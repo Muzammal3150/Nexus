@@ -1,0 +1,16 @@
+{
+  "files.exclude": {
+    "frontend/.gitignore": true,
+    "frontend/components.json": true,
+    "frontend/eslint.config.mjs": true,
+    "frontend/next-env.d.ts": true,
+    "frontend/next.config.ts": true,
+    "frontend/node_modules": true,
+    "frontend/package.json": true,
+    "frontend/pnpm-lock.yaml": true,
+    "frontend/pnpm-workspace.yaml": true,
+    "frontend/postcss.config.mjs": true,
+    "frontend/README.md": true,
+    "frontend/tsconfig.json": true
+  }
+}

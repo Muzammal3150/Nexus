@@ -1,0 +1,109 @@
+CodeMesh
+Privacy-first AI Collaboration Platform for Developers
+Core Features
+🔐 Authentication & Security
+Anonymous login (no phone number required)
+Username-based accounts
+QR-based identity/key verification
+Multi-device linking
+End-to-end encryption for all communications
+💬 Communication
+One-to-one encrypted chat
+Group chats
+Rich text messages
+Emoji reactions
+Reply & thread support
+Typing indicators
+Read receipts (optional)
+Self-destructing messages
+📞 Meetings
+Voice calls
+Video calls
+Group calls
+Screen sharing
+Microphone & camera controls
+Call quality indicators
+💻 Developer Collaboration
+Code snippet sharing with syntax highlighting
+Collaborative whiteboard
+Architecture diagram brainstorming
+File sharing
+Drag-and-drop uploads
+
+(Stretch Goal: Real-time collaborative code editor.)
+
+🤖 AI Features
+Live AI subtitles during voice/video calls
+Speaker identification
+Searchable transcripts
+(Optional) AI meeting summaries
+(Optional) AI action items
+🌐 Offline & Cross-Platform
+Progressive Web App (PWA)
+Offline encrypted message queue
+Installable on desktop/mobile
+Push notifications
+🎨 User Experience
+Beautiful modern UI
+Dark & light themes
+Responsive design
+Smooth animations
+Fast navigation
+Keyboard shortcuts
+Suggested Tech Stack
+Frontend
+Next.js
+React
+TypeScript
+Tailwind CSS
+shadcn/ui
+Backend
+Node.js
+Express (or NestJS)
+Socket.IO
+PostgreSQL
+Prisma
+Redis (optional)
+Real-Time
+WebRTC (voice/video/screen sharing)
+Socket.IO (signaling & messaging)
+Security
+Web Crypto API / libsodium
+X25519 for key exchange
+AES-GCM for message encryption
+Secure key storage
+AI
+Whisper (or another speech-to-text model) for subtitles
+Optional LLM for summaries/action items
+Deployment
+Docker
+Vercel (frontend)
+Railway / Render / VPS (backend)
+MVP (Must Have)
+✅ Anonymous authentication
+✅ End-to-end encrypted chat
+✅ Group chats
+✅ Voice calls
+✅ Video calls
+✅ Screen sharing
+✅ File sharing
+✅ Code snippet sharing
+✅ Collaborative whiteboard
+✅ AI subtitles
+✅ QR verification
+✅ Beautiful UI
+✅ PWA support
+Stretch Goals (If Time Allows)
+Real-time collaborative code editor
+AI meeting summaries
+AI action items
+Device linking
+Offline encrypted queue
+Self-destructing messages
+Message search
+Presence status
+Architecture diagram templates
+Markdown support
+Elevator Pitch
+
+CodeMesh is a privacy-first collaboration platform built for developers. It combines end-to-end encrypted messaging, voice/video meetings, screen sharing, collaborative whiteboarding, secure code sharing, and AI-powered subtitles to help programmers discuss architecture, solve problems, and build software together in one secure workspace.
