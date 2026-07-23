@@ -1,3 +1,25 @@
 {
-  "files.exclude": {}
+  "files.exclude": {
+    ".git": true,
+    ".gitignore": true,
+    ".vscode": true,
+    "node_modules": true,
+    "package.json": true,
+    "packages": true,
+    "pnpm-lock.yaml": true,
+    "pnpm-workspace.yaml": true,
+    "todo.txt": true,
+    "apps\\frontend/.gitignore": true,
+    "apps\\frontend/.next": true,
+    "apps\\frontend/components.json": true,
+    "apps\\frontend/eslint.config.mjs": true,
+    "apps\\frontend/next-env.d.ts": true,
+    "apps\\frontend/next.config.ts": true,
+    "apps\\frontend/node_modules": true,
+    "apps\\frontend/package.json": true,
+    "apps\\frontend/pnpm-lock.yaml": true,
+    "apps\\frontend/postcss.config.mjs": true,
+    "apps\\frontend/README.md": true,
+    "apps\\frontend/tsconfig.json": true
+  }
 }

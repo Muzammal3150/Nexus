@@ -11,6 +11,7 @@ model User {
 
     @@unique([email])
     @@map("user")
+    rooms Room[]
 }
 
 model Session {
