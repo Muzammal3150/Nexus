@@ -19,6 +19,7 @@ export default function SignupForm() {
     const form = useForm<signUpValues>({
         resolver: zodResolver(signUpValidator),
         defaultValues: {
+            username: '',
             email: '',
             password: '',
             confirmPassword: '',
@@ -60,6 +61,15 @@ export default function SignupForm() {
                 icon={UserIcon}
                 placeholder="John"
                 autoComplete="name"
+                required
+            />
+            <InputField
+                name="username"
+                label="Username"
+                form={form}
+                icon={UserIcon}
+                placeholder="John123"
+                autoComplete="username"
                 required
             />
 

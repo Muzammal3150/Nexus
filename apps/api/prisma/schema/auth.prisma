@@ -8,10 +8,11 @@ model User {
     updatedAt     DateTime  @updatedAt
     sessions      Session[]
     accounts      Account[]
+    username      String    @unique
+    rooms         Room[]
 
     @@unique([email])
     @@map("user")
-    rooms Room[]
 }
 
 model Session {

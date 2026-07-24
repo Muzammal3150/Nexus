@@ -20,6 +20,13 @@
     "apps\\frontend/pnpm-lock.yaml": true,
     "apps\\frontend/postcss.config.mjs": true,
     "apps\\frontend/README.md": true,
-    "apps\\frontend/tsconfig.json": true
+    "apps\\frontend/tsconfig.json": true,
+    "apps\\api/.gitignore": true,
+    "apps\\api/nodemon.json": true,
+    "apps\\api/node_modules": true,
+    "apps\\api/package.json": true,
+    "apps\\api/pnpm-lock.yaml": true,
+    "apps\\api/prisma.config.ts": true,
+    "apps\\api/tsconfig.json": true
   }
 }
