@@ -1,7 +1,5 @@
 'use client';
 
-import { Check, CheckCheck } from 'lucide-react';
-
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Message, MessageAvatar, MessageContent, MessageFooter } from '@/components/ui/message';
@@ -14,24 +12,24 @@ import {
     MessageScrollerViewport,
 } from '@/components/ui/message-scroller';
 import type { ChatMessage } from '@/lib/types';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 
 interface ChatThreadProps {
     messages: ChatMessage[];
 }
 
-function StatusIcon({ status }: { status?: ChatMessage['status'] }) {
-    if (status === 'read') {
-        return <CheckCheck className="size-3.5 text-primary" />;
-    }
-    if (status === 'delivered') {
-        return <CheckCheck className="size-3.5" />;
-    }
-    if (status === 'sent') {
-        return <Check className="size-3.5" />;
-    }
-    return null;
-}
+// function StatusIcon({ status }: { status?: ChatMessage['status'] }) {
+//     if (status === 'read') {
+//         return <CheckCheck className="size-3.5 text-primary" />;
+//     }
+//     if (status === 'delivered') {
+//         return <CheckCheck className="size-3.5" />;
+//     }
+//     if (status === 'sent') {
+//         return <Check className="size-3.5" />;
+//     }
+//     return null;
+// }
 
 export function ChatThread({ messages }: ChatThreadProps) {
     return (
@@ -65,11 +63,7 @@ function MessageItem({ message }: { message: ChatMessage }) {
                         <BubbleContent>{message.text}</BubbleContent>
                     </Bubble>
                     <MessageFooter className="text-[11px] text-muted-foreground">
-                        <span>
-                            {formatDistanceToNow(message.time, {
-                                addSuffix: true,
-                            })}
-                        </span>
+                        <span>{format(message.time, 'p')}</span>
                         {/* {message.isMine && (
                                                     <StatusIcon status={message.status} />
                                                 )} */}

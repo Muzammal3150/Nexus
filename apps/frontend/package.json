@@ -13,6 +13,8 @@
     "@hookform/resolvers": "^5.4.0",
     "@nexus/shared": "workspace:*",
     "@shadcn/react": "^0.2.1",
+    "@tanstack/react-query": "^5.101.4",
+    "@teispace/next-themes": "^2.0.4",
     "axios": "^1.18.1",
     "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tanstack/eslint-plugin-query": "^5.101.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

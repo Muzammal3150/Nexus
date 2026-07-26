@@ -1,5 +1,5 @@
-import { RoomWithMembers } from "@/db/db.d";
-import { getRoom } from "@/lib/rooms";
+import { api } from "@/lib/axios";
+import { Room } from "@/types/room";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -8,7 +8,7 @@ export function useActiveRoom() {
 
 
     const [isLoading, setIsLoading] = useState(true);
-    const [room, setRoom] = useState<RoomWithMembers | null>(null);
+    const [room, setRoom] = useState<Room | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -19,7 +19,7 @@ export function useActiveRoom() {
             setIsLoading(true);
 
             try {
-                const room = await getRoom(roomId);
+                const { data: room } = await api.get<Room>(`/rooms/${roomId}`);
                 setRoom(room);
             } catch (error) {
                 console.error("Failed to load room:", error);

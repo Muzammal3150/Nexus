@@ -7,6 +7,30 @@ export const router: Router = Router();
 
 
 
+router.get("/:roomId", async (req, res) => {
+    const session = await auth.api.getSession({
+        headers: req.headers,
+    });
+
+    if (!session) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const { roomId } = req.params
+    const rooms = await prisma.room.findUnique({
+        where: {
+            id: roomId
+        },
+        include: {
+            members: {
+                include: {
+                    user: true,
+                }
+            }
+        },
+    });
+
+    return res.json(rooms);
+});
 router.get("/", async (req, res) => {
     const session = await auth.api.getSession({
         headers: req.headers,
@@ -20,52 +44,19 @@ router.get("/", async (req, res) => {
         where: {
             members: {
                 some: {
-                    id: session.user.id,
+                    userId: session.user.id,
                 },
             },
         },
-        include: { members: true },
+        include: {
+            members: {
+                include: {
+                    user: true,
+                }
+            }
+        },
     });
 
     return res.json(rooms);
 });
 
-router.post("/", async (req, res) => {
-    const session = await auth.api.getSession({
-        headers: req.headers,
-    });
-
-    if (!session) {
-        return res.status(401).json({
-            message: "Unauthorized",
-        });
-    }
-
-    const {
-        name,
-        memberIds,
-        description
-    }: {
-        name: string;
-        description?: string;
-        memberIds: string[];
-    } = req.body;
-
-    // Always include the creator
-    const members = [...new Set([session.user.id, ...memberIds])];
-
-    const room = await prisma.room.create({
-        data: {
-            name,
-            description,
-            members: {
-                connect: members.map((id) => ({ id })),
-            },
-        },
-        include: {
-            members: true,
-        },
-    });
-
-    return res.status(201).json(room);
-});

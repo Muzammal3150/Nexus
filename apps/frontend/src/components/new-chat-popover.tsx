@@ -3,7 +3,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AxiosError } from 'axios';
 import { User } from 'better-auth';
-import { AlertCircle, Loader2, Plus, SearchIcon, UserPlus, Users, X } from 'lucide-react';
+import {
+    AlertCircle,
+    AtSign,
+    AtSignIcon,
+    Loader2,
+    Plus,
+    SearchIcon,
+    UserPlus,
+    Users,
+    X,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -213,14 +223,14 @@ export function NewChatPopover() {
                         <CardHeader className="gap-3">
                             <CardTitle>New Chat</CardTitle>
 
-                            <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+                            <div className="grid grid-cols-2 gap-1 rounded-lg bg-background border p-1">
                                 <button
                                     type="button"
                                     onClick={() => switchMode('direct')}
                                     className={cn(
-                                        'flex items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-medium transition-colors',
+                                        'flex items-center justify-center  gap-1.5 rounded-md py-1 text-sm font-medium transition-colors',
                                         mode === 'direct'
-                                            ? 'bg-background shadow-sm'
+                                            ? 'bg-muted border shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground',
                                     )}
                                 >
@@ -231,9 +241,9 @@ export function NewChatPopover() {
                                     type="button"
                                     onClick={() => switchMode('group')}
                                     className={cn(
-                                        'flex items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-medium transition-colors',
+                                        'flex items-center justify-center gap-1.5 rounded-md py-1 text-sm font-medium transition-colors',
                                         mode === 'group'
-                                            ? 'bg-background shadow-sm'
+                                            ? 'bg-muted border shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground',
                                     )}
                                 >
@@ -273,7 +283,7 @@ export function NewChatPopover() {
                                 <InputGroup>
                                     <InputGroupInput
                                         id="member-search"
-                                        placeholder="Username, email or phone number"
+                                        placeholder="Username"
                                         value={search}
                                         maxLength={MAX_NAME_LENGTH}
                                         aria-invalid={Boolean(searchError)}
@@ -300,7 +310,7 @@ export function NewChatPopover() {
                                                 className="text-muted-foreground hover:text-foreground disabled:opacity-40"
                                                 aria-label="Invite member"
                                             >
-                                                <Plus className="h-4 w-4" />
+                                                <AtSignIcon className="h-4 w-4" />
                                             </button>
                                         ) : (
                                             <SearchIcon className="h-4 w-4 text-muted-foreground" />
@@ -379,3 +389,5 @@ export function NewChatPopover() {
         </Popover>
     );
 }
+
+function DirectForm() {}

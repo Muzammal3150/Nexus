@@ -18,7 +18,7 @@ export default function LoginForm() {
     const router = useRouter();
 
     const form = useForm<loginValues>({
-        resolver: zodResolver(loginValidator as any),
+        resolver: zodResolver(loginValidator),
         defaultValues: {
             email: '',
             password: '',
@@ -68,7 +68,6 @@ export default function LoginForm() {
             <Field>
                 <FieldLabel>Password:</FieldLabel>
                 <PasswordInput
-                    
                     id="password"
                     placeholder="••••••••"
                     autoComplete="current-password"

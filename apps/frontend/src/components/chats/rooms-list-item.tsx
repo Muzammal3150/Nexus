@@ -1,13 +1,13 @@
 'use client';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { RoomWithMembers } from '@/db/db.d';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/utils-chat';
+import { Room } from '@/types/room';
 import Link from 'next/link';
 
 interface RoomsListItemProps {
-    room: RoomWithMembers;
+    room: Room;
     active: boolean;
 }
 
@@ -24,7 +24,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                 <div className="relative shrink-0">
                     <Avatar className="size-11">
                         <AvatarFallback className={cn('text-sm font-medium')}>
-                            {getInitials(room.name)}
+                            {getInitials(room.name ?? "g")}
                         </AvatarFallback>
                     </Avatar>
                     {/* {room.online && (

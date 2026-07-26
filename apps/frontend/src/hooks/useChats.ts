@@ -6,13 +6,13 @@ export function useChats(roomId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     useEffect(() => {
 
-        chatSocket.emit("room:join", roomId)
 
         const handleMessage = (data: ChatMessage) => {
             console.log(data)
             setMessages((prev) => [...prev, data]);
         };
 
+        chatSocket.emit("room:join", roomId)
         chatSocket.on("chat:text", handleMessage);
 
         return () => {

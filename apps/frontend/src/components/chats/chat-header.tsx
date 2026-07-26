@@ -4,20 +4,17 @@ import { MoreVertical, Phone, Search, Video } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { RoomWithMembers } from '@/db/db.d';
-import type { Conversation } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/utils-chat';
+import { Room } from '@/types/room';
 
-
-
-export function ChatHeader({ room }: { room: RoomWithMembers }) {
+export function ChatHeader({ room }: { room: Room }) {
     return (
         <div className="flex items-center justify-between border-b bg-background px-5 py-3">
             <div className="flex items-center gap-3">
                 <Avatar className="size-9">
                     <AvatarFallback className={cn('text-xs font-medium')}>
-                        {getInitials(room.name)}
+                        {getInitials(room.name ?? 'g')}
                     </AvatarFallback>
                 </Avatar>
                 <div>

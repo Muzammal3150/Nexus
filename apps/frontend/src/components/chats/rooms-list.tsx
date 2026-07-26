@@ -1,23 +1,40 @@
 'use client';
 
-import { MoreVertical, Plus, Search } from 'lucide-react';
+import { MoreVertical, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-import { useRooms } from '@/hooks/useRooms';
-import Link from 'next/link';
-import { useState } from 'react';
-import { RoomsListItem } from './rooms-list-item';
+import { api } from '@/lib/axios';
+import { formatDirectRoom } from '@/lib/rooms';
+import { Room } from '@/types/room';
+import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
+import { useSession } from '../auth/auth-provider';
+import { NewChatPopover } from '../newChat/new-chat-popover';
+import { RoomsListItem } from './rooms-list-item';
 
 export function RoomsList() {
     const { roomId: activeId } = useParams<{ roomId: string }>();
-
-    const rooms = useRooms();
+    const session = useSession();
+    const { data, isLoading } = useQuery({
+        queryKey: ['get-rooms'],
+        queryFn: async () => {
+            const res = await api.get('/rooms');
+            return res.data as Room[];
+        },
+        select(rooms) {
+            return rooms.map((room) => formatDirectRoom(room, session.user));
+        },
+    });
+    // const rooms = useRooms();
     const [roomSearchValue, setRoomSearchValue] = useState('');
+
+    if (isLoading) return 'Loading';
+    const rooms = data;
     return (
         <div className="flex w-[320px] shrink-0 flex-col border-r bg-muted/20">
             <RoomsListHeader query={roomSearchValue} onQueryChange={setRoomSearchValue} />
@@ -25,10 +42,10 @@ export function RoomsList() {
 
             <ScrollArea className="flex-1">
                 <div className="flex flex-col gap-0.5 p-2">
-                    {rooms.map((room) => (
+                    {rooms?.map((room) => (
                         <RoomsListItem key={room.id} room={room} active={room.id === activeId} />
                     ))}
-                    {rooms.length === 0 && (
+                    {rooms?.length === 0 && (
                         <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                             No chats found.
                         </p>
@@ -50,12 +67,7 @@ function RoomsListHeader({
         <header>
             <div className="flex items-center gap-2 px-4 py-3">
                 <h2 className="text-lg font-semibold tracking-tight mr-auto">Chats</h2>
-                <Link href={'/chats/new'}>
-                    <Button size={'sm'}>
-                        <Plus />
-                        New
-                    </Button>
-                </Link>
+                <NewChatPopover />
                 <Button variant="ghost" size="icon" className="size-8">
                     <MoreVertical className="size-4" />
                 </Button>
