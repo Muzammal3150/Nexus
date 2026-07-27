@@ -1,8 +1,8 @@
 'use client';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import { getInitials } from '@/lib/utils-chat';
+import { getInitials } from '@/lib/chat/utils-chat';
+import { cn } from '@/lib/cn';
 import { Room } from '@/types/room';
 import Link from 'next/link';
 

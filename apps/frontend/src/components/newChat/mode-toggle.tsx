@@ -1,6 +1,6 @@
 import { UserPlus, Users } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/cn';
 
 const MODES = [
     { value: 'direct', label: 'Direct', icon: UserPlus },

@@ -2,6 +2,32 @@ import { Router } from "express";
 import prisma from "../config/prisma.js";
 
 export const router: Router = Router();
+router.get("/many/id", async (req, res) => {
+    const ids = req.query.ids;
+
+    const values = Array.isArray(ids) ? ids as string[] : typeof ids === "string" ? ids.split(",") : [];
+
+    if (values.length === 0) {
+        return res.status(400).json({
+            message: "usernames are required.",
+        });
+    }
+
+    const users = await prisma.user.findMany({
+        where: {
+            id: { in: values }
+        },
+        select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+
+        }
+    });
+
+    return res.json(users);
+});
 router.get("/many", async (req, res) => {
     const usernames = req.query.usernames;
 

@@ -11,7 +11,7 @@ import {
     MessageScrollerProvider,
     MessageScrollerViewport,
 } from '@/components/ui/message-scroller';
-import type { ChatMessage } from '@/lib/types';
+import { ChatMessage } from '@/types/messages';
 import { format } from 'date-fns';
 
 interface ChatThreadProps {
@@ -60,10 +60,10 @@ function MessageItem({ message }: { message: ChatMessage }) {
                 )}
                 <MessageContent>
                     <Bubble variant={message.isMine ? 'default' : 'muted'}>
-                        <BubbleContent>{message.text}</BubbleContent>
+                        <BubbleContent>{message.body}</BubbleContent>
                     </Bubble>
                     <MessageFooter className="text-[11px] text-muted-foreground">
-                        <span>{format(message.time, 'p')}</span>
+                        <span>{format(message.sendedAt, 'p')}</span>
                         {/* {message.isMine && (
                                                     <StatusIcon status={message.status} />
                                                 )} */}

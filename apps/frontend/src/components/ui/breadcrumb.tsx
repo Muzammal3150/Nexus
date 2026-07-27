@@ -1,8 +1,8 @@
-import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
+import * as React from "react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/cn"
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
@@ -115,11 +115,8 @@ function BreadcrumbEllipsis({
 }
 
 export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
+    Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem,
+    BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator
 }
+

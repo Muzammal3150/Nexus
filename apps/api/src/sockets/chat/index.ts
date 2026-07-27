@@ -125,24 +125,18 @@ export class ChatSocket implements SocketHandler {
     }
 
 
-    private onText(socket: Socket, data: { roomId: string, text: string }) {
-        const { text, roomId } = data
+    private onText(socket: Socket, data: { roomId: string, body: string }) {
+        const { body, roomId } = data
 
-        console.log(data)
-        socket.to(roomId).emit("chat:text", {
+        const payload = {
             id: crypto.randomUUID(),
-            user: socket.data.user,
-            text,
-            time: new Date(),
-        })
-        socket.emit("chat:text", {
-            id: crypto.randomUUID(),
-            user: socket.data.user,
-            text,
-            time: new Date(),
-            isMine: true,
+            sender: socket.data.user,
+            body,
+            sendedAt: new Date(),
+        }
 
-        })
+        socket.to(roomId).emit("chat:text", payload)
+        socket.emit("chat:text", { ...payload, isMine: true })
     }
 }
 

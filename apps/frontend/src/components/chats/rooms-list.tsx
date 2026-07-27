@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 import { api } from '@/lib/axios';
-import { formatDirectRoom } from '@/lib/rooms';
+import { formatDirectRoom } from '@/lib/chat/rooms';
 import { Room } from '@/types/room';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
@@ -36,7 +36,7 @@ export function RoomsList() {
     if (isLoading) return 'Loading';
     const rooms = data;
     return (
-        <div className="flex w-[320px] shrink-0 flex-col border-r bg-muted/20">
+        <div className="flex w-[320px] shrink-0 flex-col border-r bg-sidebar/50">
             <RoomsListHeader query={roomSearchValue} onQueryChange={setRoomSearchValue} />
             <Separator />
 

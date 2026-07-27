@@ -5,14 +5,12 @@ import { AxiosError } from 'axios';
 import { User } from 'better-auth';
 import {
     AlertCircle,
-    AtSign,
     AtSignIcon,
     Loader2,
-    Plus,
     SearchIcon,
     UserPlus,
     Users,
-    X,
+    X
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -20,8 +18,8 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { api } from '@/lib/axios';
+import { cn } from '@/lib/cn';
 import { chatSocket } from '@/lib/socket';
-import { cn } from '@/lib/utils';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

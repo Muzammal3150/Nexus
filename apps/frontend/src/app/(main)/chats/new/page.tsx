@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Separator } from '@/components/ui/separator';
 
-import { addRoom } from '@/lib/rooms';
+import { addRoom } from '@/lib/chat/rooms';
 import { useRouter } from 'next/navigation';
 
 const MAX_NAME_LENGTH = 60;

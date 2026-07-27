@@ -16,10 +16,10 @@ export interface Conversation {
 export type MessageRole = "user" | "assistant";
 export type MessageStatus = "sent" | "delivered" | "read";
 
-export interface ChatMessage {
+export interface Message {
   id: string;
-  text: string;
-  time: string;
+  body: string;
+  sendedAt: string;
   user: User;
   isMine: boolean
 }

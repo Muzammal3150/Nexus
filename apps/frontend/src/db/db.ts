@@ -1,18 +1,13 @@
 import Dexie, { type Table } from "dexie";
-import {CachedUser, Room, RoomMember } from './db.d'
+import { CachedMessage } from './db.d';
 export class AppDb extends Dexie {
-
-    users!: Table<CachedUser,string>;
-    rooms!: Table<Room, string>;
-    roomMembers!: Table<RoomMember, string>;
+    messages!: Table<CachedMessage, string>;
 
     constructor() {
         super("nexsus");
 
         this.version(1).stores({
-            users: "id, name, email, image",
-            rooms: "id, name",
-            roomMembers: "[roomId+userId], roomId, userId"
+            messages: "id, roomId, type, body, senderId, sendedAt"
         });
     }
 }

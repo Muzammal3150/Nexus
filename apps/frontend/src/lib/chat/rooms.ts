@@ -1,5 +1,5 @@
 import { Room } from "@/types/room";
-import { Session, User } from "better-auth";
+import { User } from "better-auth";
 
 export function formatDirectRoom(room: Room,user:User) {
     if (room.isGroup) return room;

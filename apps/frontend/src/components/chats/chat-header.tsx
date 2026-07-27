@@ -4,8 +4,8 @@ import { MoreVertical, Phone, Search, Video } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { getInitials } from '@/lib/utils-chat';
+import { getInitials } from '@/lib/chat/utils-chat';
+import { cn } from '@/lib/cn';
 import { Room } from '@/types/room';
 
 export function ChatHeader({ room }: { room: Room }) {
