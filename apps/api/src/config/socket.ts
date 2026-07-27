@@ -1,6 +1,8 @@
 import { Server, Namespace, Socket } from "socket.io";
 import { type Server as HttpServer } from "node:http";
-
+import { createClient } from "redis";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { pubClient, subClient } from "./redis.js";
 export interface SocketHandler {
     namespace: string;
     init(namespace: Namespace): void;
@@ -11,10 +13,12 @@ export class SocketServer {
     private handlers: SocketHandler[] = [];
 
     constructor(httpServer: HttpServer) {
+
         this.io = new Server(httpServer, {
+            adapter: createAdapter(pubClient, subClient),
             cors: {
                 origin: process.env.FRONTEND_URL,
-                credentials:true,
+                credentials: true,
             },
         });
     }

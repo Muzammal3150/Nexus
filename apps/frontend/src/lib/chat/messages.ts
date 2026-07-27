@@ -1,22 +1,22 @@
 import { db } from "@/db/db";
-import { Message } from "@/db/db.d";
+import { CachedMessage } from "@/db/db.d";
 
 
-export async function addMessage(message: Message) {
+export async function addMessage(message: CachedMessage) {
     await db.transaction("rw", db.messages, async () => {
         await db.messages.add(message)
     })
 }
 
 
-export async function deleteMessage(id: Message['id']) {
+export async function deleteMessage(id: CachedMessage['id']) {
     await db.transaction("rw", db.messages, async () => {
         await db.messages.delete(id)
     })
 }
 
 
-export async function getMessage(id: Message["id"]) {
+export async function getMessage(id: CachedMessage["id"]) {
     const message = await db.messages.get(id);
     if (!message) return null;
     return message;
