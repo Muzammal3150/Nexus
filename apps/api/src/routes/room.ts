@@ -39,14 +39,16 @@ router.get("/", async (req, res) => {
     if (!session) {
         return res.status(401).json({ message: "Unauthorized" });
     }
+    
+    const rooms = await getAllRooms(session.user.id)
 
-    const rooms = await prisma.room.findMany({
+    return res.json(rooms);
+});
+
+export function getAllRooms(userId: string) {
+    return prisma.room.findMany({
         where: {
-            members: {
-                some: {
-                    userId: session.user.id,
-                },
-            },
+            members: { some: { userId, } },
         },
         include: {
             members: {
@@ -57,6 +59,4 @@ router.get("/", async (req, res) => {
         },
     });
 
-    return res.json(rooms);
-});
-
+}

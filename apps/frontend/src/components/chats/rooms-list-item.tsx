@@ -4,7 +4,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/chat/utils-chat';
 import { cn } from '@/lib/cn';
 import { Room } from '@/types/room';
+import { format } from 'date-fns';
 import Link from 'next/link';
+import { Badge } from '../ui/badge';
+import { CheckCheck } from 'lucide-react';
+import { useSession } from '../auth/auth-provider';
+import { User } from 'better-auth';
 
 interface RoomsListItemProps {
     room: Room;
@@ -12,6 +17,8 @@ interface RoomsListItemProps {
 }
 
 export function RoomsListItem({ room, active }: RoomsListItemProps) {
+    const session = useSession();
+    // console.log(room);
     return (
         <Link href={`/chats/${room.id}`}>
             <button
@@ -24,7 +31,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                 <div className="relative shrink-0">
                     <Avatar className="size-11">
                         <AvatarFallback className={cn('text-sm font-medium')}>
-                            {getInitials(room.name ?? "g")}
+                            {getInitials(room.name ?? 'g')}
                         </AvatarFallback>
                     </Avatar>
                     {/* {room.online && (
@@ -35,37 +42,40 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-medium">{room.name}</span>
-                        {/* <span
-                        className={cn(
-                            'shrink-0 text-xs',
-                            room.unread > 0
-                            ? 'font-medium text-primary'
-                                : 'text-muted-foreground',
-                        )}
-                        >
-                        {room.time}
-                    </span> */}
-                    </div>
-                    {/* 
-                <div className="mt-0.5 flex items-center justify-between gap-2">
-                    <span
-                        className={cn(
-                            'flex items-center gap-1 truncate text-xs',
-                            conversation.typing ? 'text-primary' : 'text-muted-foreground',
+                        <span
+                            className={cn(
+                                'shrink-0 text-xs',
+                                room.unread > 0
+                                    ? 'font-medium text-primary'
+                                    : 'text-muted-foreground',
                             )}
-                    >
-                        {conversation.read && <CheckCheck className="size-3.5 shrink-0" />}
-                        <span className="truncate">{conversation.lastMessage}</span>
-                    </span>
-                    
-                    {conversation.unread > 0 && (
-                        <Badge className="h-5 min-w-5 shrink-0 justify-center rounded-full px-1.5 text-[11px]">
-                        {conversation.unread}
-                        </Badge>
-                    )}
-                </div> */}
+                        >
+                            {room.lastMessage && format(room.lastMessage?.sendedAt, 'p')}
+                        </span>
+                    </div>
+
+                    <div className="mt-0.5 flex items-center justify-between gap-2">
+                        <span
+                            className={cn(
+                                'flex items-center gap-1 truncate text-xs',
+                                room.typing ? 'text-primary' : 'text-muted-foreground',
+                            )}
+                        >
+                            {!room.unread && <CheckCheck className="size-3.5 shrink-0" />}
+                            {room.lastMessage && (
+                                <span className="truncate">You: {room.lastMessage.body}</span>
+                            )}
+                        </span>
+
+                        {room.unread > 0 && <Badge>{room.unread}</Badge>}
+                    </div>
                 </div>
             </button>
         </Link>
     );
+}
+
+function formatUserName(user: User, currUser: User) {
+    if (user.id == currUser.id) return 'You';
+    return user.name;
 }

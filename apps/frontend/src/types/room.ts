@@ -1,4 +1,5 @@
 import { User } from "better-auth";
+import { ChatMessage } from "./messages";
 
 export interface Room {
     avatar?: string;
@@ -9,6 +10,8 @@ export interface Room {
     isGroup: boolean;
     name?: string;
     members: RoomMember[]
+    unread: number;
+    lastMessage: ChatMessage | null;
 }
 
 export interface RoomMember {

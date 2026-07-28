@@ -4,6 +4,7 @@ import type { ExtendedError, Namespace, Socket } from "socket.io";
 import type { SocketHandler } from "../../config/socket.js";
 import { auth } from "../../config/auth.js";
 import prisma from "../../config/prisma.js";
+import { getAllRooms } from "../../routes/room.js";
 
 export class ChatSocket implements SocketHandler {
     namespace = "/chat"
@@ -33,13 +34,20 @@ export class ChatSocket implements SocketHandler {
         next();
     }
 
-    private onConnect(socket: Socket) {
-        // console.log(socket.data)
+    private async onConnect(socket: Socket) {
+
+        await this.joinAllRooms(socket)
         socket.on("chat:text", (data) => this.onText(socket, data));
-        socket.on("room:join", (roomId) => this.joinRoom(socket, roomId));
+        // socket.on("room:join", (roomId) => this.joinRoom(socket, roomId));
         socket.on("room:create", (data, callback) => this.createRoom(socket, data, callback));
     }
 
+    private async joinAllRooms(socket: Socket) {
+        const rooms = await getAllRooms(socket.data.user.id)
+
+        socket.join(rooms.map(({ id }) => id))
+        console.log("Joined Rooms", socket.data.user, rooms)
+    }
     private joinRoom(socket: Socket, roomId: string) {
         console.log("joinRoom", roomId)
         socket.join(roomId)
@@ -133,6 +141,7 @@ export class ChatSocket implements SocketHandler {
             sender: socket.data.user,
             body,
             sendedAt: new Date(),
+            roomId,
         }
 
         socket.to(roomId).emit("chat:text", payload)

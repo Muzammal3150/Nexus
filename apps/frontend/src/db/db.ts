@@ -6,8 +6,8 @@ export class AppDb extends Dexie {
     constructor() {
         super("nexsus");
 
-        this.version(1).stores({
-            messages: "id, roomId, type, body, senderId, sendedAt"
+        this.version(2).stores({
+            messages: "id, roomId, type, body, senderId, sendedAt, read"
         });
     }
 }

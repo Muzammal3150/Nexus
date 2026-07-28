@@ -43,28 +43,36 @@ export function useChats(roomId: string) {
         }));
     }, [roomId, session.user.id]);
 
+    const groupedMessages = messages && Object.groupBy(messages!, (message) => getDateGroup(message.sendedAt))
+
     useEffect(() => {
-        const handleMessage = ({
-            id,
-            sender,
-            sendedAt,
-            body,
-        }: ChatMessage) => {
+        (async () => {
+            await db.messages
+                .where('roomId')
+                .equals(roomId)
+                .modify((message) => {
+                    message.read = true;
+                });
+        })();
+    }, [roomId]);
+
+
+    useEffect(() => {
+        const handleMessage = ({ id, sender, sendedAt, body, roomId: _roomId }: ChatMessage) => {
             addMessage({
                 id,
-                roomId,
+                roomId: _roomId,
                 senderId: sender.id,
                 sendedAt,
                 body,
+                read: _roomId == roomId,
             });
         };
 
-        chatSocket.emit("room:join", roomId);
         chatSocket.on("chat:text", handleMessage);
 
         return () => {
             chatSocket.off("chat:text", handleMessage);
-            chatSocket.emit("room:leave", roomId);
         };
     }, [roomId]);
 
@@ -77,6 +85,29 @@ export function useChats(roomId: string) {
 
     return {
         messages: messages ?? [],
+        groupedMessages,
         onSend,
     };
+}
+
+
+import {
+    format,
+    isToday,
+    isYesterday,
+    differenceInCalendarDays,
+} from "date-fns";
+
+function getDateGroup(_date: Date | string) {
+    const date = new Date(_date)
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+
+    const daysAgo = differenceInCalendarDays(new Date(), date);
+
+    if (daysAgo < 7) {
+        return format(date, "EEEE"); // Monday, Tuesday...
+    }
+
+    return format(date, "MMMM d, yyyy"); // July 28, 2026
 }

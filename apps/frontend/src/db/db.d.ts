@@ -25,6 +25,7 @@ export interface CachedMessage {
     senderId: string;
     sendedAt: string;
     body: string;
+    read: boolean;
 
 }
 

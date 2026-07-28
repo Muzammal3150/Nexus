@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageCircle, Settings } from 'lucide-react';
+import { MessageCircle, Phone, PhoneCall, Settings } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -21,6 +21,11 @@ const sidebarItems = {
         url: '/chats',
         icon: MessageCircle,
         title: 'Chats',
+    },
+    calls: {
+        url: '/calls',
+        icon: Phone,
+        title: 'Calls',
     },
 };
 

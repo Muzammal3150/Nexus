@@ -13,9 +13,11 @@ import {
 } from '@/components/ui/message-scroller';
 import { ChatMessage } from '@/types/messages';
 import { format } from 'date-fns';
+import React from 'react';
+import { Marker, MarkerContent } from '../ui/marker';
 
 interface ChatThreadProps {
-    messages: ChatMessage[];
+    messages?: Partial<Record<string, ChatMessage[]>>;
 }
 
 // function StatusIcon({ status }: { status?: ChatMessage['status'] }) {
@@ -37,9 +39,18 @@ export function ChatThread({ messages }: ChatThreadProps) {
             <MessageScroller className="flex-1 bg-muted/20">
                 <MessageScrollerViewport>
                     <MessageScrollerContent className="flex flex-col gap-3 px-6 py-4">
-                        {messages.map((message) => (
-                            <MessageItem message={message} key={message.id} />
-                        ))}
+                        {messages &&
+                            Object.keys(messages).map((day) => (
+                                <React.Fragment key={day}>
+                                    <Marker variant="separator">
+                                        <MarkerContent>{day}</MarkerContent>
+                                    </Marker>
+
+                                    {messages[day]!.map((message) => (
+                                        <MessageItem key={message.id} message={message} />
+                                    ))}
+                                </React.Fragment>
+                            ))}
                     </MessageScrollerContent>
                 </MessageScrollerViewport>
                 <MessageScrollerButton />

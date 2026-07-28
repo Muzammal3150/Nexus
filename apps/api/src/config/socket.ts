@@ -1,7 +1,6 @@
-import { Server, Namespace, Socket } from "socket.io";
-import { type Server as HttpServer } from "node:http";
-import { createClient } from "redis";
 import { createAdapter } from "@socket.io/redis-adapter";
+import { type Server as HttpServer } from "node:http";
+import { Namespace, Server } from "socket.io";
 import { pubClient, subClient } from "./redis.js";
 export interface SocketHandler {
     namespace: string;
