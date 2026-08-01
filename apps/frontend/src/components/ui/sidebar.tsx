@@ -22,7 +22,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/cn"
+import { cn } from "@/lib/utils"
 import { PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"

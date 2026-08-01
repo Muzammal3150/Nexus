@@ -1,6 +1,5 @@
 'use client';
 
-import { SessionContext } from '@/components/auth/auth-provider';
 import { authClient } from '@/lib/auth/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -23,7 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
     return (
         <QueryClientProvider client={queryClient}>
-            <SessionContext.Provider value={session}>{children}</SessionContext.Provider>
+     {children}
         </QueryClientProvider>
     );
 }

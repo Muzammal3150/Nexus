@@ -8,6 +8,7 @@ import { addMessage } from "@/lib/chat/messages";
 import { chatSocket } from "@/lib/socket";
 import { ChatMessage } from "@/types/messages";
 import { User } from "better-auth";
+import { format, differenceInCalendarDays, isToday, isYesterday } from "date-fns";
 
 
 
@@ -76,27 +77,17 @@ export function useChats(roomId: string) {
         };
     }, [roomId]);
 
-    const onSend = (text: string) => {
-        chatSocket.emit("chat:text", {
-            roomId,
-            body: text,
-        });
-    };
+
 
     return {
         messages: messages ?? [],
         groupedMessages,
-        onSend,
+        
     };
 }
 
 
-import {
-    format,
-    isToday,
-    isYesterday,
-    differenceInCalendarDays,
-} from "date-fns";
+
 
 function getDateGroup(_date: Date | string) {
     const date = new Date(_date)

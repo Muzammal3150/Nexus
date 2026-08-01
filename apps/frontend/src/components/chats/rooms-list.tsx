@@ -10,25 +10,40 @@ import { motion, AnimatePresence } from 'motion/react';
 
 import { useRooms } from '@/hooks/useRooms';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NewChatPopover } from '../newChat/new-chat-popover';
 import { RoomsListItem } from './rooms-list-item';
 
 export function RoomsList() {
     const { roomId: activeId } = useParams<{ roomId: string }>();
     const { rooms, isLoading } = useRooms();
-    const [roomSearchValue, setRoomSearchValue] = useState('');
+    const [search, setSearch] = useState('');
 
+    const filteredRooms = useMemo(() => {
+        const query = search.trim().toLowerCase();
+
+        if (!query) {
+            return rooms;
+        }
+
+        return rooms?.filter((room) => {
+            return (
+                room.name?.toLowerCase().includes(query) ||
+                room.description?.toLowerCase().includes(query) ||
+                room.members.some((member) => member.user.name?.toLowerCase().includes(query))
+            );
+        });
+    }, [rooms, search]);
     if (isLoading) return 'Loading';
     return (
-        <div className="flex w-[320px] shrink-0 flex-col border-r bg-sidebar/50">
-            <RoomsListHeader query={roomSearchValue} onQueryChange={setRoomSearchValue} />
+        <div className="flex  shrink-0 [320px] flex-col border-r bg-sidebar/50 h-full">
+            <RoomsListHeader query={search} onQueryChange={setSearch} />
             <Separator />
 
             <ScrollArea className="flex-1">
                 <div className="flex flex-col gap-0.5 p-2">
                     <AnimatePresence>
-                        {rooms?.map((room) => (
+                        {filteredRooms?.map((room) => (
                             <motion.div
                                 key={room.id}
                                 layout

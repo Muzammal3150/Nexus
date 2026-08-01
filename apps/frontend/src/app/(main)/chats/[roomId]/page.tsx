@@ -8,15 +8,16 @@ import { useChats } from '@/hooks/useChats';
 
 export default function ChatPanel() {
     const { roomId, room, isLoading } = useActiveRoom();
+    const { groupedMessages } = useChats(roomId);
 
-    const { onSend, groupedMessages } = useChats(roomId);
-    
     if (isLoading) return 'Loading';
     return (
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-col h-dvh ">
             <ChatHeader room={room!} />
-            <ChatThread messages={groupedMessages} />
-            <ChatComposer onSend={onSend} />
+            <div className="flex flex-col flex-1 overflow-auto relative">
+                <ChatThread messages={groupedMessages} />
+                <ChatComposer roomId={roomId} />
+            </div>
         </div>
     );
 }

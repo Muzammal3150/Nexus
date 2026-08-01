@@ -1,15 +1,17 @@
+import { useSession } from "@/components/auth/auth-provider";
 import { api } from "@/lib/axios";
+import { formatDirectRoom } from "@/lib/chat/rooms";
 import { Room } from "@/types/room";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export function useActiveRoom() {
     const { roomId } = useParams<{ roomId: string }>();
-
+    const session = useSession()
 
     const [isLoading, setIsLoading] = useState(true);
     const [room, setRoom] = useState<Room | null>(null);
-
+    console.log(room)
     useEffect(() => {
         (async () => {
             if (!roomId) {
@@ -29,5 +31,12 @@ export function useActiveRoom() {
         })();
     }, [roomId]);
 
-    return { roomId, room, isLoading };
+    return {
+        roomId,
+        room: room && formatDirectRoom(room, session.user),
+        // lastMessage: roomMessages?.at(-1) ?? null,
+        // unread: unreadMessages?.length ?? 0,
+
+        isLoading
+    };
 }

@@ -2,14 +2,14 @@
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/chat/utils-chat';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { Room } from '@/types/room';
-import { format } from 'date-fns';
-import Link from 'next/link';
-import { Badge } from '../ui/badge';
-import { CheckCheck } from 'lucide-react';
-import { useSession } from '../auth/auth-provider';
 import { User } from 'better-auth';
+import { format } from 'date-fns';
+import { CheckCheck } from 'lucide-react';
+import Link from 'next/link';
+import { useSession } from '../auth/auth-provider';
+import { Badge } from '../ui/badge';
 
 interface RoomsListItemProps {
     room: Room;

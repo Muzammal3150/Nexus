@@ -36,7 +36,7 @@ interface ChatThreadProps {
 export function ChatThread({ messages }: ChatThreadProps) {
     return (
         <MessageScrollerProvider autoScroll defaultScrollPosition="end">
-            <MessageScroller className="flex-1 bg-muted/20">
+            <MessageScroller className=" bg-muted/20  ">
                 <MessageScrollerViewport>
                     <MessageScrollerContent className="flex flex-col gap-3 px-6 py-4">
                         {messages &&

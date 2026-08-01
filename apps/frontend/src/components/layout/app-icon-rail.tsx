@@ -1,8 +1,7 @@
 'use client';
 
-import { MessageCircle, Phone, PhoneCall, Settings } from 'lucide-react';
+import { MessageCircle, Phone } from 'lucide-react';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
     Sidebar,
     SidebarContent,
@@ -15,6 +14,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { NavUser } from '../nav-user';
 
 const sidebarItems = {
     chats: {
@@ -32,8 +32,8 @@ const sidebarItems = {
 export function AppIconRail() {
     const pathname = usePathname();
     return (
-        <Sidebar collapsible="none" className="w-17 border-r">
-            <SidebarHeader className="items-center py-3">
+        <Sidebar collapsible="none" className="w-17 border-r gap-4 py-4">
+            <SidebarHeader className="items-center">
                 <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <MessageCircle className="size-4.5" />
                 </div>
@@ -68,8 +68,8 @@ export function AppIconRail() {
                 </SidebarMenu>
             </SidebarContent>
 
-            <SidebarFooter className="items-center gap-3 pb-4">
-                <Tooltip>
+            <SidebarFooter className="items-center">
+                {/* <Tooltip>
                     <TooltipTrigger
                         render={
                             <button
@@ -81,25 +81,9 @@ export function AppIconRail() {
                         <Settings className="size-5" />
                     </TooltipTrigger>
                     <TooltipContent side="right">Settings</TooltipContent>
-                </Tooltip>
+                </Tooltip> */}
 
-                <Tooltip>
-                    <TooltipTrigger
-                        render={
-                            <button
-                                type="button"
-                                className="flex size-11 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                            />
-                        }
-                    >
-                        <Avatar className="size-9">
-                            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
-                                YS
-                            </AvatarFallback>
-                        </Avatar>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">Your profile</TooltipContent>
-                </Tooltip>
+                <NavUser />
             </SidebarFooter>
         </Sidebar>
     );

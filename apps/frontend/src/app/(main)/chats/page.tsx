@@ -1,6 +1,4 @@
-import { Button } from '@/components/ui/button';
 import { MessageCircleOff } from 'lucide-react';
-import Link from 'next/link';
 
 export default function NoRoomSelected() {
     return (
@@ -18,9 +16,6 @@ export default function NoRoomSelected() {
                 </p>
             </div>
 
-            <Link href="/chats/new">
-                <Button>Create Room</Button>
-            </Link>
         </div>
     );
 }

@@ -18,8 +18,8 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { api } from '@/lib/axios';
-import { cn } from '@/lib/cn';
 import { chatSocket } from '@/lib/socket';
+import { cn } from '@/lib/utils';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
