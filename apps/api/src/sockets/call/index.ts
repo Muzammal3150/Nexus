@@ -11,6 +11,8 @@ import { onCallInit } from "./handlers/init-room.js";
 import { onCallLeave } from "./handlers/leave-room.js";
 import { onCallReject } from "./handlers/reject-invite.js";
 import type { CallContext } from "./types.js";
+import { onRTCOffer } from "./handlers/rtc-offer.js";
+import { onRTCAnswer } from "./handlers/rtc-answer.js";
 
 
 export class CallSocket implements SocketHandler {
@@ -85,12 +87,14 @@ export class CallSocket implements SocketHandler {
                 });
             };
         };
-        socket.on(CallEvents.Init, safe((data, callback) => onCallInit(this.ctx(), socket, data, callback)));
-        socket.on(CallEvents.Accept, safe((data, callback) => onCallAccept(this.ctx(), socket, data, callback)));
-        socket.on(CallEvents.Reject, safe((data, callback) => onCallReject(this.ctx(), socket, data, callback)));
+        socket.on(CallEvents.Init, safe((data, cb) => onCallInit(this.ctx(), socket, data, cb)));
+        socket.on(CallEvents.Accept, safe((data, cb) => onCallAccept(this.ctx(), socket, data, cb)));
+        socket.on(CallEvents.Reject, safe((data, cb) => onCallReject(this.ctx(), socket, data, cb)));
         socket.on(CallEvents.GetRoom, safe((roomId, cb) => onGetRoom(this.ctx(), roomId, cb)));
-        socket.on(CallEvents.Leave, safe((data, callback) => onCallLeave(this.ctx(), socket, data, callback)));
+        socket.on(CallEvents.Leave, safe((data, cb) => onCallLeave(this.ctx(), socket, data, cb)));
 
+        socket.on(CallEvents.Offer, safe((data, cb) => onRTCOffer(this.ctx(), socket, data, cb)));
+        socket.on(CallEvents.Answer, safe((data, cb) => onRTCAnswer(this.ctx(), socket, data, cb)));
 
         socket.on("disconnect", () => {
             onDisconnect(this.ctx(), socket).catch((err) => {

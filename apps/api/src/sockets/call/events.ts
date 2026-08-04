@@ -1,15 +1,17 @@
 export const CallEvents = {
     Init: "call:init",
+    Leave: "call:leave",
+    GetRoom: "call:get-room",
+
     Invite: "call:invite",
     Accept: "call:accept",
     Reject: "call:reject",
 
-    Offer: "call:offer",
-    Answer: "call:answer",
-    IceCandidate: "call:ice-candidate",
-    GetRoom: "call:get-room",
 
-    Leave: "call:leave",
+    Offer: "rtc:offer",
+    Answer: "rtc:answer",
+    IceCandidate: "rtc:ice-candidate",
+
 
     LeaveBroadcast: "call:leave-broadcast",
     InviteBroadcast: "call:invite-broadcast",
@@ -18,6 +20,8 @@ export const CallEvents = {
     RejectBroadcast: "call:reject-broadcast",
     ReadyBroadcast: "call:ready-broadcast",
     ExpiredBroadcast: "call:expired-broadcast",
+    OfferBroadcast: "rtc:offer-broadcast",
 
+    AnwerBroadcast: "rtc:answer-broadcast",
     Error: "call:error"
 } as const;

@@ -14,28 +14,20 @@ export default function VideoCallPage() {
     const roomId = params.callId!.toString();
     const call = useCall(roomId);
 
+    
+
     useEffect(() => {
         if (call.room == null && !call.isLoading) {
             return notFound();
         }
     }, [call.room, call.isLoading]);
 
-    console.log(call.room, call.isLoading);
-
     const { members, self } = call;
 
     const [focusedId, setFocusedId] = useState<string | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
-    const [seconds, setSeconds] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
-    const onLeave = () => {
-        // Handle leaving the call, e.g., navigate away or close the call modal
-        console.log('Leaving the call...');
-    };
-    useEffect(() => {
-        const id = setInterval(() => setSeconds((s) => s + 1), 1000);
-        return () => clearInterval(id);
-    }, []);
+    const onLeave = () => {};
 
     function toggleFullscreen() {
         if (!containerRef.current) return;
@@ -49,15 +41,11 @@ export default function VideoCallPage() {
     const focused = focusedId ? members.find((m) => m.user.id === focusedId) : undefined;
     const others = focused ? members.filter((m) => m.user.id !== focused.user.id) : [];
 
-    const durationLabel = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(
-        seconds % 60,
-    ).padStart(2, '0')}`;
-
     return (
         <div ref={containerRef} className="flex size-full flex-col ">
             <CallTopBar
                 title={'Team Standup'}
-                durationLabel={durationLabel}
+                durationLabel={'0'}
                 memberCount={members.length}
                 onShowMembers={() => setSheetOpen(true)}
             />
@@ -66,12 +54,17 @@ export default function VideoCallPage() {
                 {focused ? (
                     <SpotlightView
                         focused={focused}
+                        // stream={call.memberStream.get(focused.user.id)}
                         others={others}
                         onBackToGrid={() => setFocusedId(null)}
                         onFocus={setFocusedId}
                     />
                 ) : (
-                    <MemberGrid members={members} onFullView={setFocusedId} />
+                    <MemberGrid
+                        members={members}
+                        membersStream={new Map()}
+                        onFullView={setFocusedId}
+                    />
                 )}
             </div>
 
@@ -79,7 +72,7 @@ export default function VideoCallPage() {
                 muted={!self?.state.mic}
                 cameraOff={!self?.state.camera}
                 onToggleMute={() => updateSelf({ muted: !self?.muted })}
-                onToggleCamera={() => updateSelf({ cameraOff: !self?.cameraOff })}
+                onToggleCamera={() => console.log(call.callControllerRef.current?.peers)}
                 onToggleFullscreen={toggleFullscreen}
                 onLeave={() => onLeave?.()}
             />

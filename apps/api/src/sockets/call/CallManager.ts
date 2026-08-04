@@ -172,4 +172,15 @@ export class CallManager {
             room.joinedUserIds.has(userId)
         );
     }
+    isMember(roomId: string, userId: string) {
+        return this.rooms.get(roomId)?.memberIds.includes(userId) ?? false;
+    }
+
+    hasJoined(roomId: string, userId: string) {
+        return this.rooms.get(roomId)?.joinedUserIds.has(userId) ?? false;
+    }
+
+    hasAccepted(roomId: string, userId: string) {
+        return this.rooms.get(roomId)?.acceptedUserIds.has(userId) ?? false;
+    }
 }

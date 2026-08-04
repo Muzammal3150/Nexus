@@ -28,21 +28,19 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
         startCall(call.name, call.colorIndex, call.method);
     }
     return (
-        <CallProvider>
-            <ResizablePanelGroup className="h-full overflow-auto">
-                <ResizablePanel defaultSize={320} minSize={320} collapsible maxSize={'50%'}>
-                    <CallsSidebar
-                        favourites={[]}
-                        recents={[]}
-                        query={query}
-                        onQueryChange={setQuery}
-                        onCallFavourite={handleCallFavourite}
-                        onCallBackRecent={handleCallBackRecent}
-                    />
-                </ResizablePanel>
-                <ResizableHandle />
-                <ResizablePanel>{children}</ResizablePanel>
-            </ResizablePanelGroup>
-        </CallProvider>
+        <ResizablePanelGroup className="h-full overflow-auto">
+            <ResizablePanel defaultSize={320} minSize={320} collapsible maxSize={'50%'}>
+                <CallsSidebar
+                    favourites={[]}
+                    recents={[]}
+                    query={query}
+                    onQueryChange={setQuery}
+                    onCallFavourite={handleCallFavourite}
+                    onCallBackRecent={handleCallBackRecent}
+                />
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel>{children}</ResizablePanel>
+        </ResizablePanelGroup>
     );
 }

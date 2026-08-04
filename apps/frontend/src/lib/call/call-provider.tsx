@@ -1,59 +1,58 @@
-'use client';
+// 'use client';
 
-import { callSocket } from '@/lib/socket';
-import { createContext, useContext, useEffect, useRef } from 'react';
+// import { callSocket } from '@/lib/socket';
+// import { User } from 'better-auth';
+// import { createContext, useContext, useEffect, useRef } from 'react';
 
-const CallContext = createContext<{
-    peer: RTCPeerConnection | null;
-} | null>(null);
+// const CallContext = createContext<{
+//     peer: RTCPeerConnection | null;
+// } | null>(null);
 
-export function CallProvider({ children }: { children: React.ReactNode }) {
-    const peerRef = useRef<RTCPeerConnection | null>(null);
+// export function CallProvider({ children }: { children: React.ReactNode }) {
+//     const peerRef = useRef<RTCPeerConnection | null>(null);
 
-    useEffect(() => {
-        callSocket.connect();
+//     useEffect(() => {
+//         peerRef.current = new RTCPeerConnection({
+//             iceServers: [
+//                 {
+//                     urls: 'stun:stun.l.google.com:19302',
+//                 },
+//             ],
+//         });
 
-        peerRef.current = new RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: 'stun:stun.l.google.com:19302',
-                },
-            ],
-        });
+//         async function handleAccept({ user }: { user: User }) {
+//             const offer = await peerRef?.current?.createOffer();
+//             callSocket.emit('call:offer', { userId: user.id, offer });
+//             // Create offer if needed
+//         }
 
-        function handleJoin() {
-            // Create offer if needed
-        }
+//         callSocket.on('call:accept-broadcast', handleAccept);
 
-        callSocket.on('call:join-broadcast', handleJoin);
+//         return () => {
+//             callSocket.off('call:accept-broadcast', handleAccept);
 
-        return () => {
-            callSocket.off('call:join-broadcast', handleJoin);
+//             peerRef.current?.close();
+//             peerRef.current = null;
+//         };
+//     }, []);
 
-            peerRef.current?.close();
-            peerRef.current = null;
+//     return (
+//         <CallContext.Provider
+//             value={{
+//                 peer: peerRef.current,
+//             }}
+//         >
+//             {children}
+//         </CallContext.Provider>
+//     );
+// }
 
-            callSocket.disconnect();
-        };
-    }, []);
+// export function useCall() {
+//     const context = useContext(CallContext);
 
-    return (
-        <CallContext.Provider
-            value={{
-                peer: peerRef.current,
-            }}
-        >
-            {children}
-        </CallContext.Provider>
-    );
-}
+//     if (!context) {
+//         throw new Error('useCall must be used inside CallProvider');
+//     }
 
-export function useCall() {
-    const context = useContext(CallContext);
-
-    if (!context) {
-        throw new Error('useCall must be used inside CallProvider');
-    }
-
-    return context;
-}
+//     return context;
+// }

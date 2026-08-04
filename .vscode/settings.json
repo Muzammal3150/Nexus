@@ -10,7 +10,6 @@
     "pnpm-workspace.yaml": true,
     "todo.txt": true,
     "apps\\frontend/.gitignore": true,
-    "apps\\frontend/.next": true,
     "apps\\frontend/components.json": true,
     "apps\\frontend/eslint.config.mjs": true,
     "apps\\frontend/next-env.d.ts": true,

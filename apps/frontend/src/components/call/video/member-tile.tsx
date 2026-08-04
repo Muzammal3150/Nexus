@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Maximize2, MicOff, VideoOff } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,6 +15,7 @@ interface MemberTileProps {
     onFullView?: () => void;
     className?: string;
     size?: 'default' | 'large' | 'thumb';
+    stream?: MediaStream;
 }
 
 const avatarSizes = {
@@ -28,8 +30,22 @@ const avatarTextSizes = {
     large: 'text-3xl',
 } as const;
 
-export function MemberTile({ member, onFullView, className, size = 'default' }: MemberTileProps) {
+export function MemberTile({
+    member,
+    onFullView,
+    className,
+    size = 'default',
+    stream,
+}: MemberTileProps) {
     const showControls = size !== 'thumb';
+
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        if (!videoRef.current) return;
+
+        videoRef.current.srcObject = stream ?? null;
+    }, [stream]);
 
     return (
         <div
@@ -39,11 +55,21 @@ export function MemberTile({ member, onFullView, className, size = 'default' }: 
                 className,
             )}
         >
-            <Avatar className={avatarSizes[size]}>
-                <AvatarFallback className={cn('font-medium', avatarTextSizes[size])}>
-                    {getInitials(member.user.name)}
-                </AvatarFallback>
-            </Avatar>
+            {stream ? (
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted={member.isSelf}
+                    className="absolute inset-0 h-full w-full object-cover"
+                />
+            ) : (
+                <Avatar className={avatarSizes[size]}>
+                    <AvatarFallback className={cn('font-medium', avatarTextSizes[size])}>
+                        {getInitials(member.user.name)}
+                    </AvatarFallback>
+                </Avatar>
+            )}
 
             {!member.joined && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/30 backdrop-blur-sm">

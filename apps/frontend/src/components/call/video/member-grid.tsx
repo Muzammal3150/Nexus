@@ -15,9 +15,10 @@ function gridColsClass(count: number) {
 interface MemberGridProps {
     members: CallMember[];
     onFullView: (id: string) => void;
+    membersStream: Map<string, MediaStream>;
 }
 
-export function MemberGrid({ members, onFullView }: MemberGridProps) {
+export function MemberGrid({ members, onFullView, membersStream }: MemberGridProps) {
     return (
         <div
             className={cn(
@@ -26,7 +27,12 @@ export function MemberGrid({ members, onFullView }: MemberGridProps) {
             )}
         >
             {members.map((m) => (
-                <MemberTile key={m.user.id} member={m} onFullView={() => onFullView(m.user.id)} />
+                <MemberTile
+                    key={m.user.id}
+                    member={m}
+                    stream={membersStream.get(m.user.id)}
+                    onFullView={() => onFullView(m.user.id)}
+                />
             ))}
         </div>
     );
