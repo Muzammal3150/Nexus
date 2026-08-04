@@ -1,4 +1,4 @@
-import { SessionType } from "@/components/auth/auth-provider";
+import { SessionType } from "@/components/auth/session-provider";
 
 
 export async function getSession({

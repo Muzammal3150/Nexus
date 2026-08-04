@@ -38,9 +38,7 @@ const memberSchema = z.object({
     name: z.string(),
 });
 
-// member-count / groupName-required rules are now validated manually in
-// onSubmit (they depend on an async lookup), so the schema only covers
-// what can be checked synchronously.
+
 const formSchema = z.object({
     mode: z.enum(['direct', 'group']),
     groupName: z.string().max(MAX_NAME_LENGTH).optional(),

@@ -6,6 +6,7 @@ import { connectRedis } from "./config/redis.js";
 import { SocketServer } from "./config/socket.js";
 import { router } from "./routes/index.js";
 import { ChatSocket } from "./sockets/chat/index.js";
+import { CallSocket } from "./sockets/call/index.js";
 
 
 const app = express();
@@ -15,6 +16,7 @@ await connectRedis()
 
 new SocketServer(server)
     .register(new ChatSocket())
+    .register(new CallSocket())
     .init()
 
 

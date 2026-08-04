@@ -1,4 +1,4 @@
-import { RoomsList } from '@/components/chats/rooms-list';
+import { RoomsList } from '@/components/chat/rooms-list';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import type { ReactNode } from 'react';
 

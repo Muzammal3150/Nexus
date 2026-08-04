@@ -1,13 +1,10 @@
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
-import { getSession } from '@/lib/auth/authServer';
-import { SessionContext, SessionProvider } from '@/components/auth/auth-provider';
-import { headers } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -31,7 +28,6 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const session = await getSession({ headers: await headers() });
 
     return (
         <html
@@ -47,18 +43,16 @@ export default async function RootLayout({
             )}
         >
             <body>
-                <SessionProvider session={session}>
-                    <Providers>
-                        <ThemeProvider
-                            attribute="class"
-                            defaultTheme="system"
-                            enableSystem
-                            disableTransitionOnChange
-                        >
-                            <TooltipProvider delay={500}>{children}</TooltipProvider>
-                        </ThemeProvider>
-                    </Providers>
-                </SessionProvider>
+                <Providers>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        <TooltipProvider delay={500}>{children}</TooltipProvider>
+                    </ThemeProvider>
+                </Providers>
             </body>
         </html>
     );

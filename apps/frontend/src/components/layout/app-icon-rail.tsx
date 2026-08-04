@@ -14,7 +14,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { NavUser } from '../nav-user';
+import { NavUser } from './nav-user';
 
 const sidebarItems = {
     chats: {

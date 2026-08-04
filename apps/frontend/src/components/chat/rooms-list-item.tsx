@@ -8,7 +8,7 @@ import { User } from 'better-auth';
 import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
-import { useSession } from '../auth/auth-provider';
+import { useSession } from '../auth/session-provider';
 import { Badge } from '../ui/badge';
 
 interface RoomsListItemProps {
@@ -18,7 +18,7 @@ interface RoomsListItemProps {
 
 export function RoomsListItem({ room, active }: RoomsListItemProps) {
     const session = useSession();
-    // console.log(room);
+
     return (
         <Link href={`/chats/${room.id}`}>
             <button
@@ -63,7 +63,10 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                         >
                             {!room.unread && <CheckCheck className="size-3.5 shrink-0" />}
                             {room.lastMessage && (
-                                <span className="truncate">You: {room.lastMessage.body}</span>
+                                <span className="truncate">
+                                    {formatUserName(room.lastMessage.sender, session.user)}:{' '}
+                                    {room.lastMessage.body}
+                                </span>
                             )}
                         </span>
 
@@ -76,6 +79,6 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
 }
 
 function formatUserName(user: User, currUser: User) {
-    if (user.id == currUser.id) return 'You';
-    return user.name;
+    if (user?.id == currUser.id) return 'You';
+    return user?.name;
 }

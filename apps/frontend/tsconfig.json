@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/components/new/video-call/video-call-page.tsx", "src/components/call/video/call-top-bar.tsx", "src/components/call/video/member-grid.tsx", "src/components/new/video-call/member-tile.tsx", "src/components/call/video/member-sheet.tsx", "src/components/new/video-call/spotlight-view.tsx", "src/components/call/video/call-controls.tsx"  ],
   "exclude": ["node_modules"]
 }

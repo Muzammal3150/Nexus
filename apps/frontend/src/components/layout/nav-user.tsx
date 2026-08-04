@@ -14,7 +14,7 @@ import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/
 import { authClient } from '@/lib/auth/auth';
 import { Bell, CircleUser, LogOut } from 'lucide-react';
 import { useRouter } from 'next/dist/client/components/navigation';
-import { useSession } from './auth/auth-provider';
+import { useSession } from '../auth/session-provider';
 
 export function NavUser() {
     const { isMobile } = useSidebar();

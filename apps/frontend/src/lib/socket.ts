@@ -11,4 +11,8 @@ export const chatSocket = io(
     `http://localhost:8000/chat`,
     options
 );
+export const callSocket = io(
+    `http://localhost:8000/call`,
+    options
+);
 

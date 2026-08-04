@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 
-import { useRooms } from '@/hooks/useRooms';
+import { useRooms } from '@/hooks/chat/useRooms';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { NewChatPopover } from '../newChat/new-chat-popover';
+import { NewChatPopover } from './newChat/new-chat-popover';
 import { RoomsListItem } from './rooms-list-item';
 
 export function RoomsList() {
@@ -42,7 +42,7 @@ export function RoomsList() {
 
             <ScrollArea className="flex-1">
                 <div className="flex flex-col gap-0.5 p-2">
-                    <AnimatePresence>
+                    <AnimatePresence mode="popLayout">
                         {filteredRooms?.map((room) => (
                             <motion.div
                                 key={room.id}
@@ -53,7 +53,12 @@ export function RoomsList() {
                             >
                                 <RoomsListItem
                                     key={room.id}
-                                    room={room}
+                                    room={{
+                                        ...room,
+                                        lastMessage: room.lastMessage
+                                            ? { ...room.lastMessage, isMine: false }
+                                            : null,
+                                    }}
                                     active={room.id === activeId}
                                 />
                             </motion.div>

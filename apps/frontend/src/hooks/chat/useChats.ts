@@ -1,14 +1,14 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect } from "react";
 
-import { useSession } from "@/components/auth/auth-provider";
+import { useSession } from "@/components/auth/session-provider";
 import { db } from "@/db/db";
 import { api } from "@/lib/axios";
 import { addMessage } from "@/lib/chat/messages";
 import { chatSocket } from "@/lib/socket";
 import { ChatMessage } from "@/types/messages";
 import { User } from "better-auth";
-import { format, differenceInCalendarDays, isToday, isYesterday } from "date-fns";
+import { differenceInCalendarDays, format, isToday, isYesterday } from "date-fns";
 
 
 

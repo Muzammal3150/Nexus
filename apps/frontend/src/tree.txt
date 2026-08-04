@@ -1,0 +1,190 @@
+Folder PATH listing for volume Library
+Volume serial number is 00000020 E041:E7D5
+D:.
+¦   proxy.ts
+¦   tree.txt
+¦   
++---app
+¦   ¦   globals.css
+¦   ¦   layout.tsx
+¦   ¦   providers.tsx
+¦   ¦   
+¦   +---(auth)
+¦   ¦   ¦   layout.tsx
+¦   ¦   ¦   
+¦   ¦   +---login
+¦   ¦   ¦       page.tsx
+¦   ¦   ¦       
+¦   ¦   +---signup
+¦   ¦           page.tsx
+¦   ¦           
+¦   +---(main)
+¦       ¦   layout.tsx
+¦       ¦   page.tsx
+¦       ¦   
+¦       +---calls
+¦       ¦   ¦   layout.tsx
+¦       ¦   ¦   page.tsx
+¦       ¦   ¦   
+¦       ¦   +---[callId]
+¦       ¦           not-found.tsx
+¦       ¦           page.tsx
+¦       ¦           
+¦       +---chats
+¦           ¦   layout.tsx
+¦           ¦   page.tsx
+¦           ¦   
+¦           +---[roomId]
+¦                   page.tsx
+¦                   
++---components
+¦   ¦   nav-user.tsx
+¦   ¦   theme-provider.tsx
+¦   ¦   
+¦   +---auth
+¦   ¦   ¦   auth-provider.tsx
+¦   ¦   ¦   
+¦   ¦   +---fields
+¦   ¦   ¦       input-field.tsx
+¦   ¦   ¦       password-input.tsx
+¦   ¦   ¦       
+¦   ¦   +---login
+¦   ¦   ¦       footer.tsx
+¦   ¦   ¦       header.tsx
+¦   ¦   ¦       
+¦   ¦   +---signup
+¦   ¦           footer.tsx
+¦   ¦           header.tsx
+¦   ¦           
+¦   +---calls
+¦   ¦       CallToaster.tsx
+¦   ¦       new-call-dialog.tsx
+¦   ¦       
+¦   +---chats
+¦   ¦   ¦   chat-composer.tsx
+¦   ¦   ¦   chat-header.tsx
+¦   ¦   ¦   chat-thread.tsx
+¦   ¦   ¦   file-view-grid.tsx
+¦   ¦   ¦   new-chat-popover.tsx
+¦   ¦   ¦   rooms-list-item.tsx
+¦   ¦   ¦   rooms-list.tsx
+¦   ¦   ¦   
+¦   ¦   +---newChat
+¦   ¦           create-room.ts
+¦   ¦           direct-chat-form.tsx
+¦   ¦           form-root-error.tsx
+¦   ¦           group-chat-form.tsx
+¦   ¦           member-chip-list.tsx
+¦   ¦           mode-toggle.tsx
+¦   ¦           new-chat-popover.tsx
+¦   ¦           resolve-user.ts
+¦   ¦           
+¦   +---layout
+¦   ¦       app-icon-rail.tsx
+¦   ¦       
+¦   +---new
+¦   ¦   ¦   new-call-dialog.tsx
+¦   ¦   ¦   selection-chip.tsx
+¦   ¦   ¦   user-result-item.tsx
+¦   ¦   ¦   
+¦   ¦   +---calls
+¦   ¦   ¦       audio-call-screen.tsx
+¦   ¦   ¦       calls-sidebar.tsx
+¦   ¦   ¦       favourite-item.tsx
+¦   ¦   ¦       recent-call-item.tsx
+¦   ¦   ¦       
+¦   ¦   +---video-call
+¦   ¦           call-controls.tsx
+¦   ¦           call-top-bar.tsx
+¦   ¦           member-grid.tsx
+¦   ¦           member-sheet.tsx
+¦   ¦           member-tile.tsx
+¦   ¦           participants.ts
+¦   ¦           spotlight-view.tsx
+¦   ¦           
+¦   +---ui
+¦           alert-dialog.tsx
+¦           alert.tsx
+¦           attachment.tsx
+¦           avatar.tsx
+¦           badge.tsx
+¦           breadcrumb.tsx
+¦           bubble.tsx
+¦           button.tsx
+¦           card.tsx
+¦           collapsible.tsx
+¦           command.tsx
+¦           dialog.tsx
+¦           dropdown-menu.tsx
+¦           field.tsx
+¦           input-group.tsx
+¦           input.tsx
+¦           label.tsx
+¦           marker.tsx
+¦           message-scroller.tsx
+¦           message.tsx
+¦           popover.tsx
+¦           resizable.tsx
+¦           scroll-area.tsx
+¦           separator.tsx
+¦           sheet.tsx
+¦           sidebar.tsx
+¦           skeleton.tsx
+¦           switch.tsx
+¦           tabs.tsx
+¦           textarea.tsx
+¦           toast.tsx
+¦           tooltip.tsx
+¦           
++---db
+¦       db.d.ts
+¦       db.ts
+¦       
++---hooks
+¦       use-mobile.ts
+¦       useActiveRoom.ts
+¦       useCall.ts
+¦       useChats.ts
+¦       useMedia.ts
+¦       useRooms.ts
+¦       
++---lib
+¦   ¦   axios.ts
+¦   ¦   directory.ts
+¦   ¦   peer.ts
+¦   ¦   socket.ts
+¦   ¦   types.ts
+¦   ¦   utils.ts
+¦   ¦   
+¦   +---auth
+¦   ¦   ¦   auth.ts
+¦   ¦   ¦   authServer.ts
+¦   ¦   ¦   
+¦   ¦   +---permissions
+¦   ¦           authorization.ts
+¦   ¦           permissions.ts
+¦   ¦           
+¦   +---call
+¦   ¦       call-provider.ts
+¦   ¦       start-call.ts
+¦   ¦       
+¦   +---chat
+¦           chat-provider.ts
+¦           messages.ts
+¦           rooms.ts
+¦           utils-chat.ts
+¦           
++---types
+¦       calls.ts
+¦       messages.ts
+¦       room.ts
+¦       types.ts
+¦       
++---validators
+    ¦   checkout.ts
+    ¦   product.ts
+    ¦   
+    +---auth
+            login.ts
+            signup.ts
+            

@@ -4,7 +4,6 @@ import prisma from "../config/prisma.js";
 export const router: Router = Router();
 router.get("/many/id", async (req, res) => {
     const ids = req.query.ids;
-
     const values = Array.isArray(ids) ? ids as string[] : typeof ids === "string" ? ids.split(",") : [];
 
     if (values.length === 0) {

@@ -1,4 +1,4 @@
-import { useSession } from "@/components/auth/auth-provider";
+import { useSession } from "@/components/auth/session-provider";
 import { api } from "@/lib/axios";
 import { formatDirectRoom } from "@/lib/chat/rooms";
 import { Room } from "@/types/room";
@@ -11,7 +11,7 @@ export function useActiveRoom() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [room, setRoom] = useState<Room | null>(null);
-    console.log(room)
+
     useEffect(() => {
         (async () => {
             if (!roomId) {

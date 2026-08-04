@@ -5,14 +5,14 @@ import { Room } from "@/types/room";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
+export function ChatSocketProvider({ children }: { children: React.ReactNode }) {
     const queryClient = useQueryClient()
 
     useEffect(() => {
         chatSocket.connect();
         
         const handleRoomBroadCast = (newRoom: Room) => {
-            console.log(newRoom)
+
             queryClient.setQueryData(['get-rooms'], (prev: Room[]) => {
                 if (prev.some((room) => room.id === newRoom.id)) return prev;
 
