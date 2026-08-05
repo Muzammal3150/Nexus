@@ -3,19 +3,19 @@ import { CallEvents } from "../events.js";
 import { safeAck } from "../safeAck.js";
 import type { CallContext } from "../types.js";
 
-interface RTCOfferPayload {
+interface RTCIceCandidatePayload {
     targetId: string;
     roomId: string;
-    offer: RTCSessionDescriptionInit;
+    candidate: RTCIceCandidate;
 }
 
-export async function onRTCAnswer(
+export async function onRTCIceCandidate(
     ctx: CallContext,
     socket: Socket,
     data: unknown,
     callback?: unknown,
 ) {
-    const payload = data as Partial<RTCOfferPayload> | undefined;
+    const payload = data as Partial<RTCIceCandidatePayload> | undefined;
 
     if (
         !payload ||
@@ -49,13 +49,13 @@ export async function onRTCAnswer(
             message,
         });
     }
-    console.log("Invite sended to ", payload.targetId)
+    // console.log("Invite sended to ", payload.targetId)
     ctx.io.to(`user:${payload.targetId}`).emit(
-        CallEvents.AnswerBroadcast,
+        CallEvents.IceCandidateBroadcast,
         {
             sender: socket.data.user,
             roomId: payload.roomId,
-            offer: payload.offer,
+            candidate: payload.candidate,
             sentAt: new Date(),
         },
     );

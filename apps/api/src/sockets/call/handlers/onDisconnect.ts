@@ -1,6 +1,6 @@
 import type { Socket } from "socket.io";
 import type { CallContext } from "../types.js";
-import { onCallLeave } from "./leave-room.js";
+import { onCallLeave } from "./onCallLeave.js";
 
 export async function onDisconnect(ctx: CallContext, socket: Socket) {
     if (!socket.data?.user?.id) return;

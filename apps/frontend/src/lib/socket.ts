@@ -8,11 +8,11 @@ const options = {
 };
 
 export const chatSocket = io(
-    `http://localhost:8000/chat`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`,
     options
 );
 export const callSocket = io(
-    `http://localhost:8000/call`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/call`,
     options
 );
 

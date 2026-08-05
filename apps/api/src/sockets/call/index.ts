@@ -4,15 +4,17 @@ import type { SocketHandler } from "../../config/socket.js";
 import { authenticate } from "../authenticate.js";
 import { CallManager } from "./CallManager.js";
 import { CallEvents } from "./events.js";
-import { onCallAccept } from "./handlers/accept-invite.js";
-import { onDisconnect } from "./handlers/disconnect.js";
-import { onGetRoom } from "./handlers/get-room.js";
-import { onCallInit } from "./handlers/init-room.js";
-import { onCallLeave } from "./handlers/leave-room.js";
-import { onCallReject } from "./handlers/reject-invite.js";
+import { onCallAccept } from "./handlers/onCallAccept.js";
+import { onCallInit } from "./handlers/onCallInit.js";
+import { onCallLeave } from "./handlers/onCallLeave.js";
+import { onDisconnect } from "./handlers/onDisconnect.js";
+import { onGetRoom } from "./handlers/onGetRoom.js";
+import { onCallReject } from "./handlers/onCallReject.js";
+import { onRTCAnswer } from "./handlers/onRTCAnswer.js";
+import { onRTCOffer } from "./handlers/onRTCOffer.js";
 import type { CallContext } from "./types.js";
-import { onRTCOffer } from "./handlers/rtc-offer.js";
-import { onRTCAnswer } from "./handlers/rtc-answer.js";
+import { onCallReady } from "./handlers/onCallReady.js";
+import { onRTCIceCandidate } from "./handlers/onRTCIceCandidate.js";
 
 
 export class CallSocket implements SocketHandler {
@@ -89,12 +91,14 @@ export class CallSocket implements SocketHandler {
         };
         socket.on(CallEvents.Init, safe((data, cb) => onCallInit(this.ctx(), socket, data, cb)));
         socket.on(CallEvents.Accept, safe((data, cb) => onCallAccept(this.ctx(), socket, data, cb)));
+        socket.on(CallEvents.Ready, (data) => onCallReady(socket, data));
         socket.on(CallEvents.Reject, safe((data, cb) => onCallReject(this.ctx(), socket, data, cb)));
         socket.on(CallEvents.GetRoom, safe((roomId, cb) => onGetRoom(this.ctx(), roomId, cb)));
         socket.on(CallEvents.Leave, safe((data, cb) => onCallLeave(this.ctx(), socket, data, cb)));
 
         socket.on(CallEvents.Offer, safe((data, cb) => onRTCOffer(this.ctx(), socket, data, cb)));
         socket.on(CallEvents.Answer, safe((data, cb) => onRTCAnswer(this.ctx(), socket, data, cb)));
+        socket.on(CallEvents.IceCandidate, safe((data, cb) => onRTCIceCandidate(this.ctx(), socket, data, cb)));
 
         socket.on("disconnect", () => {
             onDisconnect(this.ctx(), socket).catch((err) => {

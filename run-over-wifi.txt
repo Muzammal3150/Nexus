@@ -1,0 +1,8 @@
+WIFI Running:
+Backed:
+    .env
+
+frontend:
+    next.config.ts
+    .env.local
+    

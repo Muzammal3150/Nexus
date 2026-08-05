@@ -2,6 +2,7 @@ export const CallEvents = {
     Init: "call:init",
     Leave: "call:leave",
     GetRoom: "call:get-room",
+    Ready: "call:ready",
 
     Invite: "call:invite",
     Accept: "call:accept",
@@ -13,6 +14,7 @@ export const CallEvents = {
     IceCandidate: "rtc:ice-candidate",
 
 
+    IceCandidateBroadcast: "rtc:ice-candidate-broadcast",
     LeaveBroadcast: "call:leave-broadcast",
     InviteBroadcast: "call:invite-broadcast",
     AcceptBroadcast: "call:accept-broadcast",
@@ -22,6 +24,6 @@ export const CallEvents = {
     ExpiredBroadcast: "call:expired-broadcast",
     OfferBroadcast: "rtc:offer-broadcast",
 
-    AnwerBroadcast: "rtc:answer-broadcast",
+    AnswerBroadcast: "rtc:answer-broadcast",
     Error: "call:error"
 } as const;
