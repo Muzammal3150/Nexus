@@ -1,8 +1,9 @@
 'use client';
 
-import { ChatComposer } from '@/components/chat/chat-composer';
-import { ChatHeader } from '@/components/chat/chat-header';
-import { ChatThread } from '@/components/chat/chat-thread';
+
+import { ChatComposer } from '@/components/chat/chat-page/chat-composer';
+import { ChatHeader } from '@/components/chat/chat-page/chat-header';
+import { ChatThread } from '@/components/chat/chat-page/chat-thread';
 import { useActiveRoom } from '@/hooks/chat/useActiveRoom';
 import { useChats } from '@/hooks/chat/useChats';
 

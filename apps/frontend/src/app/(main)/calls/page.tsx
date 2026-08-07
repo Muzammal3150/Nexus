@@ -1,13 +1,12 @@
 'use client';
 
 import { Phone, PhoneCall } from 'lucide-react';
-import { useState } from 'react';
 
-import { NewCallDialog } from '@/components/call/newCall/new-call-dialog';
 import { Button } from '@/components/ui/button';
+import { useUiStore } from '@/stores/uiStore';
 
 export default function AppNewCall() {
-    const [open, setOpen] = useState(false);
+    const open = useUiStore((s) => s.open);
 
     return (
         <div className="flex flex-1 h-full flex-col items-center justify-center gap-3 bg-muted/20 text-center">
@@ -19,9 +18,8 @@ export default function AppNewCall() {
                 <p className="text-sm text-muted-foreground">
                     Pick a favourite or a recent call to get started
                 </p>
-                <NewCallDialog open={open} onOpenChange={setOpen} />
             </div>
-            <Button onClick={() => setOpen(true)}>
+            <Button onClick={() => open('new-call-dialog')}>
                 <Phone className="mr-2 size-4" />
                 Start a Call
             </Button>

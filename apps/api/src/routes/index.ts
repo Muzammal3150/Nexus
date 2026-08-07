@@ -5,6 +5,7 @@ import { auth } from "../config/auth.js";
 
 import { router as roomsRouter } from "./room.js";
 import { router as usersRouter } from "./users.js";
+import { router as chatUploadRouter } from "./chatUpload.js";
 
 export const router: Router = Router();
 
@@ -12,3 +13,4 @@ export const router: Router = Router();
 router.all("/auth/*splat", toNodeHandler(auth));
 router.use('/rooms', roomsRouter)
 router.use('/users', usersRouter)
+router.use('/uploads', chatUploadRouter)

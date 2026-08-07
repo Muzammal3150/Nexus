@@ -2,14 +2,7 @@ import { User } from "better-auth";
 
 export interface CallMember {
   user: User;
-
-  stream?: MediaStream;
-
-  state: {
-    camera: boolean;
-    mic: boolean;
-  };
-
+  stream?: MediaStream | null;
   isSelf: boolean;
 }
 export interface CallRoom {

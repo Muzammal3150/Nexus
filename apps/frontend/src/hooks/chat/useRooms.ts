@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/components/auth/session-provider";
+import { useSession } from "@/components/providers/session-provider";
 import { db } from "@/db/db";
 import { api } from "@/lib/axios";
 import { formatDirectRoom } from "@/lib/chat/rooms";

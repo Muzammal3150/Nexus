@@ -1,5 +1,5 @@
-import { useMemo, useEffect, useSyncExternalStore } from "react";
-import { useSession } from "@/components/auth/session-provider";
+import { useSession } from "@/components/providers/session-provider";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { CallController } from "./CallController";
 
 export function useCall(roomId: string) {
@@ -13,7 +13,7 @@ export function useCall(roomId: string) {
     useEffect(() => {
         void controller.init();
         return () => controller.destroy();
-    }, [controller]);
+    }, [controller]); // re-run init/destroy whenever the instance changes
 
     return useSyncExternalStore(
         controller.subscribe,

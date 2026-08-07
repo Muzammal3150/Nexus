@@ -1,4 +1,4 @@
-import { useSession } from "@/components/auth/session-provider";
+import { useSession } from "@/components/providers/session-provider";
 import { api } from "@/lib/axios";
 import { formatDirectRoom } from "@/lib/chat/rooms";
 import { Room } from "@/types/room";

@@ -8,18 +8,20 @@ import { CallMember } from '@/types/calls';
 import { MemberTile } from './member-tile';
 
 interface SpotlightViewProps {
-    focused: CallMember;
-    others: CallMember[];
+    focusedId: string;
     onBackToGrid: () => void;
     onFocus: (id: string) => void;
+    members: CallMember[];
 }
 
-export function SpotlightView({ focused, others, onBackToGrid, onFocus }: SpotlightViewProps) {
+export function SpotlightView({ focusedId, onBackToGrid, onFocus, members }: SpotlightViewProps) {
+    const focused = members.find((m) => m.user.id === focusedId);
+    const others = members.filter((m) => m.user.id !== focusedId);
     return (
         <div className="flex w-full max-w-5xl flex-1 flex-col gap-3 p-4">
             <div className="relative flex-1">
                 <MemberTile
-                    member={focused}
+                    member={focused!}
                     size="large"
                     className="h-full max-h-[70vh] aspect-auto"
                 />

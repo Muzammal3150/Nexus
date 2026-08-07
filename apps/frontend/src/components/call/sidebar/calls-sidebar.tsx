@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { FavouriteItem } from './favourite-item';
 import { RecentCallItem } from './recent-call-item';
+import { useUiStore } from '@/stores/uiStore';
 
 interface CallsSidebarProps {
     favourites: FavouriteContact[];
@@ -29,12 +30,18 @@ export function CallsSidebar({
     const q = query.toLowerCase();
     const filteredFavourites = favourites.filter((f) => f.name.toLowerCase().includes(q));
     const filteredRecents = recents.filter((r) => r.name.toLowerCase().includes(q));
+    const open = useUiStore((s) => s.open);
 
     return (
         <div className="flex shrink-0 flex-col border-r bg-background">
             <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-lg font-semibold tracking-tight">Calls</h2>
-                <Button variant="ghost" size="icon" className="size-8">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    onClick={() => open('new-call-dialog')}
+                >
                     <SquarePen className="size-4" />
                 </Button>
             </div>

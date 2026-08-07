@@ -1,9 +1,7 @@
-import { SessionType } from "@/components/auth/session-provider";
+import { SessionType } from "@/components/providers/session-provider";
 
 
-export async function getSession({
-    headers,
-}: {
+export async function getSession({ headers }: {
     headers: HeadersInit;
 }): Promise<SessionType | null> {
     try {

@@ -6,3 +6,10 @@ frontend:
     next.config.ts
     .env.local
     
+
+
+    Add new device
+    mkcert -CAROOT
+        rootCA.perm -> device
+        chromebook/windows:chrome:manage certificates
+        android:settings:ca certificates

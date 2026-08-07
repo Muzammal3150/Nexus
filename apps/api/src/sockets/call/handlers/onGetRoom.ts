@@ -19,6 +19,7 @@ interface GetRoomResponse {
 
 
 export async function onGetRoom(ctx: CallContext, roomId: unknown, cb: unknown) {
+    console.log("GET ROOM", roomId)
     if (typeof roomId !== "string" || !roomId.trim()) {
         return safeAck<GetRoomResponse>(cb, {
             success: false,

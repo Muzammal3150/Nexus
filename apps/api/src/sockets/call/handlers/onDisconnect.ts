@@ -13,8 +13,6 @@ export async function onDisconnect(ctx: CallContext, socket: Socket) {
         return;
     }
 
-    // Run leaves concurrently via allSettled so one failing room never blocks
-    // cleanup of the others, and every rejection still gets logged.
     const results = await Promise.allSettled(
         rooms.map((room) => onCallLeave(ctx, socket, { roomId: room.id }))
     );

@@ -1,6 +1,6 @@
-import { SessionProvider } from '@/components/auth/session-provider';
 import { CallToaster } from '@/components/call/CallToaster';
 import { AppIconRail } from '@/components/layout/app-icon-rail';
+import { SessionProvider } from '@/components/providers/session-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toast';
 import { getSession } from '@/lib/auth/authServer';

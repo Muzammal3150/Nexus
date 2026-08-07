@@ -1,4 +1,5 @@
-import { RoomsList } from '@/components/chat/rooms-list';
+import { NewChatDialog } from '@/components/chat/new-chat/new-chat-dialog';
+import { RoomsList } from '@/components/chat/sidebar/rooms-list';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import type { ReactNode } from 'react';
 
@@ -9,7 +10,11 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                 <RoomsList />
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel>{children}</ResizablePanel>
+            <ResizablePanel>
+                {children}
+
+                <NewChatDialog />
+            </ResizablePanel>
         </ResizablePanelGroup>
     );
 }

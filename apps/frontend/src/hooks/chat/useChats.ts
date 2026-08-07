@@ -1,7 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect } from "react";
 
-import { useSession } from "@/components/auth/session-provider";
+import { useSession } from "@/components/providers/session-provider";
 import { db } from "@/db/db";
 import { api } from "@/lib/axios";
 import { addMessage } from "@/lib/chat/messages";
