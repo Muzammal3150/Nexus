@@ -2,6 +2,7 @@ export const ChatEvents = {
     Chat: {
 
         Text: "chat:text",
+        File: "chat:file",
     },
 
     Room: {

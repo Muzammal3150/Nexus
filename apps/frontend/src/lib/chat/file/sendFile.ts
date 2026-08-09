@@ -93,7 +93,7 @@ async function uploadFile({
 
         chatSocket.emit("chat:file", {
             roomId,
-            file: {
+            attachment: {
                 id,
                 filename: data.file.filename,
                 originalFilename: data.file.originalname,

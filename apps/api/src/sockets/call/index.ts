@@ -15,6 +15,7 @@ import { onRTCOffer } from "./handlers/onRTCOffer.js";
 import type { CallContext } from "./types.js";
 import { onCallReady } from "./handlers/onCallReady.js";
 import { onRTCIceCandidate } from "./handlers/onRTCIceCandidate.js";
+import { initSafe } from "../chat/safeAck.js";
 
 
 export class CallSocket implements SocketHandler {
@@ -24,10 +25,6 @@ export class CallSocket implements SocketHandler {
 
     init(io: Namespace) {
         this.io = io;
-
-        console.log("Call server inited");
-
-        // io.use() callbacks that throw don't reject cleanly, so wrap in a catch.
         this.io.use((socket, next) => authenticate(socket, next));
 
         this.callManager = new CallManager({
@@ -78,17 +75,13 @@ export class CallSocket implements SocketHandler {
             return;
         }
 
-        const safe = <A extends unknown[]>(handler: (...args: A) => unknown | Promise<unknown>) => {
-            return (...args: A) => {
-                Promise.resolve(handler(...args)).catch((err) => {
-                    console.error(
-                        `Error in handler for socket ${socket.id} (${socket.data.user?.name}):`,
-                        err
-                    );
-                    socket.emit(CallEvents.Error, { message: "Internal server error" });
-                });
-            };
-        };
+        const safe = initSafe((err) => {
+            console.error(
+                `Error in handler for socket ${socket.id} (${socket.data.user?.name}):`,
+                err
+            );
+            socket.emit(CallEvents.Error, { message: "Internal server error" });
+        });
         socket.on(CallEvents.Init, safe((data, cb) => onCallInit(this.ctx(), socket, data, cb)));
         socket.on(CallEvents.Accept, safe((data, cb) => onCallAccept(this.ctx(), socket, data, cb)));
         socket.on(CallEvents.Ready, (data) => onCallReady(socket, data));

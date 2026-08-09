@@ -6,9 +6,10 @@ import { db } from "@/db/db";
 import { api } from "@/lib/axios";
 import { addMessage } from "@/lib/chat/messages";
 import { chatSocket } from "@/lib/socket";
-import { ChatMessage, ChatTextMessage } from "@/types/messages";
+import { ChatFileMessage, ChatMessage, ChatTextMessage } from "@/types/messages";
 import { User } from "better-auth";
 import { differenceInCalendarDays, format, isToday, isYesterday } from "date-fns";
+import { addCacheFile } from "@/lib/chat/file/files";
 
 
 
@@ -59,7 +60,45 @@ export function useChats(roomId: string) {
 
 
     useEffect(() => {
-        const handleMessage = ({ id, sender, sentAt, text, roomId: _roomId }: Omit<ChatTextMessage, "type">) => {
+        const handleFile = async ({ id, roomId: _roomId, sender, sentAt, attachment }: Omit<ChatFileMessage, "type">) => {
+            console.log("file")
+            const response = await api.get(
+                `../uploads/chat/${attachment.filename}`,
+                {
+                    responseType: "blob",
+                },
+            );
+
+            const file = new File(
+                [response.data],
+                attachment.originalFilename,
+                {
+                    type: attachment.mimeType,
+                },
+            );
+            const fileId = await addCacheFile(file)
+
+            await addMessage({
+                id,
+                type: "file",
+                roomId,
+                senderId: sender.id,
+                attachment: {
+                    fileId,
+                    originalFilename: attachment.originalFilename,
+                    mimeType: attachment.mimeType,
+                    size: attachment.size,
+                    status: "downloaded",
+                    uploadProgress: 0,
+                    downloadProgress: 0,
+                },
+                isRead: _roomId == roomId,
+
+                sentAt,
+            });
+
+        };
+        const handleText = ({ id, sender, sentAt, text, roomId: _roomId }: Omit<ChatTextMessage, "type">) => {
             addMessage({
                 type: "text",
                 id,
@@ -71,10 +110,12 @@ export function useChats(roomId: string) {
             });
         };
 
-        chatSocket.on("chat:text", handleMessage);
+        chatSocket.on("chat:file", handleFile);
+        chatSocket.on("chat:text", handleText);
 
         return () => {
-            chatSocket.off("chat:text", handleMessage);
+            chatSocket.off("chat:file", handleFile);
+            chatSocket.off("chat:text", handleText);
         };
     }, [roomId]);
 

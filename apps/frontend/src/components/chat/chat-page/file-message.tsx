@@ -87,7 +87,7 @@ function useCachedFile(fileId: string | undefined) {
         setFile(null);
         setLoading(true);
         setError(null);
-        console.log(fileId)
+        console.log(fileId);
         db.files
             .get(fileId)
             .then((cachedFile: CachedFile | undefined) => {
@@ -157,15 +157,14 @@ export function MessageFileContent({ isMine, sentAt, attachment }: MessageFileCo
     const isDownloading = attachment.status === 'downloading';
     const isPending = attachment.status === 'pending';
     const isFailed = attachment.status === 'failed';
-    const isUploaded = attachment.status === 'uploaded';
-
+    const isComplete = attachment.status === 'uploaded' || attachment.status === 'downloaded';
     /*
      * Only previewable files are loaded from IndexedDB automatically.
      *
      * Generic files such as PDF, ZIP, DOCX, etc. stay untouched
      * until the user clicks Download.
      */
-    const shouldLoadPreview = isUploaded && (mediaKind === 'image' || mediaKind === 'video');
+    const shouldLoadPreview = isComplete && (mediaKind === 'image' || mediaKind === 'video');
 
     const {
         file: cachedFile,
@@ -201,30 +200,30 @@ export function MessageFileContent({ isMine, sentAt, attachment }: MessageFileCo
         <MessageContent>
             <Bubble
                 variant={isMine ? 'default' : 'muted'}
-                className={mediaKind === 'other' || !isUploaded ? 'p-0' : 'p-1'}
+                className={mediaKind === 'other' || !isComplete ? 'p-0' : 'p-1'}
             >
                 <BubbleContent className="p-0">
                     {(isPending || isUploading || isDownloading) && (
                         <TransferringAttachment attachment={attachment} progress={progress} />
                     )}
 
-                    {isUploaded && shouldLoadPreview && isLoadingFile && (
+                    {shouldLoadPreview && isLoadingFile && (
                         <PreviewLoading filename={attachment.originalFilename} />
                     )}
 
-                    {isUploaded && shouldLoadPreview && fileError && (
+                    { shouldLoadPreview && fileError && (
                         <PreviewError filename={attachment.originalFilename} error={fileError} />
                     )}
 
-                    {isUploaded && mediaKind === 'image' && fileUrl && (
+                    {isComplete && mediaKind === 'image' && fileUrl && (
                         <ImagePreview url={fileUrl} filename={attachment.originalFilename} />
                     )}
 
-                    {isUploaded && mediaKind === 'video' && fileUrl && (
+                    {isComplete && mediaKind === 'video' && fileUrl && (
                         <VideoPreview url={fileUrl} filename={attachment.originalFilename} />
                     )}
 
-                    {isUploaded && mediaKind === 'other' && (
+                    {isComplete && mediaKind === 'other' && (
                         <GenericFileAttachment attachment={attachment} />
                     )}
                 </BubbleContent>
