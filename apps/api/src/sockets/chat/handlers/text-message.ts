@@ -6,7 +6,7 @@ const MAX_MESSAGE_LENGTH = 4000;
 
 interface TextPayload {
     roomId: string;
-    body: string;
+    text: string;
 }
 
 
@@ -18,15 +18,14 @@ export function onText(socket: Socket, data: unknown) {
         return;
     }
 
-    if (typeof payload.body !== "string" || !payload.body.trim()) {
+    if (typeof payload.text !== "string" || !payload.text.trim()) {
         socket.emit(ChatEvents.Error, { message: "Message body cannot be empty" });
         return;
     }
 
-    const body = payload.body.trim().slice(0, MAX_MESSAGE_LENGTH);
+    const text = payload.text.trim().slice(0, MAX_MESSAGE_LENGTH);
 
-    // Only allow sending into rooms this socket is actually a member of —
-    // prevents spoofing messages into arbitrary rooms by guessing an id.
+
     if (!socket.rooms.has(payload.roomId)) {
         socket.emit(ChatEvents.Error, { message: "You are not a member of this room" });
         return;
@@ -35,8 +34,8 @@ export function onText(socket: Socket, data: unknown) {
     const messagePayload = {
         id: crypto.randomUUID(),
         sender: socket.data.user,
-        body,
-        sendedAt: new Date(),
+        text,
+        sentAt: Date.now(),
         roomId: payload.roomId,
     };
 

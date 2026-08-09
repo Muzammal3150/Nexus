@@ -1,13 +1,17 @@
 import Dexie, { type Table } from "dexie";
-import { CachedMessage } from './db.d';
+import { CachedFile, CachedMessage } from "./db.d";
+
 export class AppDb extends Dexie {
     messages!: Table<CachedMessage, string>;
+    files!: Table<CachedFile, string>;
+
 
     constructor() {
-        super("nexsus");
+        super("nexus");
 
         this.version(2).stores({
-            messages: "id, roomId, type, body, senderId, sendedAt, read"
+            messages: "id, roomId, senderId, sentAt, type",
+            files: "id"
         });
     }
 }

@@ -14,11 +14,17 @@ export async function deleteMessage(id: CachedMessage['id']) {
         await db.messages.delete(id)
     })
 }
-
-
+export async function updateMessage(
+    id: CachedMessage["id"],
+    changes: Partial<Omit<CachedMessage, "id" | "roomId">>,
+) {
+    await db.messages.update(id, changes);
+}
 export async function getMessage(id: CachedMessage["id"]) {
     const message = await db.messages.get(id);
     if (!message) return null;
     return message;
 
 }
+
+

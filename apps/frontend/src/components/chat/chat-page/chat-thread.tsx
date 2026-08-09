@@ -15,6 +15,7 @@ import {
 import { ChatMessage } from '@/types/messages';
 import { format } from 'date-fns';
 import React from 'react';
+import { MessageFileContent } from './file-message';
 
 interface ChatThreadProps {
     messages?: Partial<Record<string, ChatMessage[]>>;
@@ -69,18 +70,44 @@ function MessageItem({ message }: { message: ChatMessage }) {
                         </Avatar>
                     </MessageAvatar>
                 )}
-                <MessageContent>
-                    <Bubble variant={message.isMine ? 'default' : 'muted'}>
-                        <BubbleContent>{message.body}</BubbleContent>
-                    </Bubble>
-                    <MessageFooter className="text-[11px] text-muted-foreground">
-                        <span>{format(message.sendedAt, 'p')}</span>
-                        {/* {message.isMine && (
-                                                    <StatusIcon status={message.status} />
-                                                )} */}
-                    </MessageFooter>
-                </MessageContent>
+                {message.type == 'text' ? (
+                    <MessageTextContent
+                        text={message.text}
+                        isMine={message.isMine}
+                        sentAt={message.sentAt}
+                    />
+                ) : (
+                    <MessageFileContent
+                        isMine={message.isMine}
+                        sentAt={message.sentAt}
+                        attachment={message.attachment}
+                    />
+                )}
             </Message>
         </MessageScrollerItem>
+    );
+}
+
+function MessageTextContent({
+    text,
+    isMine,
+    sentAt,
+}: {
+    text: string;
+    isMine: boolean;
+    sentAt: number;
+}) {
+    return (
+        <MessageContent>
+            <Bubble variant={isMine ? 'default' : 'muted'}>
+                <BubbleContent>{text}</BubbleContent>
+            </Bubble>
+            <MessageFooter className="text-[11px] text-muted-foreground">
+                <span>{format(sentAt, 'p')}</span>
+                {/* {message.isMine && (
+                                                    <StatusIcon status={message.status} />
+                                                    )} */}
+            </MessageFooter>
+        </MessageContent>
     );
 }

@@ -1,20 +1,21 @@
 'use client';
 
-import { Paperclip, Send } from 'lucide-react';
+import { Loader2, Paperclip, Send } from 'lucide-react';
 import { ChangeEvent, useRef, useState } from 'react';
 
+import { useSession } from '@/components/providers/session-provider';
 import { Button } from '@/components/ui/button';
-import { FileViewGrid } from './file-view-grid';
-import { chatSocket } from '@/lib/socket';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { api } from '@/lib/axios';
-import { toast } from '@/components/ui/toast';
-import axios from 'axios';
+import { sendChatFiles } from '@/lib/chat/file/sendFile';
+import { chatSocket } from '@/lib/socket';
+import { FileViewGrid } from './file-view-grid';
 
 export function ChatComposer({ roomId }: { roomId: string }) {
     const [value, setValue] = useState('');
     const [files, setFiles] = useState<File[]>([]);
+    const session = useSession()!;
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [fileLoading, setFileLoading] = useState(false);
 
     const handleSend = () => {
         const trimmed = value.trim();
@@ -23,7 +24,7 @@ export function ChatComposer({ roomId }: { roomId: string }) {
 
         chatSocket.emit('chat:text', {
             roomId,
-            body: trimmed,
+            text: trimmed,
         });
 
         setValue('');
@@ -38,44 +39,21 @@ export function ChatComposer({ roomId }: { roomId: string }) {
         if (!e.target.files) return;
         setFiles(Array.from(e.target.files));
     };
-    type UploadedFile = {
-        filename: string;
-        mimetype: string;
-        size: number;
-        originalname: string;
-    };
-
     const onFileSend = async (files: File[]) => {
-        const formData = new FormData();
-
-        files.forEach((file) => {
-            formData.append('files', file);
-        });
-
-        try {
-            const { data } = await api.post<{ files: UploadedFile[] }>(
-                '/uploads/chat/many',
-                formData,
-            );
-
-            data.files.forEach((file) => {
-                chatSocket.emit('chat:file', {
-                    roomId,
-                    file,
-                });
-            });
-        } catch (error) {
-            const message = axios.isAxiosError(error)
-                ? (error.response?.data?.message ?? error.message)
-                : 'Something went wrong';
-
-            toast.add({ type: 'error', description: message });
-        }
+        setFileLoading(true);
+        await sendChatFiles({ files, roomId, senderId: session.user.id });
+        setFileLoading(false);
     };
     return (
         <div className="border-t p-2">
             {/* Drawer */}
-            <FileViewGrid files={files} setFiles={setFiles} onFileSend={onFileSend} />
+            {fileLoading ? (
+                <div className="absolute inset-0 z-100 flex h-full w-full items-center justify-center bg-background/80 backdrop-blur-sm">
+                    <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <FileViewGrid files={files} setFiles={setFiles} onFileSend={onFileSend} />
+            )}
             <InputGroup className="relative overflow-hidden px-0.5 h-fit">
                 <input ref={fileInputRef} type="file" hidden multiple onChange={handleUploadFile} />
 

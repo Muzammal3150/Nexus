@@ -90,3 +90,6 @@ prisma/dev.db-journal
 *.pid
 *.seed
 ```
+
+
+uploads/

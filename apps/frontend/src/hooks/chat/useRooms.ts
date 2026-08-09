@@ -16,7 +16,7 @@ export function useRooms() {
 
 
     const messages = useLiveQuery(async () => {
-        const rawMessages = await db.messages.orderBy("sendedAt").toArray();
+        const rawMessages = await db.messages.orderBy("sentAt").toArray();
         return Object.groupBy(rawMessages, message => message.roomId);
     }, []);
 
@@ -32,7 +32,7 @@ export function useRooms() {
 
     const rooms = useMemo(() => data?.map(room => {
         const roomMessages = messages?.[room.id]
-        const unreadMessages = roomMessages?.filter(({ read, senderId }) => !read && senderId != session.user.id)
+        const unreadMessages = roomMessages?.filter(({ isRead, senderId }) => !isRead && senderId != session.user.id)
         const lastMessage = roomMessages?.at(-1) ?? null
         const lastMessageWithSender = lastMessage
             ? {
@@ -48,8 +48,8 @@ export function useRooms() {
         }
     }).sort(
         (a, b) =>
-            new Date(b.lastMessage?.sendedAt ?? 0).getTime() -
-            new Date(a.lastMessage?.sendedAt ?? 0).getTime()
+            new Date(b.lastMessage?.sentAt ?? 0).getTime() -
+            new Date(a.lastMessage?.sentAt ?? 0).getTime()
     ), [data, messages, session.user])
 
 

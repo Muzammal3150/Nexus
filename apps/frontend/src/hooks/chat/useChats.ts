@@ -6,7 +6,7 @@ import { db } from "@/db/db";
 import { api } from "@/lib/axios";
 import { addMessage } from "@/lib/chat/messages";
 import { chatSocket } from "@/lib/socket";
-import { ChatMessage } from "@/types/messages";
+import { ChatMessage, ChatTextMessage } from "@/types/messages";
 import { User } from "better-auth";
 import { differenceInCalendarDays, format, isToday, isYesterday } from "date-fns";
 
@@ -14,13 +14,13 @@ import { differenceInCalendarDays, format, isToday, isYesterday } from "date-fns
 
 
 export function useChats(roomId: string) {
-    const session = useSession();
+    const session = useSession()!;
 
     const messages = useLiveQuery<ChatMessage[]>(async () => {
         const rawMessages = await db.messages
             .where("roomId")
             .equals(roomId)
-            .sortBy("sendedAt");
+            .sortBy("sentAt");
 
         if (rawMessages.length === 0) {
             return [];
@@ -44,7 +44,7 @@ export function useChats(roomId: string) {
         }));
     }, [roomId, session.user.id]);
 
-    const groupedMessages = messages && Object.groupBy(messages!, (message) => getDateGroup(message.sendedAt))
+    const groupedMessages = messages && Object.groupBy(messages!, (message) => getDateGroup(message.sentAt))
 
     useEffect(() => {
         (async () => {
@@ -52,21 +52,22 @@ export function useChats(roomId: string) {
                 .where('roomId')
                 .equals(roomId)
                 .modify((message) => {
-                    message.read = true;
+                    message.isRead = true;
                 });
         })();
     }, [roomId]);
 
 
     useEffect(() => {
-        const handleMessage = ({ id, sender, sendedAt, body, roomId: _roomId }: ChatMessage) => {
+        const handleMessage = ({ id, sender, sentAt, text, roomId: _roomId }: Omit<ChatTextMessage, "type">) => {
             addMessage({
+                type: "text",
                 id,
                 roomId: _roomId,
                 senderId: sender.id,
-                sendedAt,
-                body,
-                read: _roomId == roomId,
+                sentAt,
+                text,
+                isRead: _roomId == roomId,
             });
         };
 
@@ -77,20 +78,35 @@ export function useChats(roomId: string) {
         };
     }, [roomId]);
 
+    useEffect(() => {
+        const markUploadingFilesAsFailed = async () => {
+            await db.messages
+                .where("roomId")
+                .equals(roomId)
+                .filter((message) =>
+                    message.type === "file" &&
+                    message.attachment.status === "uploading"
+                )
+                .modify({
+                    "attachment.status": "failed",
+                });
+        };
 
+        markUploadingFilesAsFailed();
+    }, [roomId]);
 
     return {
         messages: messages ?? [],
         groupedMessages,
-        
+
     };
 }
 
 
 
 
-function getDateGroup(_date: Date | string) {
-    const date = new Date(_date)
+function getDateGroup(timestamp: number) {
+    const date = new Date(timestamp)
     if (isToday(date)) return "Today";
     if (isYesterday(date)) return "Yesterday";
 

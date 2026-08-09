@@ -77,6 +77,7 @@ export function FileViewGrid({
     const onClose = () => setFiles([]);
     const onSubmit = () => {
         onFileSend(files);
+        setFiles([]);
     };
 
     if (!activeFile) return null;

@@ -49,7 +49,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                                     : 'text-muted-foreground',
                             )}
                         >
-                            {room.lastMessage && format(room.lastMessage?.sendedAt, 'p')}
+                            {room.lastMessage && format(room.lastMessage?.sentAt, 'p')}
                         </span>
                     </div>
 

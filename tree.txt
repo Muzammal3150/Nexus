@@ -1,0 +1,463 @@
+Folder PATH listing for volume Library
+Volume serial number is 000000F7 E041:E7D5
+D:.
+|   .gitignore
+|   package.json
+|   pnpm-workspace.yaml
+|   run-over-wifi.txt
+|   todo.txt
+|   tree.txt
+|   
++---.vscode
+|       settings.json
+|       
++---apps
+|   +---api
+|   |   |   .env
+|   |   |   .gitignore
+|   |   |   nodemon.json
+|   |   |   package.json
+|   |   |   prisma.config.ts
+|   |   |   react-19.2.4.tgz
+|   |   |   tsconfig.json
+|   |   |   
+|   |   +---certs
+|   |   |       dev-cert.pem
+|   |   |       dev-key.pem
+|   |   |       
+|   |   +---prisma
+|   |   |   +---migrations
+|   |   |   |   |   migration_lock.toml
+|   |   |   |   |   
+|   |   |   |   +---20260724070257_init_username
+|   |   |   |   |       migration.sql
+|   |   |   |   |       
+|   |   |   |   \---20260724082323_init_room_members
+|   |   |   |           migration.sql
+|   |   |   |           
+|   |   |   \---schema
+|   |   |           auth.prisma
+|   |   |           rooms.prisma
+|   |   |           schema.prisma
+|   |   |           
+|   |   +---src
+|   |   |   |   app.ts
+|   |   |   |   server.ts
+|   |   |   |   
+|   |   |   +---auth
+|   |   |   |       authorize.ts
+|   |   |   |       
+|   |   |   +---config
+|   |   |   |       auth.ts
+|   |   |   |       chatUpload.ts
+|   |   |   |       prisma.ts
+|   |   |   |       redis.ts
+|   |   |   |       socket.ts
+|   |   |   |       
+|   |   |   +---generated
+|   |   |   |   \---prisma
+|   |   |   |       |   browser.ts
+|   |   |   |       |   client.ts
+|   |   |   |       |   commonInputTypes.ts
+|   |   |   |       |   enums.ts
+|   |   |   |       |   models.ts
+|   |   |   |       |   
+|   |   |   |       +---internal
+|   |   |   |       |       class.ts
+|   |   |   |       |       prismaNamespace.ts
+|   |   |   |       |       prismaNamespaceBrowser.ts
+|   |   |   |       |       
+|   |   |   |       \---models
+|   |   |   |               Account.ts
+|   |   |   |               Room.ts
+|   |   |   |               RoomMembers.ts
+|   |   |   |               Session.ts
+|   |   |   |               User.ts
+|   |   |   |               Verification.ts
+|   |   |   |               
+|   |   |   +---routes
+|   |   |   |       chatUpload.ts
+|   |   |   |       index.ts
+|   |   |   |       room.ts
+|   |   |   |       users.ts
+|   |   |   |       
+|   |   |   \---sockets
+|   |   |       |   authenticate.ts
+|   |   |       |   
+|   |   |       +---call
+|   |   |       |   |   CallManager.ts
+|   |   |       |   |   events.ts
+|   |   |       |   |   index.ts
+|   |   |       |   |   safeAck.ts
+|   |   |       |   |   types.ts
+|   |   |       |   |   
+|   |   |       |   \---handlers
+|   |   |       |           onCallAccept.ts
+|   |   |       |           onCallInit.ts
+|   |   |       |           onCallLeave.ts
+|   |   |       |           onCallReady.ts
+|   |   |       |           onCallReject.ts
+|   |   |       |           onDisconnect.ts
+|   |   |       |           onGetRoom.ts
+|   |   |       |           onRTCAnswer.ts
+|   |   |       |           onRTCIceCandidate.ts
+|   |   |       |           onRTCOffer.ts
+|   |   |       |           
+|   |   |       \---chat
+|   |   |           |   events.ts
+|   |   |           |   index.ts
+|   |   |           |   safeAck.ts
+|   |   |           |   types.ts
+|   |   |           |   
+|   |   |           \---handlers
+|   |   |                   create-room.ts
+|   |   |                   text-message.ts
+|   |   |                   
+|   |   \---uploads
+|   |       \---chat
+|   |               1786079269898-5b03d287-9441-4e71-a754-04e0142082b3.exe
+|   |               1786079269980-952aba19-d7b6-4b68-96f6-dac11d4c1f05.pem
+|   |               1786079269981-bb1ea747-57c6-40ce-bad4-a55a6fa2a046.pem
+|   |               1786079935307-2a418577-6045-425e-92e6-c5ea3b43a4b8.exe
+|   |               1786079935351-777bb82f-35e8-4f64-98aa-f141d4096723.pem
+|   |               1786079935352-3f8f0b1d-0a8b-49e8-96fb-799e5aa87ca8.pem
+|   |               1786079944344-069a6b27-a9a0-4c4f-bd51-00a76a9a914b.exe
+|   |               1786079944400-631f7e07-2e34-4a6f-ac0c-619a405c199e.pem
+|   |               1786079944400-f0631fde-5f7e-4b07-9771-11dca4cae33b.pem
+|   |               1786079945275-1a42aae3-0a11-4b4f-bb21-5159f41db47b.exe
+|   |               1786079945314-afe4e2c4-f1af-45df-bf8d-527fd751f41c.pem
+|   |               1786079945314-b42c4096-0aaa-425a-b476-4650d33da051.pem
+|   |               1786079945467-19b58f2b-40f2-4d8f-8eb1-3d247794337d.exe
+|   |               1786079945500-91ecab0d-764a-438a-9f89-0f1950b9fada.pem
+|   |               1786079945500-c153fb02-813d-40c7-9131-1fec44eae52a.pem
+|   |               1786079945667-ed5bdd68-03b1-45a1-8f53-9cdd2cee5cb0.exe
+|   |               1786079945702-8c58ba1e-b3f7-442c-b1fe-5e1406767bf0.pem
+|   |               1786079945702-df370e83-da15-48c3-a3cd-bcbc47df52a3.pem
+|   |               1786082081294-234d5826-1d55-435f-9ee8-8b834064b79b.exe
+|   |               1786082081382-209f2abb-8f6c-4067-a723-fcf141fd450e.pem
+|   |               1786082081382-d90706d3-1951-4b11-b4d4-9289d48dda38.pem
+|   |               1786084552441-bf62231a-c9bc-4afd-b385-00ba65829d34.pem
+|   |               1786084601660-a38a5a73-67f3-40db-a071-d91b50b2e7f9.pem
+|   |               1786084743784-5daac612-6d41-4236-8ca7-6bdbdae25c2b.pem
+|   |               1786085042349-673dfd9e-bc11-4a8b-8642-87819734d84d.pem
+|   |               1786087013206-71a48795-e2c3-4ee4-86ad-2c8c6b836d5b.pem
+|   |               1786087013210-0453029d-ccbb-49e5-a06b-b70965de0dff.pem
+|   |               1786087013211-b8491c38-91aa-4a27-bdc2-d02930dead86.exe
+|   |               1786088502016-dd4f24f9-463f-47ec-8389-ceff20b8c36e.pem
+|   |               1786088502022-9fbb2e8b-7d92-4e5f-ad6a-c9fc041fe3f9.pem
+|   |               1786088725663-cbb66384-9fc6-471d-8fae-b556259dfe77.pem
+|   |               1786088725666-57f4e960-a9e4-479a-b910-c87c6e3035f1.pem
+|   |               1786089107162-9f51be56-4600-4875-91e0-7b36e5e5e31e.pem
+|   |               1786089107164-043e2172-371e-4c8a-89e4-8b89f292262b.pem
+|   |               1786089968480-7f2c4027-4ac4-45e1-a2d9-745549601a59.pem
+|   |               1786089968482-9442198c-6370-476b-ac82-fa059f65c842.pem
+|   |               1786089983376-dd8fd489-4f2e-4464-9793-2a6e6d3344ac.exe
+|   |               1786089983382-cc54b8a2-db9a-46c2-a10b-b5418e310c64.pem
+|   |               1786089983388-cecfb1d8-cf3b-4b7c-a301-20ec6e550f5f.pem
+|   |               1786090203780-231647bd-6971-4ef5-98ea-4336d93ec96a.exe
+|   |               1786090203808-ee6f6e7b-cb37-4a72-a08b-58f90ea967b4.pem
+|   |               1786090203812-3ab0fe3f-80d6-42ad-83e7-71111ea90e6b.pem
+|   |               1786090244494-f9471b07-7785-4c71-b0e6-3405e78f25de.exe
+|   |               1786090244503-c17cb771-e427-4187-aaf7-32226c1ddd05.pem
+|   |               1786090244504-ba56a4f3-a1f0-4c7e-a234-ed9a363a3c91.pem
+|   |               1786090245089-d1f27ecd-ef95-4bba-a81d-78beb2b0fa9d.pem
+|   |               1786090245090-0e3d1314-9b42-4248-aa02-9d9e4a2f20ab.pem
+|   |               1786090245090-d4e44c11-b6e8-42f8-8b85-91cb9117999a.exe
+|   |               1786091430565-9783c3e1-9bc7-485f-861a-55bdfe8f0de7.mp4
+|   |               1786091510461-125e233c-4fe1-4f8c-bf4a-456b202fe6f6.mp4
+|   |               1786091510464-00764d8b-ff04-46a9-933d-72f453a3bc1d.mp4
+|   |               1786091510466-18457f18-fbbe-47c0-8740-a0fadf3ef0b5.mp4
+|   |               1786091510468-969329e2-a151-4e94-a23a-6600f738b5de.msix
+|   |               1786091682698-4ef3d997-66b9-4b3b-9020-d61ea7a2999e.mp4
+|   |               1786091682699-1487dbbc-47f3-4312-b98e-4d8b1c0b58c8.mp4
+|   |               1786091682701-8064127c-6a47-4431-9f7c-ec66520552ce.mp4
+|   |               1786091682703-06beca29-0870-4b22-94f0-2683f075ed99.msix
+|   |               1786091711068-99b5b6a6-ef61-46da-ad5d-696866f6bc1b.msix
+|   |               1786092140424-98e64217-4303-4ce3-bf0d-78929228a451.mp4
+|   |               1786092165951-a889f26d-997f-415a-9c2c-70bd55378d12.mp4
+|   |               1786092165956-6a989796-ae42-47b5-af57-3dafcfec537a.mp4
+|   |               1786092165960-1359d5ae-3967-4abe-a918-44594522bd1f.mp4
+|   |               1786092165963-4f2d75fb-69a8-44cc-8e7a-9296a6e1ac15.msix
+|   |               1786092200170-f7424b26-58cb-4f7e-b2b4-3e0ac46a996f.png
+|   |               1786092201099-38a299ab-b952-4921-bf7d-6674f5ab3513.png
+|   |               1786092201246-51b69161-b202-4128-ae44-ef4d8ce3ddd4.png
+|   |               1786092201398-490c0c69-09d7-4571-a0b8-8e25c48151ac.png
+|   |               1786092201566-168dda3a-1a34-48d6-ba30-032adc1d4f96.png
+|   |               1786092201742-e934d30f-b020-4eb0-b77f-07d89d2bbbe9.png
+|   |               1786092225896-5ba1fab9-ee23-4961-b6fb-3767c3d2b8d2.png
+|   |               1786092225897-492053ea-0cdd-4bd8-a73a-b545b42bac07.png
+|   |               1786092225899-03f13292-e273-4bb6-b085-1374ef80b5cf.png
+|   |               1786092225902-bcddaa99-b551-4b71-8c1c-6038dc9d0e87.png
+|   |               1786092225910-f462e561-c9ff-43cb-bd64-19a9d2dc15f5.png
+|   |               1786092226326-ab366bfe-5273-426d-a8a0-07e037409acf.png
+|   |               1786092226327-ee79b7d3-fa4e-4086-a958-97c2dc8228a5.png
+|   |               1786092226330-37eded10-d12a-4d46-9ba0-705c47e85433.png
+|   |               1786092226337-81745085-8033-4491-a508-97ff6c6c4207.png
+|   |               1786092226339-060274b9-f613-497a-91db-18f6eb4c37a2.png
+|   |               1786092226519-22c7c2ee-d5dc-42fe-b3d5-6512e5463e5e.png
+|   |               1786092226520-dd3705e9-2076-4de8-84ff-18837a9e9dc4.png
+|   |               1786092226523-8fbaf362-3e66-4a4a-9c4d-f35169e255a0.png
+|   |               1786092226530-ef1f72b3-cf66-4cea-829d-023311106bc7.png
+|   |               1786092226531-f82c5da4-2ac1-460d-9521-22ffe7dc55f8.png
+|   |               1786092226862-365465fe-462a-46ed-9b9a-4688b7ba7b67.png
+|   |               1786092226865-53ac8ef1-9a27-4b3b-9690-db0269e35153.png
+|   |               1786092226869-65db3b06-01bb-4b61-b150-dd2a8fea2e8d.png
+|   |               1786092226873-86a92778-22b7-4fdb-be03-3b035904b558.png
+|   |               1786092226874-db2b6e20-b182-49ea-b1fa-a25fa354f325.png
+|   |               1786092227094-4ba0ce25-5e68-47a6-9e13-0d01ed3dd33b.png
+|   |               1786092227097-b66d9dfd-975a-4314-ac78-76aa32e640af.png
+|   |               1786092227099-f692e60f-b564-4c5d-8789-7313bb567e5d.png
+|   |               1786092227107-4bd48503-8e98-4bbc-9efb-694a93f37849.png
+|   |               1786092227108-5fc745b9-c46b-4fd8-8b1c-f83ef8e9b07b.png
+|   |               1786092255007-732111d0-20b5-436d-94ac-6bc0fe511d4c.png
+|   |               1786092255013-781a8ccd-8091-408b-a1f6-75f9e396962b.png
+|   |               1786092255017-2bd3d7fb-00a7-4c6c-b90b-f094aa14f947.png
+|   |               1786092255022-24b3789a-9449-4e9e-b53d-8887b34f38ee.png
+|   |               1786092255024-acf70598-843c-4207-8cc6-32bc60e75f96.png
+|   |               1786092408745-42bfc139-90ef-486d-9a28-151aae8563e7.png
+|   |               1786092408755-f38886e5-5482-4df2-8c8c-ad1ac33e20cb.png
+|   |               1786092408760-0ae78bc1-3063-4cf5-bdd7-4104ff7e357e.png
+|   |               1786092408762-7a23c24c-f2a7-4f77-9434-d3ff86ce16ff.png
+|   |               1786092617789-e72d111e-b025-4310-8693-f2b399446780.png
+|   |               1786092617792-04760c6d-e377-4019-8df3-2c8baa9e8bee.png
+|   |               1786092617796-6a9e8034-c2c7-478e-a936-06a49dbbcd57.png
+|   |               1786092617799-86252b71-479a-4eae-b79d-d6568950a65a.png
+|   |               1786092617800-a380d0ba-b8f0-46ca-8c2f-285f560c432d.png
+|   |               1786092617801-c041ad1e-6b63-45fb-98d5-58aa873e4582.png
+|   |               1786092617821-2bdb3e9f-2f30-4b51-800c-859c4de80a50.png
+|   |               1786092617823-e8ca62ac-3084-488e-9dd7-b0fa2cab4904.png
+|   |               1786092641978-73f1e587-4401-4588-9d12-448a014c8e36.png
+|   |               1786092641986-c908a969-fa2f-495c-9d7e-6b4279592a23.mp4
+|   |               1786092641992-77abae02-5368-48c1-a502-562a3574fb75.mp4
+|   |               1786092641998-4207ce57-dd4d-4525-ab79-6d8abd371234.mp4
+|   |               1786092642008-bbe1bef0-f693-40f8-b9d6-86d1c26d4201.msix
+|   |               
+|   \---frontend
+|       |   .env.local
+|       |   .gitignore
+|       |   components.json
+|       |   eslint.config.mjs
+|       |   next-env.d.ts
+|       |   next.config.ts
+|       |   package.json
+|       |   postcss.config.mjs
+|       |   README.md
+|       |   tsconfig.json
+|       |   
+|       +---certs
+|       |       dev-cert.pem
+|       |       dev-key.pem
+|       |       
+|       +---public
+|       |       file.svg
+|       |       globe.svg
+|       |       next.svg
+|       |       vercel.svg
+|       |       window.svg
+|       |       
+|       \---src
+|           |   proxy.ts
+|           |   tree.txt
+|           |   
+|           +---app
+|           |   |   globals.css
+|           |   |   layout.tsx
+|           |   |   providers.tsx
+|           |   |   
+|           |   +---(auth)
+|           |   |   |   layout.tsx
+|           |   |   |   
+|           |   |   +---login
+|           |   |   |       page.tsx
+|           |   |   |       
+|           |   |   \---signup
+|           |   |           page.tsx
+|           |   |           
+|           |   \---(main)
+|           |       |   layout.tsx
+|           |       |   page.tsx
+|           |       |   
+|           |       +---calls
+|           |       |   |   layout.tsx
+|           |       |   |   page.tsx
+|           |       |   |   
+|           |       |   \---[roomId]
+|           |       |           not-found.tsx
+|           |       |           page.tsx
+|           |       |           
+|           |       \---chats
+|           |           |   layout.tsx
+|           |           |   page.tsx
+|           |           |   
+|           |           \---[roomId]
+|           |                   page.tsx
+|           |                   
+|           +---components
+|           |   +---auth
+|           |   |   +---fields
+|           |   |   |       input-field.tsx
+|           |   |   |       password-input.tsx
+|           |   |   |       
+|           |   |   +---login
+|           |   |   |       footer.tsx
+|           |   |   |       header.tsx
+|           |   |   |       
+|           |   |   \---signup
+|           |   |           footer.tsx
+|           |   |           header.tsx
+|           |   |           
+|           |   +---call
+|           |   |   |   CallToaster.tsx
+|           |   |   |   
+|           |   |   +---audio
+|           |   |   |       audio-call-screen.tsx
+|           |   |   |       
+|           |   |   +---new-call
+|           |   |   |       new-call-dialog.tsx
+|           |   |   |       selection-chip.tsx
+|           |   |   |       user-result-item.tsx
+|           |   |   |       
+|           |   |   +---sidebar
+|           |   |   |       calls-sidebar.tsx
+|           |   |   |       favourite-item.tsx
+|           |   |   |       recent-call-item.tsx
+|           |   |   |       
+|           |   |   \---video
+|           |   |           call-controls.tsx
+|           |   |           call-top-bar.tsx
+|           |   |           member-grid.tsx
+|           |   |           member-sheet.tsx
+|           |   |           member-tile.tsx
+|           |   |           participants.ts
+|           |   |           spotlight-view.tsx
+|           |   |           
+|           |   +---chat
+|           |   |   +---chat-page
+|           |   |   |       chat-composer.tsx
+|           |   |   |       chat-header.tsx
+|           |   |   |       chat-thread.tsx
+|           |   |   |       file-message.tsx
+|           |   |   |       file-view-grid.tsx
+|           |   |   |       
+|           |   |   +---new-chat
+|           |   |   |       create-room.ts
+|           |   |   |       direct-chat-form.tsx
+|           |   |   |       form-root-error.tsx
+|           |   |   |       group-chat-form.tsx
+|           |   |   |       member-chip-list.tsx
+|           |   |   |       mode-toggle.tsx
+|           |   |   |       new-chat-dialog.tsx
+|           |   |   |       resolve-user.ts
+|           |   |   |       
+|           |   |   \---sidebar
+|           |   |           rooms-list-item.tsx
+|           |   |           rooms-list.tsx
+|           |   |           
+|           |   +---layout
+|           |   |       app-icon-rail.tsx
+|           |   |       nav-user.tsx
+|           |   |       
+|           |   +---providers
+|           |   |       session-provider.tsx
+|           |   |       theme-provider.tsx
+|           |   |       
+|           |   \---ui
+|           |           alert-dialog.tsx
+|           |           alert.tsx
+|           |           attachment.tsx
+|           |           avatar.tsx
+|           |           badge.tsx
+|           |           breadcrumb.tsx
+|           |           bubble.tsx
+|           |           button-group.tsx
+|           |           button.tsx
+|           |           card.tsx
+|           |           collapsible.tsx
+|           |           command.tsx
+|           |           dialog.tsx
+|           |           dropdown-menu.tsx
+|           |           field.tsx
+|           |           input-group.tsx
+|           |           input.tsx
+|           |           label.tsx
+|           |           marker.tsx
+|           |           message-scroller.tsx
+|           |           message.tsx
+|           |           popover.tsx
+|           |           resizable.tsx
+|           |           scroll-area.tsx
+|           |           separator.tsx
+|           |           sheet.tsx
+|           |           sidebar.tsx
+|           |           skeleton.tsx
+|           |           slider.tsx
+|           |           switch.tsx
+|           |           tabs.tsx
+|           |           textarea.tsx
+|           |           toast.tsx
+|           |           tooltip.tsx
+|           |           
+|           +---db
+|           |       db.d.ts
+|           |       db.ts
+|           |       
+|           +---hooks
+|           |   |   use-mobile.ts
+|           |   |   
+|           |   +---call
+|           |   |       CallController.ts
+|           |   |       events.ts
+|           |   |       useCall.ts
+|           |   |       useMedia.ts
+|           |   |       useWebRTC.ts
+|           |   |       
+|           |   \---chat
+|           |           useActiveRoom.ts
+|           |           useChats.ts
+|           |           useRooms.ts
+|           |           
+|           +---lib
+|           |   |   axios.ts
+|           |   |   socket.ts
+|           |   |   utils.ts
+|           |   |   
+|           |   +---auth
+|           |   |       auth.ts
+|           |   |       authServer.ts
+|           |   |       users.ts
+|           |   |       
+|           |   +---call
+|           |   |       call-socket-provider.tsx
+|           |   |       get-room.ts
+|           |   |       init-call.ts
+|           |   |       utils.ts
+|           |   |       
+|           |   \---chat
+|           |       |   chat-socket-provider.ts
+|           |       |   messages.ts
+|           |       |   rooms.ts
+|           |       |   utils-chat.ts
+|           |       |   
+|           |       \---file
+|           |               sendFile.ts
+|           |               utils.ts
+|           |               
+|           +---stores
+|           |       uiStore.ts
+|           |       
+|           +---types
+|           |       calls.ts
+|           |       messages.ts
+|           |       room.ts
+|           |       
+|           \---validators
+|               \---auth
+|                       login.ts
+|                       signup.ts
+|                       
+\---packages
+    +---config
+    \---shared
+        |   package.json
+        |   
+        \---src

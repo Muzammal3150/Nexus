@@ -1,13 +1,24 @@
+
+import { CachedFileData } from "@/db/db.d";
 import { User } from "better-auth";
 
-export interface ChatMessage {
+export type ChatMessage = ChatFileMessage | ChatTextMessage;
+
+export interface BaseChatMessage {
     id: string;
     sender: User;
-
     roomId: string;
-    sendedAt: string;
-    body: string;
+    sentAt: number;
     isMine: boolean;
-    read: boolean;
+    isRead: boolean;
+}
 
+export interface ChatFileMessage extends BaseChatMessage {
+    type: "file";
+    attachment: CachedFileData;
+}
+
+export interface ChatTextMessage extends BaseChatMessage {
+    type: "text";
+    text: string;
 }

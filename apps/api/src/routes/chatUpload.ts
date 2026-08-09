@@ -5,7 +5,6 @@ import { chatUpload } from "../config/chatUpload.js";
 export const router: Router = Router();
 
 router.post("/chat", chatUpload.single("file"), (req, res) => {
-    console.log(req.file)
     if (!req.file) {
         return res.status(400).json({
             message: "No file uploaded",
