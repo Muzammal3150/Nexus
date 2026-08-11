@@ -1,31 +1,42 @@
 'use client';
+
 import { NewCallDialog } from '@/components/call/new-call/new-call-dialog';
 import { CallsSidebar } from '@/components/call/sidebar/calls-sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useUiStore } from '@/stores/uiStore';
+import { type ReactNode, useEffect, useState } from 'react';
 
-import { type ReactNode } from 'react';
+function useIsDesktop() {
+    const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(min-width: 640px)');
+
+        const update = () => {
+            setIsDesktop(mediaQuery.matches);
+        };
+
+        update();
+
+        mediaQuery.addEventListener('change', update);
+
+        return () => {
+            mediaQuery.removeEventListener('change', update);
+        };
+    }, []);
+
+    return isDesktop;
+}
 
 export default function ChatLayout({ children }: { children: ReactNode }) {
+    const isDesktop = useIsDesktop();
+
     const isOpen = useUiStore((s) => s.isOpen('new-call-dialog'));
     const setOpen = useUiStore((s) => s.setOpen);
-    return (
-        <>
-            <ResizablePanelGroup className="hidden! sm:flex! h-full overflow-auto">
-                <ResizablePanel defaultSize={320} minSize={320} collapsible maxSize={'50%'}>
-                    <CallsSidebar />
-                </ResizablePanel>
-                <ResizableHandle />
-                <ResizablePanel>
-                    {children}
 
-                    <NewCallDialog
-                        open={isOpen}
-                        onOpenChange={(next) => setOpen('new-call-dialog', next)}
-                    />
-                </ResizablePanel>
-            </ResizablePanelGroup>
-            <div className="flex h-full w-full sm:hidden">
+    if (!isDesktop) {
+        return (
+            <div className="h-full w-full">
                 {children}
 
                 <NewCallDialog
@@ -33,6 +44,31 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                     onOpenChange={(next) => setOpen('new-call-dialog', next)}
                 />
             </div>
-        </>
+        );
+    }
+
+    return (
+        <ResizablePanelGroup className="h-full overflow-auto">
+            <ResizablePanel
+                defaultSize={320}
+                minSize={320}
+                maxSize="50%"
+                collapsible
+                id="calls-sidebar"
+            >
+                <CallsSidebar />
+            </ResizablePanel>
+
+            <ResizableHandle />
+
+            <ResizablePanel id="calls-main-content">
+                {children}
+
+                <NewCallDialog
+                    open={isOpen}
+                    onOpenChange={(next) => setOpen('new-call-dialog', next)}
+                />
+            </ResizablePanel>
+        </ResizablePanelGroup>
     );
 }

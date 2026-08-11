@@ -3,6 +3,7 @@
 import { MessageCircle, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import {
     Sidebar,
@@ -29,32 +30,40 @@ const sidebarItems = {
     },
 };
 
-export function AppIconRail() {
+function useIsDesktop() {
+    const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(min-width: 640px)');
+
+        const update = () => {
+            setIsDesktop(mediaQuery.matches);
+        };
+
+        update();
+        mediaQuery.addEventListener('change', update);
+
+        return () => {
+            mediaQuery.removeEventListener('change', update);
+        };
+    }, []);
+
+    return isDesktop;
+}
+
+function DesktopSidebar() {
     const pathname = usePathname();
 
     return (
-        <Sidebar
-            collapsible="none"
-            className="
-max-sm:order-last
-        h-16 w-full
-        border-t border-r-0
-        bg-background
-        justify-center
-        max-sm:flex-row!
-        sm:static sm:h-screen sm:w-17
-        sm:border-t-0 sm:border-r
-      "
-        >
-            {/* Logo - desktop only */}
-            <SidebarHeader className="hidden sm:flex items-center py-4">
+        <Sidebar collapsible="none" className="h-screen w-17 border-r">
+            <SidebarHeader className="items-center py-4">
                 <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <MessageCircle className="size-4.5" />
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="max-sm:flex-none! w-fit items-center p-2.5 max-sm:h-fit">
-                <SidebarMenu className="flex-row  items-center justify-center gap-2 sm:flex-col sm:gap-1">
+            <SidebarContent className="items-center">
+                <SidebarMenu className="items-center gap-1">
                     {Object.entries(sidebarItems).map(([key, item]) => {
                         const Icon = item.icon;
                         const isActive = pathname.startsWith(item.url);
@@ -84,10 +93,77 @@ max-sm:order-last
                 </SidebarMenu>
             </SidebarContent>
 
-            {/* User - desktop only */}
-            <SidebarFooter className="flex items-center list-none px-0 sm:pb-4">
+            <SidebarFooter className="items-center pb-4">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
     );
+}
+
+function MobileBottomNav() {
+    const pathname = usePathname();
+
+    return (
+        <nav className="max-sm:order-last z-50 border-t bg-background/90 px-3 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden">
+            <div className="mx-auto flex h-[72px] max-w-md items-center justify-around gap-2">
+                {Object.entries(sidebarItems).map(([key, item]) => {
+                    const Icon = item.icon;
+                    const isActive = pathname.startsWith(item.url);
+
+                    return (
+                        <Link
+                            key={key}
+                            href={item.url}
+                            className="flex min-w-20 flex-1 flex-col items-center justify-center gap-1.5 py-2"
+                        >
+                            <div
+                                className={`
+                  flex size-10 items-center justify-center rounded-xl
+                  transition-all
+                  ${
+                      isActive
+                          ? 'bg-primary/15 text-primary'
+                          : 'text-muted-foreground hover:bg-muted/60'
+                  }
+                `}
+                            >
+                                <Icon className="size-5" />
+                            </div>
+
+                            <span
+                                className={`
+                  text-[11px] font-medium
+                  ${isActive ? 'text-foreground' : 'text-muted-foreground'}
+                `}
+                            >
+                                {item.title}
+                            </span>
+                        </Link>
+                    );
+                })}
+
+                <div className="flex min-w-20 flex-1 items-center justify-center">
+                    <div className="flex flex-col items-center gap-1.5 py-2">
+                        <div className="flex size-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted/60">
+                            <NavUser />
+                        </div>
+
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                            Profile
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    );
+}
+
+export function AppIconRail() {
+    const isDesktop = useIsDesktop();
+
+    if (isDesktop) {
+        return <DesktopSidebar />;
+    }
+
+    return <MobileBottomNav />;
 }
