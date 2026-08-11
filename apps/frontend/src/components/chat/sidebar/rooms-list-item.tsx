@@ -65,7 +65,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                                 {room.lastMessage && (
                                     <span className="truncate">
                                         {formatUserName(room.lastMessage.sender, session!.user)}:{' '}
-                                        {room.lastMessage.body}
+                                        {room.lastMessage.text}
                                     </span>
                                 )}
                             </span>

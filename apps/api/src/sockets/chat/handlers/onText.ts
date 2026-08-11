@@ -1,5 +1,6 @@
 import type { Socket } from "socket.io";
 import { ChatEvents } from "../events.js";
+import { redis } from "../../../config/redis.js";
 
 const maxMessageLength = 4000;
 
@@ -40,7 +41,7 @@ function validate(socket: Socket, data: unknown) {
 }
 
 
-export function onText(socket: Socket, data: unknown) {
+export async function onText(socket: Socket, data: unknown) {
     const payload = validate(socket, data)
     if (!payload) return;
 
@@ -53,9 +54,15 @@ export function onText(socket: Socket, data: unknown) {
         roomId,
     };
 
-    socket.to(roomId).emit(ChatEvents.Chat.Text, messagePayload);
+    const streamId = await redis.xAdd(`nexsus:chat:room:${roomId}`, '*', {
+        event: "chat:text",
+        payload: JSON.stringify(messagePayload),
+    })
+
+    socket.to(roomId).emit(ChatEvents.Chat.Text, { ...messagePayload, streamId });
     socket.emit(ChatEvents.Chat.Text, {
         ...messagePayload,
         isMine: true,
+        streamId,
     });
 }

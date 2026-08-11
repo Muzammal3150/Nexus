@@ -1,24 +1,13 @@
-import { createClient, type RedisClientType } from "redis";
+import { createClient } from "redis";
 
-export const pubClient = createClient({
-    url: process.env.REDIS_URL ?? "redis://localhost:6379",
+const redis = createClient({
+    url: process.env.REDIS_URL!
 });
 
-export const subClient: RedisClientType = pubClient.duplicate();
+redis.on("error", error => {
+    console.error("Redis Client Error", error);
+});
 
-export async function connectRedis() {
-    pubClient.on("error", (err) => {
-        console.error("Redis Pub Error:", err);
-    });
+await redis.connect();
 
-    subClient.on("error", (err) => {
-        console.error("Redis Sub Error:", err);
-    });
-
-    await Promise.all([
-        pubClient.connect(),
-        subClient.connect(),
-    ]);
-
-    console.log("Redis connected");
-}
+export { redis };

@@ -60,7 +60,7 @@ export function useChats(roomId: string) {
 
 
     useEffect(() => {
-        const handleFile = async ({ id, roomId: _roomId, sender, sentAt, attachment }: Omit<ChatFileMessage, "type">) => {
+        const handleFile = async ({ id, streamId, roomId: _roomId, sender, sentAt, attachment }: Omit<ChatFileMessage, "type">) => {
             console.log("file")
             const response = await api.get(
                 `../uploads/chat/${attachment.filename}`,
@@ -96,10 +96,10 @@ export function useChats(roomId: string) {
 
                 sentAt,
             });
-
+            chatSocket.emit("chat:received", { streamId, roomId })
         };
-        const handleText = ({ id, sender, sentAt, text, roomId: _roomId }: Omit<ChatTextMessage, "type">) => {
-            addMessage({
+        const handleText = async ({ id, streamId, sender, sentAt, text, roomId: _roomId }: Omit<ChatTextMessage, "type">) => {
+            await addMessage({
                 type: "text",
                 id,
                 roomId: _roomId,
@@ -108,6 +108,7 @@ export function useChats(roomId: string) {
                 text,
                 isRead: _roomId == roomId,
             });
+            chatSocket.emit("chat:received", { streamId, roomId })
         };
 
         chatSocket.on("chat:file", handleFile);

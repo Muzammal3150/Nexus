@@ -1,5 +1,6 @@
 import type { Socket } from "socket.io";
 import { ChatEvents } from "../events.js";
+import { redis } from "../../../config/redis.js";
 
 interface FilePayload {
     roomId: string;
@@ -55,7 +56,7 @@ function validate(socket: Socket, data: unknown) {
     return payload as FilePayload;
 }
 
-export function onFileSend(socket: Socket, data: unknown) {
+export async function onFileSend(socket: Socket, data: unknown) {
     const payload = validate(socket, data);
     if (!payload) return;
     console.log("File send")
@@ -69,9 +70,16 @@ export function onFileSend(socket: Socket, data: unknown) {
         sentAt: Date.now(),
         roomId,
     };
-    socket.to(roomId).emit(ChatEvents.Chat.File, messagePayload);
+
+    const streamId = await redis.xAdd(`nexsus:chat:room:${roomId}`, '*', {
+        event: "chat:file",
+        payload: JSON.stringify(messagePayload),
+    })
+
+    socket.to(roomId).emit(ChatEvents.Chat.File, { ...messagePayload, streamId });
     socket.emit(ChatEvents.Chat.File, {
         ...messagePayload,
         isMine: true,
+        streamId,
     });
 }

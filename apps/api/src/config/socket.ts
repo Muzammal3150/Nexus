@@ -1,7 +1,8 @@
 import { createAdapter } from "@socket.io/redis-adapter";
 import { type Server as HttpServer } from "node:http";
 import { Namespace, Server } from "socket.io";
-import { pubClient, subClient } from "./redis.js";
+import { redis } from "./redis.js";
+
 
 
 
@@ -12,10 +13,21 @@ export interface SocketHandler {
 }
 
 export class SocketServer {
-    private io: Server;
+    private io!: Server;
     private handlers: SocketHandler[] = [];
 
-    constructor(httpServer: HttpServer) {
+    register(handler: SocketHandler) {
+        this.handlers.push(handler);
+        return this;
+    }
+
+    async init(httpServer: HttpServer) {
+
+        const pubClient = redis.duplicate()
+        const subClient = redis.duplicate()
+
+        await pubClient.connect()
+        await subClient.connect()
 
         this.io = new Server(httpServer, {
             adapter: createAdapter(pubClient, subClient),
@@ -24,14 +36,8 @@ export class SocketServer {
                 credentials: true,
             },
         });
-    }
 
-    register(handler: SocketHandler) {
-        this.handlers.push(handler);
-        return this;
-    }
 
-    init() {
         for (const handler of this.handlers) {
             const namespace = this.io.of(handler.namespace);
             handler.init(namespace);

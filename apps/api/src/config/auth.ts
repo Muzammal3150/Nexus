@@ -51,6 +51,9 @@ export const auth = betterAuth({
             }
         })
     ],
-
+    session: {
+        expiresIn: 30 * 24 * 60 * 30,
+         updateAge: 24 * 60 * 60,
+    },
     trustedOrigins: ["http://localhost:3000", process.env.FRONTEND_URL!],
 });

@@ -7,6 +7,10 @@ import { createRoom } from "./handlers/createRoom.js";
 import { onText } from "./handlers/onText.js";
 import { initSafe } from "./safeAck.js";
 import { onFileSend } from "./handlers/onFileSend.js";
+import type { Session } from "better-auth";
+import type { Room } from "../../generated/prisma/client.js";
+import { redis } from "../../config/redis.js";
+import { onMessageReceived } from "./handlers/onMessageRecieved.js";
 
 
 
@@ -41,17 +45,24 @@ export class ChatSocket implements SocketHandler {
             console.error(`Error in chat handler for socket ${socket.id} (${socket.data.user?.name}):`, err);
             socket.emit(ChatEvents.Error, { message: "Internal server error" });
         });
-        
 
-        await this.joinAllRooms(socket);
+
+        const rooms = await this.joinAllRooms(socket);
+        if (!rooms) {
+            return;
+        }
+
 
         socket.on(ChatEvents.Room.Create, safe((data, callback) => createRoom(this.ctx(), socket, data, callback)));
         socket.on(ChatEvents.Chat.Text, safe((data) => onText(socket, data)));
         socket.on(ChatEvents.Chat.File, safe((data) => onFileSend(socket, data)));
-        
+        socket.on(ChatEvents.Chat.Received, safe((data) => onMessageReceived(socket, data)));
+
         socket.on("error", (err) => {
             console.error(`Chat socket transport error for ${socket.id} (${socket.data.user?.name}):`, err);
         });
+
+        await this.syncMessages(socket, rooms)
     }
 
 
@@ -63,6 +74,7 @@ export class ChatSocket implements SocketHandler {
 
             socket.join(rooms.map(({ id }) => id));
 
+            return rooms
 
         } catch (err) {
             console.error(`Failed to join existing rooms for user ${socket.data.user.id}:`, err);
@@ -70,8 +82,42 @@ export class ChatSocket implements SocketHandler {
         }
     }
 
+
+    private async syncMessages(socket: Socket, rooms: Room[]) {
+
+        for (const room of rooms) {
+            const streamId =
+                await redis.hGet(
+                    `nexsus:chat:sync:${room.id}`,
+                    socket.data.session.id
+                ) ??
+                `${(socket.data.session as Session).createdAt.getTime()}-0`;
+
+                
+            const messages = await redis.xRange(
+                `nexsus:chat:room:${room.id}`,
+                `(${streamId}`,
+                "+"
+            );
+
+            for (const message of messages) {
+                socket.emit(message.message.event as string, JSON.parse(message.message.payload as string))
+            }
+
+
+            await redis.hSet(
+                `nexsus:chat:sync:${room.id}`,
+                socket.data.session.id,
+                messages.length > 0 ? messages.at(-1)!.id : `${Date.now()}-0`
+            );
+
+        }
+        // }
+    }
+
     private ctx() {
         return { io: this.io }
     }
 
 }
+
