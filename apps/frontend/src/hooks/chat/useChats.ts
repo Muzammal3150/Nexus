@@ -7,7 +7,8 @@ import { api } from "@/lib/axios";
 import { addMessage } from "@/lib/chat/messages";
 import { chatSocket } from "@/lib/socket";
 import { ChatFileMessage, ChatMessage, ChatTextMessage } from "@/types/messages";
-import { User } from "better-auth";
+import { User } from '@/lib/auth/auth';
+
 import { differenceInCalendarDays, format, isToday, isYesterday } from "date-fns";
 import { addCacheFile } from "@/lib/chat/file/files";
 
@@ -61,21 +62,13 @@ export function useChats(roomId: string) {
 
     useEffect(() => {
         const handleFile = async ({ id, streamId, roomId: _roomId, sender, sentAt, attachment }: Omit<ChatFileMessage, "type">) => {
-            console.log("file")
-            const response = await api.get(
-                `../uploads/chat/${attachment.filename}`,
-                {
-                    responseType: "blob",
-                },
-            );
+            const response = await api.get(`../uploads/chat/${attachment.filename}`, {
+                responseType: "blob"
+            });
 
-            const file = new File(
-                [response.data],
-                attachment.originalFilename,
-                {
-                    type: attachment.mimeType,
-                },
-            );
+            const file = new File([response.data], attachment.originalFilename, {
+                type: attachment.mimeType,
+            });
             const fileId = await addCacheFile(file)
 
             await addMessage({

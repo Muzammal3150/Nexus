@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/chat/utils-chat';
 import { cn } from '@/lib/utils';
 import { Room } from '@/types/room';
-import { User } from 'better-auth';
+import { User } from '@/lib/auth/auth';
+
 import { format } from 'date-fns';
-import { Badge, CheckCheck } from 'lucide-react';
+import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 interface RoomsListItemProps {
     room: Room;
@@ -30,7 +32,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                 <div className="relative shrink-0">
                     <Avatar className="size-11">
                         <AvatarFallback className={cn('text-sm font-medium')}>
-                            {getInitials(room.name ?? 'g')}
+                            {getInitials(room.name)}
                         </AvatarFallback>
                     </Avatar>
                     {/* {room.online && (
@@ -65,7 +67,11 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                                 {room.lastMessage && (
                                     <span className="truncate">
                                         {formatUserName(room.lastMessage.sender, session!.user)}:{' '}
-                                        {room.lastMessage.text}
+                                        {room.lastMessage.type == 'text' ? (
+                                            room.lastMessage.text
+                                        ) : (
+                                            <>{room.lastMessage.attachment.originalFilename}</>
+                                        )}
                                     </span>
                                 )}
                             </span>

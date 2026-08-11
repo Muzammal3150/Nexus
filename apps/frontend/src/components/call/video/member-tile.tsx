@@ -29,12 +29,7 @@ const avatarTextSizes = {
     large: 'text-3xl',
 } as const;
 
-export function MemberTile({
-    member,
-    onFullView,
-    className,
-    size = 'default',
-}: MemberTileProps) {
+export function MemberTile({ member, onFullView, className, size = 'default' }: MemberTileProps) {
     const showControls = size !== 'thumb';
 
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -70,9 +65,7 @@ export function MemberTile({
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 256;
 
-        const source = audioContext.createMediaStreamSource(
-            new MediaStream([audioTrack])
-        );
+        const source = audioContext.createMediaStreamSource(new MediaStream([audioTrack]));
 
         source.connect(analyser);
 
@@ -84,14 +77,11 @@ export function MemberTile({
         const checkVolume = () => {
             analyser.getByteFrequencyData(data);
 
-            const volume =
-                data.reduce((sum, value) => sum + value, 0) /
-                data.length;
+            const volume = data.reduce((sum, value) => sum + value, 0) / data.length;
 
             setSpeaking(volume > 15);
 
-            animationRef.current =
-                requestAnimationFrame(checkVolume);
+            animationRef.current = requestAnimationFrame(checkVolume);
         };
 
         checkVolume();
@@ -112,9 +102,8 @@ export function MemberTile({
         <div
             className={cn(
                 'group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl border bg-primary/20',
-                speaking &&
-                    'ring-2 ring-primary ring-offset-2 ring-offset-background',
-                className
+                speaking && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
+                className,
             )}
         >
             {stream && cameraEnabled ? (
@@ -127,12 +116,7 @@ export function MemberTile({
                 />
             ) : (
                 <Avatar className={avatarSizes[size]}>
-                    <AvatarFallback
-                        className={cn(
-                            'font-medium',
-                            avatarTextSizes[size]
-                        )}
-                    >
+                    <AvatarFallback className={cn('font-medium', avatarTextSizes[size])}>
                         {getInitials(member.user.name)}
                     </AvatarFallback>
                 </Avatar>
@@ -141,7 +125,7 @@ export function MemberTile({
             {!member.joined && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/30 backdrop-blur-sm">
                     <div className="flex gap-1">
-                        {[0, 150, 300].map(delay => (
+                        {[0, 150, 300].map((delay) => (
                             <div
                                 key={delay}
                                 className="size-2 animate-bounce rounded-full bg-primary"
@@ -157,9 +141,7 @@ export function MemberTile({
             {showControls && (
                 <>
                     <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-background/70 px-2 py-1 backdrop-blur">
-                        {!micEnabled && (
-                            <MicOff className="size-3.5 text-destructive" />
-                        )}
+                        {!micEnabled && <MicOff className="size-3.5 text-destructive" />}
 
                         <span className="text-xs font-medium">
                             {member.user.name}

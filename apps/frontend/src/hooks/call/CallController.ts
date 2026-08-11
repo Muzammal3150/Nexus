@@ -2,7 +2,8 @@ import { SessionType } from "@/components/providers/session-provider";
 import { getRoom, loadMembers } from "@/lib/call/get-room";
 import { callSocket } from "@/lib/socket";
 import { CallMember, CallRoom } from "@/types/calls";
-import { User } from "better-auth";
+import { User } from '@/lib/auth/auth';
+
 
 type Snapshot = {
     room: CallRoom | null;

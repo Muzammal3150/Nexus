@@ -1,6 +1,7 @@
 
 import { CachedFileData } from "@/db/db.d";
-import { User } from "better-auth";
+import { User } from '@/lib/auth/auth';
+
 
 export type ChatMessage = ChatFileMessage | ChatTextMessage;
 

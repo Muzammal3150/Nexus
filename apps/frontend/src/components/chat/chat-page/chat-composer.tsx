@@ -9,8 +9,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { sendChatFiles } from '@/lib/chat/file/sendFile';
 import { chatSocket } from '@/lib/socket';
 import { FileViewGrid } from './file-view-grid';
+import { cn } from '@/lib/utils';
 
-export function ChatComposer({ roomId }: { roomId: string }) {
+export function ChatComposer({ roomId, className }: { roomId: string; className?: string }) {
     const [value, setValue] = useState('');
     const [files, setFiles] = useState<File[]>([]);
     const session = useSession()!;
@@ -19,7 +20,6 @@ export function ChatComposer({ roomId }: { roomId: string }) {
 
     const handleSend = () => {
         const trimmed = value.trim();
-
         if (!trimmed && files.length === 0) return;
 
         chatSocket.emit('chat:text', {
@@ -45,7 +45,7 @@ export function ChatComposer({ roomId }: { roomId: string }) {
         setFileLoading(false);
     };
     return (
-        <div className="border-t p-2">
+        <div className={cn('border-t p-2', className)}>
             {/* Drawer */}
             {fileLoading ? (
                 <div className="absolute inset-0 z-100 flex h-full w-full items-center justify-center bg-background/80 backdrop-blur-sm">

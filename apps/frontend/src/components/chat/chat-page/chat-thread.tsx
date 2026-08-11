@@ -16,9 +16,11 @@ import { ChatMessage } from '@/types/messages';
 import { format } from 'date-fns';
 import React from 'react';
 import { MessageFileContent } from './file-message';
+import { cn } from '@/lib/utils';
 
 interface ChatThreadProps {
     messages?: Partial<Record<string, ChatMessage[]>>;
+    className?: string;
 }
 
 // function StatusIcon({ status }: { status?: ChatMessage['status'] }) {
@@ -34,12 +36,15 @@ interface ChatThreadProps {
 //     return null;
 // }
 
-export function ChatThread({ messages }: ChatThreadProps) {
+export function ChatThread({ messages, className }: ChatThreadProps) {
     return (
-        <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+  
             <MessageScroller className=" bg-muted/20  ">
                 <MessageScrollerViewport>
-                    <MessageScrollerContent className="flex flex-col gap-3 px-6 py-4">
+                    <MessageScrollerContent
+                        className={cn('flex flex-col gap-3 px-6 py-4', className)}
+
+                    >
                         {messages &&
                             Object.keys(messages).map((day) => (
                                 <React.Fragment key={day}>
@@ -56,7 +61,7 @@ export function ChatThread({ messages }: ChatThreadProps) {
                 </MessageScrollerViewport>
                 <MessageScrollerButton />
             </MessageScroller>
-        </MessageScrollerProvider>
+        
     );
 }
 function MessageItem({ message }: { message: ChatMessage }) {

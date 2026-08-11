@@ -13,8 +13,9 @@ import { useUiStore } from '@/stores/uiStore';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { RoomsListItem } from './rooms-list-item';
+import { cn } from '@/lib/utils';
 
-export function RoomsList() {
+export function RoomsList({ className }: { className?: string }) {
     const { roomId: activeId } = useParams<{ roomId: string }>();
     const { rooms, isLoading } = useRooms();
     const [search, setSearch] = useState('');
@@ -36,7 +37,7 @@ export function RoomsList() {
     }, [rooms, search]);
     if (isLoading) return 'Loading';
     return (
-        <div className="flex  shrink-0 [320px] flex-col border-r bg-sidebar/50 h-full">
+        <div className={cn('flex  flex-col border-r h-full', className)}>
             <RoomsListHeader query={search} onQueryChange={setSearch} />
             <Separator />
 

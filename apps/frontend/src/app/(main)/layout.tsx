@@ -17,9 +17,9 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
             <ChatSocketProvider>
                 <CallSocketProvider>
                     <SidebarProvider className="h-dvh">
-                        <div className="flex h-full w-full">
+                        <div className="flex max-sm:flex-col h-full w-full">
                             <AppIconRail />
-                            {children}
+                            <div className="flex-1 overflow-auto h-full">{children}</div>
                         </div>
                     </SidebarProvider>
                     <Toaster />

@@ -77,9 +77,4 @@ export async function onFileSend(socket: Socket, data: unknown) {
     })
 
     socket.to(roomId).emit(ChatEvents.Chat.File, { ...messagePayload, streamId });
-    socket.emit(ChatEvents.Chat.File, {
-        ...messagePayload,
-        isMine: true,
-        streamId,
-    });
 }

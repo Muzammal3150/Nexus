@@ -5,16 +5,26 @@ import type { ReactNode } from 'react';
 
 export default function ChatLayout({ children }: { children: ReactNode }) {
     return (
-        <ResizablePanelGroup className="h-full overflow-auto">
-            <ResizablePanel defaultSize={320} minSize={320} collapsible maxSize={'50%'}>
-                <RoomsList />
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel>
-                {children}
+        <>
+            {/* Desktop */}
+            <ResizablePanelGroup className="hidden! h-full overflow-auto sm:flex!">
+                <ResizablePanel defaultSize={320} minSize={320} collapsible maxSize="50%">
+                    <RoomsList />
+                </ResizablePanel>
 
+                <ResizableHandle />
+
+                <ResizablePanel>
+                    {children}
+                    <NewChatDialog />
+                </ResizablePanel>
+            </ResizablePanelGroup>
+
+            {/* Mobile */}
+            <div className="flex h-full w-full sm:hidden">
+                {children}
                 <NewChatDialog />
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            </div>
+        </>
     );
 }

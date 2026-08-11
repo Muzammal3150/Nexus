@@ -1,21 +1,46 @@
-import { MessageCircleOff } from 'lucide-react';
+'use client';
+
+import { RoomsList } from '@/components/chat/sidebar/rooms-list';
+import { Button } from '@/components/ui/button';
+import { useUiStore } from '@/stores/uiStore';
+import { MessageCircle, Plus } from 'lucide-react';
 
 export default function NoRoomSelected() {
+    const open = useUiStore((s) => s.open);
+
     return (
-        <div className="flex flex-1 h-full flex-col items-center justify-center gap-6 px-6 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                <MessageCircleOff className="h-10 w-10 text-primary" />
+        <>
+            <div className="hidden relative sm:flex h-full flex-1 items-center justify-center overflow-hidden bg-muted/20 px-6">
+                {/* Subtle background decoration */}
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.06),transparent_45%)]" />
+
+                <div className="relative flex max-w-md flex-col items-center text-center">
+                    {/* Icon */}
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border bg-background shadow-sm">
+                        <MessageCircle className="h-7 w-7 text-primary" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-3">
+                        <h2 className="text-2xl font-semibold tracking-tight">
+                            Start a conversation
+                        </h2>
+
+                        <p className="text-sm leading-6 text-muted-foreground">
+                            Select a room from the sidebar to continue a conversation, or create a
+                            new room to get started.
+                        </p>
+                    </div>
+
+                    {/* Action */}
+                    <Button className="mt-6 gap-2" onClick={() => open('new-chat-dialog')}>
+                        <Plus className="h-4 w-4" />
+                        New Chat
+                    </Button>
+                </div>
             </div>
 
-            <div className="space-y-2">
-                <h2 className="text-3xl font-semibold tracking-tight">No room selected</h2>
-
-                <p className="max-w-md text-muted-foreground">
-                    Select a room from the sidebar to view messages, or create a new room to start
-                    chatting.
-                </p>
-            </div>
-
-        </div>
+            <RoomsList className="sm:hidden w-full" />
+        </>
     );
 }

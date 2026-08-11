@@ -29,7 +29,6 @@ export function MemberGrid({ members, onFullView }: MemberGridProps) {
                 <MemberTile
                     key={m.user.id}
                     member={m}
-                    stream={m.stream ?? null}
                     onFullView={() => onFullView(m.user.id)}
                 />
             ))}

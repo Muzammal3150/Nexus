@@ -1,6 +1,7 @@
 import { SessionType } from "@/components/providers/session-provider";
 import { CallRoom } from "@/types/calls";
-import { User } from "better-auth";
+import { User } from '@/lib/auth/auth';
+
 import { api } from "../axios";
 import { callSocket } from "../socket";
 

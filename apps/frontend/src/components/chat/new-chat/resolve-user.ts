@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { User } from 'better-auth';
+import { User } from '@/lib/auth/auth';
 
 import { api } from '@/lib/axios';
 

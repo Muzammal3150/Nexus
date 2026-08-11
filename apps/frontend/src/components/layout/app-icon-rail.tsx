@@ -1,6 +1,8 @@
 'use client';
 
 import { MessageCircle, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import {
     Sidebar,
@@ -12,8 +14,6 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { NavUser } from './nav-user';
 
 const sidebarItems = {
@@ -31,19 +31,34 @@ const sidebarItems = {
 
 export function AppIconRail() {
     const pathname = usePathname();
+
     return (
-        <Sidebar collapsible="none" className="w-17 border-r gap-4 py-4">
-            <SidebarHeader className="items-center">
+        <Sidebar
+            collapsible="none"
+            className="
+max-sm:order-last
+        h-16 w-full
+        border-t border-r-0
+        bg-background
+        justify-center
+        max-sm:flex-row!
+        sm:static sm:h-screen sm:w-17
+        sm:border-t-0 sm:border-r
+      "
+        >
+            {/* Logo - desktop only */}
+            <SidebarHeader className="hidden sm:flex items-center py-4">
                 <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <MessageCircle className="size-4.5" />
                 </div>
             </SidebarHeader>
 
-            <SidebarContent className="items-center">
-                <SidebarMenu className="items-center gap-1">
+            <SidebarContent className="max-sm:flex-none! w-fit items-center p-2.5 max-sm:h-fit">
+                <SidebarMenu className="flex-row  items-center justify-center gap-2 sm:flex-col sm:gap-1">
                     {Object.entries(sidebarItems).map(([key, item]) => {
                         const Icon = item.icon;
                         const isActive = pathname.startsWith(item.url);
+
                         return (
                             <SidebarMenuItem key={key}>
                                 <Tooltip>
@@ -55,6 +70,7 @@ export function AppIconRail() {
                                                     className="size-11 justify-center rounded-lg p-0"
                                                 >
                                                     <Icon className="size-5" />
+                                                    <span className="sr-only">{item.title}</span>
                                                 </SidebarMenuButton>
                                             </Link>
                                         }
@@ -68,21 +84,8 @@ export function AppIconRail() {
                 </SidebarMenu>
             </SidebarContent>
 
-            <SidebarFooter className="items-center">
-                {/* <Tooltip>
-                    <TooltipTrigger
-                        render={
-                            <button
-                                type="button"
-                                className="flex size-11 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                            />
-                        }
-                    >
-                        <Settings className="size-5" />
-                    </TooltipTrigger>
-                    <TooltipContent side="right">Settings</TooltipContent>
-                </Tooltip> */}
-
+            {/* User - desktop only */}
+            <SidebarFooter className="flex items-center list-none px-0 sm:pb-4">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

@@ -10,7 +10,7 @@ import { Room } from '@/types/room';
 
 export function ChatHeader({ room }: { room: Room }) {
     return (
-        <div className="flex items-center justify-between border-b sticky top-0 bg-background px-5 py-3">
+        <div className="flex items-center justify-between border-b z-100 sticky top-0 bg-background px-5 py-3">
             <div className="flex items-center gap-3">
                 <Avatar className="size-9">
                     <AvatarFallback className={cn('text-xs font-medium')}>

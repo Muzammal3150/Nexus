@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/chat/utils-chat';
 import { cn } from '@/lib/utils';
-import { User } from 'better-auth/types';
+import { User } from '@/lib/auth/auth';
+
 
 
 interface SelectionChipProps {

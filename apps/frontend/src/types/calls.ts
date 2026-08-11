@@ -1,4 +1,4 @@
-import { User } from "better-auth";
+import { User } from '@/lib/auth/auth';
 
 export interface CallMember {
   user: User;

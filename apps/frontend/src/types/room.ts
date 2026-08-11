@@ -1,4 +1,5 @@
-import { User } from "better-auth";
+import { User } from '@/lib/auth/auth';
+
 import { ChatMessage } from "./messages";
 
 export interface Room {
@@ -8,7 +9,7 @@ export interface Room {
     description?: string;
     id: string;
     isGroup: boolean;
-    name?: string;
+    name: string;
     members: RoomMember[]
     unread: number;
     lastMessage: ChatMessage | null;

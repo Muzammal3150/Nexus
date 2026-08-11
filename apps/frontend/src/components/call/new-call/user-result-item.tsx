@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CommandItem } from '@/components/ui/command';
 import { getInitials } from '@/lib/chat/utils-chat';
 import { cn } from '@/lib/utils';
-import { User } from 'better-auth';
+import { User } from '@/lib/auth/auth';
+
 
 interface UserResultItemProps {
     user: User;

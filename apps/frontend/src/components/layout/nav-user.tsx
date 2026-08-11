@@ -29,7 +29,7 @@ export function NavUser() {
         router.push('/login');
     };
     return (
-        <SidebarMenuItem className="hover:bg-transparent">
+        <SidebarMenuItem className="hover:bg-transparent list-none">
             <DropdownMenu>
                 <DropdownMenuTrigger
                     render={

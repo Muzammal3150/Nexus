@@ -9,31 +9,22 @@ import { Separator } from '@/components/ui/separator';
 import { FavouriteItem } from './favourite-item';
 import { RecentCallItem } from './recent-call-item';
 import { useUiStore } from '@/stores/uiStore';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
-interface CallsSidebarProps {
-    favourites: FavouriteContact[];
-    recents: RecentCall[];
-    query: string;
-    onQueryChange: (value: string) => void;
-    onCallFavourite: (contact: FavouriteContact, method: CallMethod) => void;
-    onCallBackRecent: (call: RecentCall) => void;
-}
-
-export function CallsSidebar({
-    favourites,
-    recents,
-    query,
-    onQueryChange,
-    onCallFavourite,
-    onCallBackRecent,
-}: CallsSidebarProps) {
+export function CallsSidebar({ className }: { className?: string }) {
+    const [query, setQuery] = useState('');
     const q = query.toLowerCase();
+
+    const favourites = [];
+    const recents = [];
+
     const filteredFavourites = favourites.filter((f) => f.name.toLowerCase().includes(q));
     const filteredRecents = recents.filter((r) => r.name.toLowerCase().includes(q));
     const open = useUiStore((s) => s.open);
 
     return (
-        <div className="flex shrink-0 flex-col border-r bg-background">
+        <div className={cn('flex shrink-0 flex-col border-r ', className)}>
             <div className="flex items-center justify-between px-4 py-3">
                 <h2 className="text-lg font-semibold tracking-tight">Calls</h2>
                 <Button
@@ -51,7 +42,7 @@ export function CallsSidebar({
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         value={query}
-                        onChange={(e) => onQueryChange(e.target.value)}
+                        onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search calls"
                         className="bg-muted pl-9"
                     />

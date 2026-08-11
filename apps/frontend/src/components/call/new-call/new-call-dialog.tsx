@@ -25,8 +25,9 @@ import { initCall } from '@/lib/call/init-call';
 import { SelectionChip } from './selection-chip';
 import { UserResultItem } from './user-result-item';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { User } from 'better-auth';
+
 import { useRouter } from 'next/navigation';
+import { User } from '@/lib/auth/auth';
 
 interface NewCallDialogProps {
     open: boolean;
