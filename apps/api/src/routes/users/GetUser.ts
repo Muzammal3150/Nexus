@@ -1,5 +1,5 @@
 import { Router } from "express";
-import prisma from "../config/prisma.js";
+import prisma from "../../config/prisma.js";
 
 export const router: Router = Router();
 router.get("/many/id", async (req, res) => {
@@ -81,5 +81,6 @@ router.get("/:username", async (req, res) => {
 
     return res.json(user);
 });
+
 
 

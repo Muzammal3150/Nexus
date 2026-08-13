@@ -1,6 +1,6 @@
 'use client';
 import { callSocket } from '@/lib/socket';
-import { User } from 'better-auth';
+
 import { Phone, PhoneOff, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
+import { User } from '@/lib/auth/auth';
 
 interface CallRoom {
     id: string;

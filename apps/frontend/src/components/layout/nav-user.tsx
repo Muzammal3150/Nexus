@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { authClient } from '@/lib/auth/auth';
-import { Bell, CircleUser, LogOut } from 'lucide-react';
+import { CircleUser, KeyIcon, LockIcon, LogOut } from 'lucide-react';
 import { useRouter } from 'next/dist/client/components/navigation';
+import Link from 'next/link';
 import { useSession } from '../providers/session-provider';
 
 export function NavUser() {
@@ -40,7 +41,10 @@ export function NavUser() {
                     }
                 >
                     <Avatar className="size-8 rounded-full group-hover:border-primary border-2 border-transparent aria-expanded:border-primary">
-                        <AvatarImage alt={session.user.name} />
+                        <AvatarImage
+                            src={session.user.image ?? undefined}
+                            alt={session.user.name}
+                        />
                         <AvatarFallback className="rounded-full">
                             {session.user.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -57,7 +61,7 @@ export function NavUser() {
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="size-8 bg-transparent!">
                                     <AvatarImage
-                                        src={session.user.image!}
+                                        src={session.user.image ?? undefined}
                                         alt={session.user.name}
                                     />
                                     <AvatarFallback>
@@ -77,21 +81,24 @@ export function NavUser() {
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                            <CircleUser />
-                            Account
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem>
-                            <Bell />
-                            Notifications
-                        </DropdownMenuItem>
+                        <Link href="/settings#account">
+                            <DropdownMenuItem>
+                                <CircleUser />
+                                Account
+                            </DropdownMenuItem>
+                        </Link>
+                        <Link href="/settings#change-password">
+                            <DropdownMenuItem>
+                                <LockIcon />
+                                Change Password
+                            </DropdownMenuItem>
+                        </Link>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => logOut()}>
-                        <LogOut />
-                        Log out
-                    </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => logOut()}>
+                            <LogOut />
+                            Log out
+                        </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </SidebarMenuItem>

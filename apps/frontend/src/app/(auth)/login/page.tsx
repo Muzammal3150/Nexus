@@ -28,14 +28,24 @@ export default function LoginForm() {
     const disabled = form.formState.isSubmitting;
 
     const onSubmit = async (values: loginValues) => {
-        const { error } = await authClient.signIn.email(values);
+        try {
+            const { error } = await authClient.signIn.email(values);
 
-        if (error) {
-            form.setError('root', { message: error.message });
-            return;
+            if (error) {
+                form.setError('root', {
+                    type: 'server',
+                    message: error.message || 'Invalid email or password.',
+                });
+                return;
+            }
+
+            router.replace('/');
+        } catch  {
+            form.setError('form', {
+                type: 'server',
+                message: 'Internal Server Error.',
+            });
         }
-
-        router.replace('/');
     };
 
     return (

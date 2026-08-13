@@ -4,8 +4,9 @@ import prisma from "../../../config/prisma.js";
 import { ChatEvents } from "../events.js";
 import { safeAck } from "../safeAck.js";
 import type { ChatContext } from "../types.js";
-import type { User } from "better-auth";
+
 import type { Room } from "../../../generated/prisma/client.js";
+import type { User } from "../../../config/auth.js";
 
 interface CreateRoomPayload {
     name: string;

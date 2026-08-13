@@ -1,30 +1,3 @@
 {
-  "files.exclude": {
-    "apps\\frontend/.gitignore": true,
-    "apps\\frontend/components.json": true,
-    "apps\\frontend/eslint.config.mjs": true,
-    "apps\\frontend/next-env.d.ts": true,
-    "apps\\frontend/next.config.ts": true,
-    "apps\\frontend/node_modules": true,
-    "apps\\frontend/package.json": true,
-    "apps\\frontend/postcss.config.mjs": true,
-    "apps\\frontend/public": true,
-    "apps\\frontend/README.md": true,
-    "apps\\frontend/tsconfig.json": true,
-    "apps\\api/.env": true,
-    "apps\\api/.gitignore": true,
-    "apps\\api/nodemon.json": true,
-    "apps\\api/node_modules": true,
-    "apps\\api/package.json": true,
-    "apps\\api/prisma.config.ts": true,
-    "apps\\api/tsconfig.json": true,
-    "pnpm-workspace.yaml": true,
-    ".git": true,
-    ".gitignore": true,
-    ".vscode": true,
-    "node_modules": true,
-    "package.json": true,
-    "packages": true,
-    "pnpm-lock.yaml": true
-  }
+  "files.exclude": {}
 }

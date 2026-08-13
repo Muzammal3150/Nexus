@@ -1,4 +1,5 @@
-import type { User } from "better-auth";
+
+import type { User } from "../../config/auth.js";
 import type { CallRoom } from "./types.js";
 
 const CALL_TIMEOUT = 1000 * 30; // 5 minutes

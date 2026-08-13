@@ -1,6 +1,7 @@
-import type { User } from "better-auth";
+
 import type { Namespace } from "socket.io";
 import type { CallManager } from "./CallManager.js";
+import type { User } from "../../config/auth.js";
 
 export interface CallRoom {
     id: string;

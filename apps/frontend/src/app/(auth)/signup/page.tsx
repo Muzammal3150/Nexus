@@ -29,14 +29,24 @@ export default function SignupForm() {
     const router = useRouter();
 
     const onSubmit = async (values: signUpValues) => {
-        const { error } = await authClient.signUp.email(values);
+        try {
+            const { error } = await authClient.signUp.email(values);
 
-        if (error) {
-            form.setError('form', { message: error.message });
-            return;
+            if (error) {
+                form.setError('form', {
+                    type: 'server',
+                    message: error.message || 'Unable to create your account.',
+                });
+                return;
+            }
+
+            router.replace('/');
+        } catch {
+            form.setError('form', {
+                type: 'server',
+                message: 'Internal Server Error.',
+            });
         }
-
-        router.replace('/');
     };
 
     const disabled = form.formState.isSubmitting;
