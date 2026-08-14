@@ -8,12 +8,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { AnimatePresence, motion } from 'motion/react';
 
+import { LoadingPage } from '@/components/custom-ui/loading';
 import { useRooms } from '@/hooks/chat/useRooms';
+import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { RoomsListItem } from './rooms-list-item';
-import { cn } from '@/lib/utils';
 
 export function RoomsList({ className }: { className?: string }) {
     const { roomId: activeId } = useParams<{ roomId: string }>();
@@ -35,7 +36,7 @@ export function RoomsList({ className }: { className?: string }) {
             );
         });
     }, [rooms, search]);
-    if (isLoading) return 'Loading';
+    if (isLoading) return <LoadingPage />;
     return (
         <div className={cn('flex  flex-col border-r h-full', className)}>
             <RoomsListHeader query={search} onQueryChange={setSearch} />

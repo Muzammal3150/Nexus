@@ -1,80 +1,124 @@
+"use client";
+
+import {
+    differenceInCalendarDays,
+    format,
+    isToday,
+    isYesterday,
+} from "date-fns";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useEffect } from "react";
 
 import { useSession } from "@/components/providers/session-provider";
 import { db } from "@/db/db";
-import { api } from "@/lib/axios";
+import { addCacheFile } from "@/lib/chat/file/files";
 import { addMessage } from "@/lib/chat/messages";
 import { chatSocket } from "@/lib/socket";
-import { ChatFileMessage, ChatMessage, ChatTextMessage } from "@/types/messages";
-import { User } from '@/lib/auth/auth';
-
-import { differenceInCalendarDays, format, isToday, isYesterday } from "date-fns";
-import { addCacheFile } from "@/lib/chat/file/files";
-
-
-
+import { useContactsStore } from "@/stores/contactStore";
+import {
+    ChatFileMessage,
+    ChatMessage,
+    ChatTextMessage,
+} from "@/types/messages";
 
 export function useChats(roomId: string) {
-    const session = useSession()!;
+    const session = useSession();
 
-    const messages = useLiveQuery<ChatMessage[]>(async () => {
-        const rawMessages = await db.messages
-            .where("roomId")
-            .equals(roomId)
-            .sortBy("sentAt");
+    if (!session) {
+        throw new Error("User not authenticated");
+    }
 
-        if (rawMessages.length === 0) {
-            return [];
-        }
+    const users = useContactsStore((state) => state.users);
+    const addUser = useContactsStore((state) => state.addUser);
 
-        const userIds = [...new Set(rawMessages.map((m) => m.senderId))];
-        const params = new URLSearchParams();
+    const messages = useLiveQuery<ChatMessage[]>(
+        async () => {
+            const rawMessages = await db.messages
+                .where("roomId")
+                .equals(roomId)
+                .sortBy("sentAt");
 
-        for (const id of userIds) {
-            params.append("ids", id);
-        }
+            return rawMessages.map((message) => ({
+                ...message,
+                sender: users[message.senderId],
+                isMine: message.senderId === session.user.id,
+            }));
+        },
+        [roomId, session.user.id, users],
+    );
 
-        const { data: users } = await api.get<User[]>(`/users/many/id?${params.toString()}`);
+    const groupedMessages = messages
+        ? Object.groupBy(
+            messages,
+            (message) => getDateGroup(message.sentAt),
+        )
+        : {};
 
-        const userMap = new Map(users.map((user) => [user.id, user]));
-
-        return rawMessages.map((message) => ({
-            ...message,
-            sender: userMap.get(message.senderId)!,
-            isMine: message.senderId === session.user.id,
-        }));
-    }, [roomId, session.user.id]);
-
-    const groupedMessages = messages && Object.groupBy(messages!, (message) => getDateGroup(message.sentAt))
-
+    /*
+     * Mark messages as read when opening the room.
+     */
     useEffect(() => {
-        (async () => {
+        const markMessagesAsRead = async () => {
             await db.messages
-                .where('roomId')
+                .where("roomId")
                 .equals(roomId)
                 .modify((message) => {
                     message.isRead = true;
                 });
-        })();
+        };
+
+        markMessagesAsRead();
     }, [roomId]);
 
-
+    /*
+     * Incoming socket messages.
+     */
     useEffect(() => {
-        const handleFile = async ({ id, streamId, roomId: _roomId, sender, sentAt, attachment }: Omit<ChatFileMessage, "type">) => {
-            const response = await api.get(`../uploads/chat/${attachment.filename}`, {
-                responseType: "blob"
-            });
+        const handleFile = async ({
+            id,
+            streamId,
+            roomId: incomingRoomId,
+            sender,
+            sentAt,
+            attachment,
+        }: Omit<ChatFileMessage, "type">) => {
+            // Store the sender globally.
+            addUser(sender);
 
-            const file = new File([response.data], attachment.originalFilename, {
-                type: attachment.mimeType,
-            });
-            const fileId = await addCacheFile(file)
+            /*
+             * Download the attachment.
+             */
+            const response = await fetch(
+                `/uploads/chat/${attachment.filename}`,
+            );
 
+            if (!response.ok) {
+                console.error(
+                    "Failed to download chat attachment:",
+                    response.status,
+                );
+                return;
+            }
+
+            const blob = await response.blob();
+
+            const file = new File(
+                [blob],
+                attachment.originalFilename,
+                {
+                    type: attachment.mimeType,
+                },
+            );
+
+            const fileId = await addCacheFile(file);
+
+            /*
+             * Store the message in Dexie.
+             */
             await addMessage({
                 id,
                 type: "file",
-                roomId,
+                roomId: incomingRoomId,
                 senderId: sender.id,
                 attachment: {
                     fileId,
@@ -85,23 +129,44 @@ export function useChats(roomId: string) {
                     uploadProgress: 0,
                     downloadProgress: 0,
                 },
-                isRead: _roomId == roomId,
-
+                isRead: incomingRoomId === roomId,
                 sentAt,
             });
-            chatSocket.emit("chat:received", { streamId, roomId })
+
+            /*
+             * Tell the server that the message was received.
+             */
+            chatSocket.emit("chat:received", {
+                streamId,
+                roomId: incomingRoomId,
+            });
         };
-        const handleText = async ({ id, streamId, sender, sentAt, text, roomId: _roomId }: Omit<ChatTextMessage, "type">) => {
+
+        const handleText = async ({
+            id,
+            streamId,
+            sender,
+            sentAt,
+            text,
+            roomId: incomingRoomId,
+        }: Omit<ChatTextMessage, "type">) => {
+            // Store the sender globally.
+            addUser(sender);
+
             await addMessage({
                 type: "text",
                 id,
-                roomId: _roomId,
+                roomId: incomingRoomId,
                 senderId: sender.id,
                 sentAt,
                 text,
-                isRead: _roomId == roomId,
+                isRead: incomingRoomId === roomId,
             });
-            chatSocket.emit("chat:received", { streamId, roomId })
+
+            chatSocket.emit("chat:received", {
+                streamId,
+                roomId: incomingRoomId,
+            });
         };
 
         chatSocket.on("chat:file", handleFile);
@@ -111,16 +176,21 @@ export function useChats(roomId: string) {
             chatSocket.off("chat:file", handleFile);
             chatSocket.off("chat:text", handleText);
         };
-    }, [roomId]);
+    }, [roomId, addUser]);
 
+    /*
+     * If the component is unmounted/reloaded while files
+     * were uploading, mark them as failed.
+     */
     useEffect(() => {
         const markUploadingFilesAsFailed = async () => {
             await db.messages
                 .where("roomId")
                 .equals(roomId)
-                .filter((message) =>
-                    message.type === "file" &&
-                    message.attachment.status === "uploading"
+                .filter(
+                    (message) =>
+                        message.type === "file" &&
+                        message.attachment.status === "uploading",
                 )
                 .modify({
                     "attachment.status": "failed",
@@ -133,23 +203,25 @@ export function useChats(roomId: string) {
     return {
         messages: messages ?? [],
         groupedMessages,
-
     };
 }
 
-
-
-
 function getDateGroup(timestamp: number) {
-    const date = new Date(timestamp)
-    if (isToday(date)) return "Today";
-    if (isYesterday(date)) return "Yesterday";
+    const date = new Date(timestamp);
+
+    if (isToday(date)) {
+        return "Today";
+    }
+
+    if (isYesterday(date)) {
+        return "Yesterday";
+    }
 
     const daysAgo = differenceInCalendarDays(new Date(), date);
 
     if (daysAgo < 7) {
-        return format(date, "EEEE"); // Monday, Tuesday...
+        return format(date, "EEEE");
     }
 
-    return format(date, "MMMM d, yyyy"); // July 28, 2026
+    return format(date, "MMMM d, yyyy");
 }

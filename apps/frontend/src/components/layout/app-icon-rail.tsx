@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageCircle, Phone } from 'lucide-react';
+import { ContactRoundIcon, MessageCircle, Phone, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -27,6 +27,11 @@ const sidebarItems = {
         url: '/calls',
         icon: Phone,
         title: 'Calls',
+    },
+    contacts: {
+        url: '/contacts',
+        icon: ContactRoundIcon,
+        title: 'Contacts',
     },
 };
 
@@ -94,6 +99,24 @@ function DesktopSidebar() {
             </SidebarContent>
 
             <SidebarFooter className="items-center pb-4">
+                <SidebarMenuItem>
+                    <Tooltip>
+                        <TooltipTrigger
+                            render={
+                                <Link href={'/settings'}>
+                                    <SidebarMenuButton
+                                        isActive={pathname.startsWith('/settings')}
+                                        className="size-11 justify-center rounded-lg p-0"
+                                    >
+                                        <SettingsIcon className="size-5" />
+                                    </SidebarMenuButton>
+                                </Link>
+                            }
+                        />
+
+                        <TooltipContent side="right">Settings</TooltipContent>
+                    </Tooltip>
+                </SidebarMenuItem>
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

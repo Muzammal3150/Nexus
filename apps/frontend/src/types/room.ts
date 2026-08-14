@@ -1,5 +1,5 @@
-import { User } from '@/lib/auth/auth';
 
+import { UserPreview } from '@/lib/auth/users';
 import { ChatMessage } from "./messages";
 
 export interface Room {
@@ -20,7 +20,7 @@ export interface RoomMember {
     roomId: string;
     room: Room;
     userId: string;
-    user: User;
+    user: UserPreview;
     role: "admin" | "client"
     joinedAt: string
 }

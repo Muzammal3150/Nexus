@@ -62,3 +62,12 @@ export type FileTransferStatus =
     | "downloading"
     | "downloaded"
     | "failed";
+
+
+
+
+export interface CachedContact {
+    userId: string;
+    name: string;
+    createdAt: number;
+}

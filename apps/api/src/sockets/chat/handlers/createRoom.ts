@@ -192,6 +192,7 @@ async function notifyNewRoomMembers(ctx: ChatContext, room: RoomWithMembers) {
 
 
 export async function createRoom(ctx: ChatContext, socket: Socket, data: unknown, callback: unknown) {
+    console.log("room creating..")
     const parsed = parsePayload(data);
     if (!parsed.ok) {
         return safeAck(callback, { success: false, error: parsed.error });
@@ -215,7 +216,6 @@ export async function createRoom(ctx: ChatContext, socket: Socket, data: unknown
             return safeAck(callback, { success: true, alreadyExists: true, room: existing.value });
         }
     }
-
     const created = await persistRoom(payload, memberIds);
     if (!created.ok) return safeAck(callback, { success: false, error: created.error });
 

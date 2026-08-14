@@ -2,6 +2,7 @@
 
 import { Phone, UserPlus, Video } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,16 +19,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { useRooms } from '@/hooks/chat/useRooms';
-import { api } from '@/lib/axios';
-import { initCall } from '@/lib/call/init-call';
-
-import { SelectionChip } from './selection-chip';
-import { UserResultItem } from './user-result-item';
 import { ButtonGroup } from '@/components/ui/button-group';
 
-import { useRouter } from 'next/navigation';
-import { User } from '@/lib/auth/auth';
+import { initCall } from '@/lib/call/init-call';
+import { SelectionChip } from './selection-chip';
+import { UserResultItem } from './user-result-item';
+import { useContactsStore, Contact } from '@/stores/contactStore';
 
 interface NewCallDialogProps {
     open: boolean;
@@ -35,68 +32,84 @@ interface NewCallDialogProps {
 }
 
 export function NewCallDialog({ open, onOpenChange }: NewCallDialogProps) {
-    const [query, setQuery] = useState('');
-    const [selected, setSelected] = useState<User[]>([]);
-    const { contacts } = useRooms();
     const router = useRouter();
 
+    const getContacts = useContactsStore((state) => state.getContacts);
+    const fetchContact = useContactsStore((state) => state.fetchUserByUsername);
+
+    const [query, setQuery] = useState('');
+    const [selected, setSelected] = useState<Contact[]>([]);
+
+    const contacts = getContacts();
+console.log(contacts)
     const q = query.trim().toLowerCase().replace(/^@/, '');
 
-    const matches = useMemo(
-        () =>
-            contacts?.filter(
-                (user) =>
-                    user.name.toLowerCase().includes(q) || user.username.toLowerCase().includes(q),
-            ) || [],
-        [contacts, q],
-    );
+    const matches = useMemo(() => {
+        if (!q) {
+            return contacts;
+        }
 
-    const exactUsernameMatch = contacts?.some((u) => u.username.toLowerCase() === q);
+        return contacts.filter((contact) => {
+            const name = contact.contact?.name ?? contact.name;
+
+            return name.toLowerCase().includes(q) || contact.username.toLowerCase().includes(q);
+        });
+    }, [contacts, q]);
+
+    const exactUsernameMatch = contacts.some((contact) => contact.username.toLowerCase() === q);
+
     const canAddUnknown = q.length > 0 && !exactUsernameMatch;
 
-    function isSelected(id: string) {
-        return selected.some((s) => s.id === id);
+    function isSelected(userId: string) {
+        return selected.some((contact) => contact.id === userId);
     }
 
-    function toggleUser(user: User) {
-        setSelected((prev) =>
-            isSelected(user.id) ? prev.filter((s) => s.id !== user.id) : [...prev, user],
+    function toggleContact(contact: Contact) {
+        setSelected((current) =>
+            isSelected(contact.id)
+                ? current.filter((item) => item.id !== contact.id)
+                : [...current, contact],
         );
+
         setQuery('');
     }
 
     async function addUnknownUser() {
-        if (!canAddUnknown) return;
+        if (!canAddUnknown) {
+            return;
+        }
 
         try {
-            const { data: user } = await api.get<User>(`/users/${q}`);
 
-            if (isSelected(user.id)) {
+
+            const result = await fetchContact(q);
+
+            if (!result || isSelected(result.id)) {
                 setQuery('');
                 return;
             }
 
-            setSelected((prev) => [...prev, user]);
+            setSelected((current) => [...current, result]);
 
             setQuery('');
         } catch (error) {
-            if (error.response?.status !== 404) {
-                console.error('Error fetching user:', error);
-                return;
-            }
+            console.error('Failed to fetch contact:', error);
         }
     }
 
-    function removeSelection(id: string) {
-        setSelected((prev) => prev.filter((s) => s.id !== id));
+    function removeSelection(userId: string) {
+        setSelected((current) => current.filter((contact) => contact.id !== userId));
     }
 
     async function handleStartCall(method: 'video' | 'audio') {
-        if (selected.length === 0) return;
+        if (selected.length === 0) {
+            return;
+        }
 
         const call = await initCall({
-            memberIds: selected.map((u) => u.id),
+            memberIds: selected.map((contact) => contact.id),
         });
+
         router.push(`/calls/${call.id}?method=${method}`);
 
         setSelected([]);
@@ -104,41 +117,45 @@ export function NewCallDialog({ open, onOpenChange }: NewCallDialogProps) {
         onOpenChange(false);
     }
 
+    function handleOpenChange(nextOpen: boolean) {
+        onOpenChange(nextOpen);
+
+        if (!nextOpen) {
+            setSelected([]);
+            setQuery('');
+        }
+    }
+
     return (
-        <Dialog
-            open={open}
-            onOpenChange={(next) => {
-                onOpenChange(next);
-                if (!next) {
-                    setSelected([]);
-                    setQuery('');
-                }
-            }}
-        >
-            <DialogContent className="gap-0  p-0 sm:max-w-md">
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogContent className="gap-0 p-0 sm:max-w-md">
                 <DialogHeader className="px-4 pb-3 pt-4">
                     <DialogTitle>New call</DialogTitle>
                 </DialogHeader>
 
                 {selected.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 border-t px-4 py-3">
-                        {selected.map((s) => (
+                        {selected.map((contact) => (
                             <SelectionChip
-                                key={s.id}
-                                selection={s}
-                                onRemove={() => removeSelection(s.id)}
+                                key={contact.id}
+                                selection={{
+                                    ...contact,
+                                    name: contact.contact?.name ?? contact.name,
+                                }}
+                                onRemove={() => removeSelection(contact.id)}
                             />
                         ))}
                     </div>
                 )}
 
-                <Command shouldFilter={false} className="">
+                <Command shouldFilter={false}>
                     <CommandInput
                         value={query}
                         onValueChange={setQuery}
                         placeholder="Search by name or username…"
                     />
-                    <CommandList className="max-h-72 py-2 ">
+
+                    <CommandList className="max-h-72 py-2">
                         <CommandEmpty className="p-0">
                             {canAddUnknown ? (
                                 <button
@@ -147,7 +164,7 @@ export function NewCallDialog({ open, onOpenChange }: NewCallDialogProps) {
                                     className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm hover:bg-accent"
                                 >
                                     <UserPlus className="size-4 text-primary" />
-                                    Add <span className="font-medium">@{q}</span> as a new contact
+                                    Add <span className="font-medium">@{q}</span>
                                 </button>
                             ) : (
                                 <p className="px-4 py-6 text-center text-sm text-muted-foreground">
@@ -156,36 +173,29 @@ export function NewCallDialog({ open, onOpenChange }: NewCallDialogProps) {
                             )}
                         </CommandEmpty>
 
-                        <CommandGroup className="max-h-72 overflow-y-auto gap-2 flex flex-col ">
-                            {matches?.map((user) => (
-                                <UserResultItem
-                                    key={user.id}
-                                    user={user}
-                                    selected={isSelected(user.id)}
-                                    onSelect={() => toggleUser(user)}
-                                />
-                            ))}
-                        </CommandGroup>
-
-                        {canAddUnknown && matches?.length > 0 && (
-                            <CommandGroup heading="Add new">
-                                <button
-                                    type="button"
-                                    onClick={addUnknownUser}
-                                    className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
-                                >
-                                    <UserPlus className="size-4 text-primary" />
-                                    Add <span className="font-medium">@{q}</span> as a new contact
-                                </button>
+                        {matches.length > 0 && (
+                            <CommandGroup className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+                                {matches.map((contact) => (
+                                    <UserResultItem
+                                        key={contact.id}
+                                        user={{
+                                            ...contact,
+                                            name: contact.contact?.name ?? contact.name,
+                                        }}
+                                        selected={isSelected(contact.id)}
+                                        onSelect={() => toggleContact(contact)}
+                                    />
+                                ))}
                             </CommandGroup>
                         )}
                     </CommandList>
                 </Command>
 
-                <DialogFooter className="flex-row p-2 items-center justify-between gap-2 border-t  sm:justify-between">
+                <DialogFooter className="flex-row items-center justify-between gap-2 border-t p-2 sm:justify-between">
                     <p className="text-xs text-muted-foreground">
                         {selected.length === 0 ? 'No one selected' : `${selected.length} selected`}
                     </p>
+
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" onClick={() => onOpenChange(false)}>
                             Cancel
@@ -201,6 +211,7 @@ export function NewCallDialog({ open, onOpenChange }: NewCallDialogProps) {
                             >
                                 <Phone className="size-4" />
                             </Button>
+
                             <Button
                                 size="icon"
                                 disabled={selected.length === 0}

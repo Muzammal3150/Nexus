@@ -48,9 +48,7 @@ export class ChatSocket implements SocketHandler {
 
 
         const rooms = await this.joinAllRooms(socket);
-        if (!rooms) {
-            return;
-        }
+
 
 
         socket.on(ChatEvents.Room.Create, safe((data, callback) => createRoom(this.ctx(), socket, data, callback)));
@@ -62,7 +60,7 @@ export class ChatSocket implements SocketHandler {
             console.error(`Chat socket transport error for ${socket.id} (${socket.data.user?.name}):`, err);
         });
 
-        await this.syncMessages(socket, rooms)
+        if (rooms) await this.syncMessages(socket, rooms)
     }
 
 
@@ -93,7 +91,7 @@ export class ChatSocket implements SocketHandler {
                 ) ??
                 `${(socket.data.session as Session).createdAt.getTime()}-0`;
 
-                
+
             const messages = await redis.xRange(
                 `nexsus:chat:room:${room.id}`,
                 `(${streamId}`,

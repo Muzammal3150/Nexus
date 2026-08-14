@@ -6,11 +6,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CommandItem } from '@/components/ui/command';
 import { getInitials } from '@/lib/chat/utils-chat';
 import { cn } from '@/lib/utils';
-import { User } from '@/lib/auth/auth';
-
+import { Contact } from '@/stores/contactStore';
 
 interface UserResultItemProps {
-    user: User;
+    user: Contact;
     selected: boolean;
     onSelect: () => void;
 }
@@ -18,7 +17,7 @@ interface UserResultItemProps {
 export function UserResultItem({ user, selected, onSelect }: UserResultItemProps) {
     return (
         <CommandItem
-            value={`${user.name} ${user.username}`}
+            value={`${user.name} ${user.contact?.name} ${user.username}`}
             onSelect={onSelect}
             className={cn(
                 'gap-3 py-2 bg-transparent! hover:bg-muted! my-1',
@@ -37,7 +36,9 @@ export function UserResultItem({ user, selected, onSelect }: UserResultItemProps
             </div>
 
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium leading-tight">{user.name}</p>
+                <p className="truncate text-sm font-medium leading-tight">
+                    {user.name ?? user.contact?.name}
+                </p>
                 <p className="truncate text-xs text-muted-foreground">@{user.username}</p>
             </div>
 

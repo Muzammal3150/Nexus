@@ -82,7 +82,7 @@ export async function loadMembers(room: CallRoom, session: SessionType) {
 
     room.memberIds.forEach(id => params.append("ids", id));
 
-    const { data: users } = await api.get<User[]>(`/users/many/id?${params.toString()}`);
+    const { data: users } = await api.get<User[]>(`/users/?${params.toString()}`);
 
     return users.map(user => ({
         user,

@@ -4,7 +4,8 @@ export interface UserPreview {
     id: string;
     name: string;
     username: string;
-    image: string | null;
+    image: string | null | undefined;
+    email: string;
 }
 
 export async function getUser(username: string) {

@@ -1,17 +1,19 @@
 import Dexie, { type Table } from "dexie";
-import { CachedFile, CachedMessage } from "./db.d";
+import { CachedContact, CachedFile, CachedMessage } from "./db.d";
 
 export class AppDb extends Dexie {
     messages!: Table<CachedMessage, string>;
     files!: Table<CachedFile, string>;
+    contacts!: Table<CachedContact, string>;
 
 
     constructor() {
         super("nexus");
 
-        this.version(2).stores({
+        this.version(3).stores({
             messages: "id, roomId, senderId, sentAt, type",
-            files: "id"
+            files: "id",
+            contacts: "userId, name, createdAt",
         });
     }
 }

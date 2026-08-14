@@ -1,4 +1,5 @@
 import { CallToaster } from '@/components/call/CallToaster';
+import { ContactsProvider } from '@/components/contacts/contact-provider';
 import { AppIconRail } from '@/components/layout/app-icon-rail';
 import { SessionProvider } from '@/components/providers/session-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -16,14 +17,16 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
         <SessionProvider session={session}>
             <ChatSocketProvider>
                 <CallSocketProvider>
-                    <SidebarProvider className="h-dvh">
-                        <div className="flex max-sm:flex-col h-full w-full">
-                            <AppIconRail />
-                            <div className="flex-1 overflow-auto h-full">{children}</div>
-                        </div>
-                    </SidebarProvider>
-                    <Toaster />
-                    <CallToaster />
+                    <ContactsProvider>
+                        <SidebarProvider className="h-dvh">
+                            <div className="flex max-sm:flex-col h-full w-full">
+                                <AppIconRail />
+                                <div className="flex-1 overflow-auto h-full">{children}</div>
+                            </div>
+                        </SidebarProvider>
+                        <Toaster />
+                        <CallToaster />
+                    </ContactsProvider>
                 </CallSocketProvider>
             </ChatSocketProvider>
         </SessionProvider>

@@ -1,13 +1,13 @@
 
 import { CachedFileData } from "@/db/db.d";
-import { User } from '@/lib/auth/auth';
+import { UserPreview } from "@/lib/auth/users";
 
 
 export type ChatMessage = ChatFileMessage | ChatTextMessage;
 
 export interface BaseChatMessage {
     id: string;
-    sender: User;
+    sender: UserPreview;
     roomId: string;
     sentAt: number;
     isMine: boolean;

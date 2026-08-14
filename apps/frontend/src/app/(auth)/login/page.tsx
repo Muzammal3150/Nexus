@@ -41,7 +41,7 @@ export default function LoginForm() {
 
             router.replace('/');
         } catch  {
-            form.setError('form', {
+            form.setError('root', {
                 type: 'server',
                 message: 'Internal Server Error.',
             });

@@ -1,5 +1,6 @@
 import { AlertCircleIcon, Download, FileIcon, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { format } from 'date-fns';
 
 import {
     Attachment,
@@ -15,9 +16,8 @@ import { MessageContent, MessageFooter } from '@/components/ui/message';
 import { db } from '@/db/db';
 import { FileTransferStatus } from '@/db/db.d';
 import { formatFileSize } from '@/lib/chat/file/utils';
-import { format } from 'date-fns';
 
-const SUPPORTED_IMAGE_TYPES = new Set([
+const supportedImageTypes = new Set([
     'image/jpeg',
     'image/png',
     'image/gif',
@@ -28,7 +28,7 @@ const SUPPORTED_IMAGE_TYPES = new Set([
     'image/x-icon',
 ]);
 
-const SUPPORTED_VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/ogg']);
+const supportedVideoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
 
 type MediaKind = 'image' | 'video' | 'other';
 
@@ -55,21 +55,33 @@ interface MessageFileContentProps {
     attachment: FileAttachment;
 }
 
-function getMediaKind(mimeType: string | undefined | null): MediaKind {
+function getMediaKind(mimeType?: string | null): MediaKind {
     if (!mimeType) return 'other';
 
-    if (SUPPORTED_IMAGE_TYPES.has(mimeType)) {
+    if (supportedImageTypes.has(mimeType)) {
         return 'image';
     }
 
-    if (SUPPORTED_VIDEO_TYPES.has(mimeType)) {
+    if (supportedVideoTypes.has(mimeType)) {
         return 'video';
     }
 
     return 'other';
 }
 
-function useCachedFile(fileId: string | undefined) {
+function getTransferProgress(attachment: FileAttachment) {
+    if (attachment.status === 'uploading') {
+        return attachment.uploadProgress;
+    }
+
+    if (attachment.status === 'downloading') {
+        return attachment.downloadProgress;
+    }
+
+    return undefined;
+}
+
+function useCachedFile(fileId?: string) {
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -87,7 +99,7 @@ function useCachedFile(fileId: string | undefined) {
         setFile(null);
         setLoading(true);
         setError(null);
-        console.log(fileId);
+
         db.files
             .get(fileId)
             .then((cachedFile: CachedFile | undefined) => {
@@ -122,11 +134,7 @@ function useCachedFile(fileId: string | undefined) {
         };
     }, [fileId]);
 
-    return {
-        file,
-        loading,
-        error,
-    };
+    return { file, loading, error };
 }
 
 function useObjectUrl(file: File | null) {
@@ -139,7 +147,6 @@ function useObjectUrl(file: File | null) {
         }
 
         const objectUrl = URL.createObjectURL(file);
-
         setUrl(objectUrl);
 
         return () => {
@@ -153,86 +160,109 @@ function useObjectUrl(file: File | null) {
 export function MessageFileContent({ isMine, sentAt, attachment }: MessageFileContentProps) {
     const mediaKind = useMemo(() => getMediaKind(attachment.mimeType), [attachment.mimeType]);
 
-    const isUploading = attachment.status === 'uploading';
-    const isDownloading = attachment.status === 'downloading';
-    const isPending = attachment.status === 'pending';
-    const isFailed = attachment.status === 'failed';
     const isComplete = attachment.status === 'uploaded' || attachment.status === 'downloaded';
-    /*
-     * Only previewable files are loaded from IndexedDB automatically.
-     *
-     * Generic files such as PDF, ZIP, DOCX, etc. stay untouched
-     * until the user clicks Download.
-     */
     const shouldLoadPreview = isComplete && (mediaKind === 'image' || mediaKind === 'video');
 
-    const {
-        file: cachedFile,
-        loading: isLoadingFile,
-        error: fileError,
-    } = useCachedFile(shouldLoadPreview ? attachment.fileId : undefined);
+    const { file, loading, error } = useCachedFile(
+        shouldLoadPreview ? attachment.fileId : undefined,
+    );
 
-    const fileUrl = useObjectUrl(cachedFile);
-
-    const progress = isUploading
-        ? attachment.uploadProgress
-        : isDownloading
-          ? attachment.downloadProgress
-          : undefined;
-
-    if (isFailed) {
-        return (
-            <MessageContent>
-                <Bubble variant={isMine ? 'default' : 'muted'} className="p-0">
-                    <BubbleContent className="p-0">
-                        <ErrorAttachment attachment={attachment} />
-                    </BubbleContent>
-                </Bubble>
-
-                <MessageFooter className="text-[11px] text-muted-foreground">
-                    <span>{format(sentAt, 'p')}</span>
-                </MessageFooter>
-            </MessageContent>
-        );
-    }
+    const fileUrl = useObjectUrl(file);
+    const progress = getTransferProgress(attachment);
 
     return (
         <MessageContent>
             <Bubble
                 variant={isMine ? 'default' : 'muted'}
-                className={mediaKind === 'other' || !isComplete ? 'p-0' : 'p-1'}
+                className={getBubbleClassName(mediaKind, isComplete)}
             >
-                <BubbleContent className="p-0">
-                    {(isPending || isUploading || isDownloading) && (
-                        <TransferringAttachment attachment={attachment} progress={progress} />
-                    )}
-
-                    {shouldLoadPreview && isLoadingFile && (
-                        <PreviewLoading filename={attachment.originalFilename} />
-                    )}
-
-                    { shouldLoadPreview && fileError && (
-                        <PreviewError filename={attachment.originalFilename} error={fileError} />
-                    )}
-
-                    {isComplete && mediaKind === 'image' && fileUrl && (
-                        <ImagePreview url={fileUrl} filename={attachment.originalFilename} />
-                    )}
-
-                    {isComplete && mediaKind === 'video' && fileUrl && (
-                        <VideoPreview url={fileUrl} filename={attachment.originalFilename} />
-                    )}
-
-                    {isComplete && mediaKind === 'other' && (
-                        <GenericFileAttachment attachment={attachment} />
-                    )}
+                <BubbleContent className="p-0 bg-transparent!">
+                    <MessageAttachment
+                        attachment={attachment}
+                        mediaKind={mediaKind}
+                        isComplete={isComplete}
+                        shouldLoadPreview={shouldLoadPreview}
+                        isLoading={loading}
+                        error={error}
+                        fileUrl={fileUrl}
+                        progress={progress}
+                    />
                 </BubbleContent>
+                <MessageTimestamp sentAt={sentAt} />
             </Bubble>
-
-            <MessageFooter className="text-[11px] text-muted-foreground">
-                <span>{format(sentAt, 'p')}</span>
-            </MessageFooter>
         </MessageContent>
+    );
+}
+
+function getBubbleClassName(mediaKind: MediaKind, isComplete: boolean) {
+    return mediaKind === 'other' || !isComplete ? 'p-0' : 'p-1';
+}
+
+interface MessageAttachmentProps {
+    attachment: FileAttachment;
+    mediaKind: MediaKind;
+    isComplete: boolean;
+    shouldLoadPreview: boolean;
+    isLoading: boolean;
+    error: string | null;
+    fileUrl: string | null;
+    progress?: number;
+}
+
+function MessageAttachment({
+    attachment,
+    mediaKind,
+    isComplete,
+    shouldLoadPreview,
+    isLoading,
+    error,
+    fileUrl,
+    progress,
+}: MessageAttachmentProps) {
+    if (attachment.status === 'failed') {
+        return <ErrorAttachment attachment={attachment} />;
+    }
+
+    if (
+        attachment.status === 'pending' ||
+        attachment.status === 'uploading' ||
+        attachment.status === 'downloading'
+    ) {
+        return <TransferringAttachment attachment={attachment} progress={progress} />;
+    }
+
+    if (shouldLoadPreview && isLoading) {
+        return <PreviewLoading filename={attachment.originalFilename} />;
+    }
+
+    if (shouldLoadPreview && error) {
+        return <PreviewError filename={attachment.originalFilename} error={error} />;
+    }
+
+    if (!isComplete) {
+        return null;
+    }
+
+    if (mediaKind === 'image' && fileUrl) {
+        return <ImagePreview url={fileUrl} filename={attachment.originalFilename} />;
+    }
+
+    if (mediaKind === 'video' && fileUrl) {
+        return <VideoPreview url={fileUrl} filename={attachment.originalFilename} />;
+    }
+
+    if (mediaKind === 'other') {
+        return <GenericFileAttachment attachment={attachment} />;
+    }
+
+    return null;
+}
+
+function MessageTimestamp({ sentAt }: { sentAt: number }) {
+    return (
+        <MessageFooter className="px-2 pb-1 text-[12px] text-muted-foreground">
+            <span>{format(sentAt, 'p')}</span>
+        </MessageFooter>
     );
 }
 
@@ -245,7 +275,6 @@ function PreviewLoading({ filename }: { filename: string }) {
 
             <AttachmentContent>
                 <AttachmentTitle>{filename}</AttachmentTitle>
-
                 <AttachmentDescription>Loading preview...</AttachmentDescription>
             </AttachmentContent>
         </Attachment>
@@ -261,7 +290,6 @@ function PreviewError({ filename, error }: { filename: string; error: string }) 
 
             <AttachmentContent>
                 <AttachmentTitle>{filename}</AttachmentTitle>
-
                 <AttachmentDescription className="text-destructive">{error}</AttachmentDescription>
             </AttachmentContent>
         </Attachment>
@@ -270,7 +298,7 @@ function PreviewError({ filename, error }: { filename: string; error: string }) 
 
 function ImagePreview({ url, filename }: { url: string; filename: string }) {
     return (
-        <div className="relative group">
+        <PreviewContainer>
             <img
                 src={url}
                 alt={filename}
@@ -279,13 +307,13 @@ function ImagePreview({ url, filename }: { url: string; filename: string }) {
             />
 
             <PreviewDownloadButton url={url} filename={filename} />
-        </div>
+        </PreviewContainer>
     );
 }
 
 function VideoPreview({ url, filename }: { url: string; filename: string }) {
     return (
-        <div className="relative group">
+        <PreviewContainer>
             <video
                 src={url}
                 controls
@@ -294,8 +322,12 @@ function VideoPreview({ url, filename }: { url: string; filename: string }) {
             />
 
             <PreviewDownloadButton url={url} filename={filename} />
-        </div>
+        </PreviewContainer>
     );
+}
+
+function PreviewContainer({ children }: { children: React.ReactNode }) {
+    return <div className="relative group hover:bg-secondary">{children}</div>;
 }
 
 function PreviewDownloadButton({ url, filename }: { url: string; filename: string }) {
@@ -324,10 +356,10 @@ function PreviewDownloadButton({ url, filename }: { url: string; filename: strin
             onClick={handleDownload}
             disabled={isDownloading}
             aria-label="Download"
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-2"
+            className="absolute top-2 right-2 rounded-full bg-black/50 p-2 opacity-0 transition-opacity group-hover:opacity-100"
         >
             {isDownloading ? (
-                <Loader2 className="size-4 text-white animate-spin" />
+                <Loader2 className="size-4 animate-spin text-white" />
             ) : (
                 <Download className="size-4 text-white" />
             )}
@@ -344,18 +376,13 @@ function GenericFileAttachment({ attachment }: { attachment: FileAttachment }) {
         setError(null);
 
         try {
-            /*
-             * This is intentionally the FIRST IndexedDB read
-             * for non-previewable files.
-             */
             const cachedFile = (await db.files.get(attachment.fileId)) as CachedFile | undefined;
-            console.log(cachedFile, attachment.fileId);
+
             if (!cachedFile?.file) {
                 throw new Error('File is no longer available locally.');
             }
 
             const url = URL.createObjectURL(cachedFile.file);
-
             const anchor = document.createElement('a');
 
             anchor.href = url;
@@ -365,13 +392,7 @@ function GenericFileAttachment({ attachment }: { attachment: FileAttachment }) {
             anchor.click();
             anchor.remove();
 
-            /*
-             * Don't revoke immediately. Give the browser time
-             * to start the download.
-             */
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-            }, 1000);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         } catch (error) {
             console.error('File download failed:', error);
 
@@ -406,7 +427,7 @@ function GenericFileAttachment({ attachment }: { attachment: FileAttachment }) {
                     onClick={handleDownload}
                     disabled={isDownloading}
                     aria-label="Download"
-                    className="p-2 size-fit mx-2 grid place-items-center"
+                    className="mx-2 grid size-fit place-items-center p-2"
                 >
                     {isDownloading ? (
                         <Loader2 className="size-5 animate-spin" />
@@ -426,16 +447,15 @@ function TransferringAttachment({
     attachment: FileAttachment;
     progress?: number;
 }) {
-    let label = 'Waiting';
-
-    if (attachment.status === 'uploading') {
-        label = 'Uploading';
-    } else if (attachment.status === 'downloading') {
-        label = 'Downloading';
-    }
+    const label =
+        attachment.status === 'uploading'
+            ? 'Uploading'
+            : attachment.status === 'downloading'
+              ? 'Downloading'
+              : 'Waiting';
 
     return (
-        <Attachment state="loading" className="w-full">
+        <Attachment state="uploading" className="w-full">
             <AttachmentMedia>
                 <Loader2 className="size-5 animate-spin" />
             </AttachmentMedia>
@@ -449,7 +469,7 @@ function TransferringAttachment({
                 </AttachmentDescription>
 
                 {typeof progress === 'number' && (
-                    <div className="mt-1 h-1 w-full rounded-full bg-muted overflow-hidden">
+                    <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted">
                         <div
                             className="h-full bg-primary transition-[width] duration-200"
                             style={{

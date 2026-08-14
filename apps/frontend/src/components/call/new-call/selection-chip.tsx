@@ -4,14 +4,12 @@ import { X } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { UserPreview } from '@/lib/auth/users';
 import { getInitials } from '@/lib/chat/utils-chat';
 import { cn } from '@/lib/utils';
-import { User } from '@/lib/auth/auth';
-
-
 
 interface SelectionChipProps {
-    selection: User;
+    selection: UserPreview;
     onRemove: () => void;
 }
 

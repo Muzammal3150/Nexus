@@ -33,7 +33,7 @@ export default function SignupForm() {
             const { error } = await authClient.signUp.email(values);
 
             if (error) {
-                form.setError('form', {
+                form.setError('root', {
                     type: 'server',
                     message: error.message || 'Unable to create your account.',
                 });
@@ -42,7 +42,7 @@ export default function SignupForm() {
 
             router.replace('/');
         } catch {
-            form.setError('form', {
+            form.setError('root', {
                 type: 'server',
                 message: 'Internal Server Error.',
             });
@@ -57,7 +57,7 @@ export default function SignupForm() {
             onSubmit={form.handleSubmit(onSubmit)}
         >
             <SignUpFormHeader />
-            {form.formState.errors.form && (
+            {form.formState.errors.root && (
                 <Alert variant="destructive" className="max-w-md">
                     <TriangleAlert />
                     <AlertDescription>{form.formState.errors.form?.message}</AlertDescription>

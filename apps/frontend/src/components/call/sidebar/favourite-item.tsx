@@ -4,9 +4,9 @@ import { Phone, Video } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { getInitials } from "@/lib/chat/utils-chat";
-import { FavouriteContact, CallMethod } from "@/types/types";
+import { cn } from "@/lib/utils";
+import { CallMethod, FavouriteContact } from "@/types/contacts";
 
 const AVATAR_COLOR_CLASS: Record<FavouriteContact["colorIndex"], string> = {
   1: "bg-chart-1/15 text-chart-1",
