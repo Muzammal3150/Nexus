@@ -1,5 +1,5 @@
-import ProfileSideBar from "@/components/settings/profile-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import ProfileSideBar from "@/features/settings/components/profile-sidebar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -1,8 +1,8 @@
 'use client';
 
-import { NewChatDialog } from '@/components/chat/new-chat/new-chat-dialog';
-import { RoomsList } from '@/components/chat/sidebar/rooms-list';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { NewChatDialog } from '@/features/chats/components/new-chat/new-chat-dialog';
+import { RoomsList } from '@/features/chats/components/sidebar/rooms-list';
 import { useEffect, useState, type ReactNode } from 'react';
 
 function useIsDesktop() {

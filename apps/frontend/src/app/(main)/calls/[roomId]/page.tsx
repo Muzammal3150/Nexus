@@ -1,9 +1,10 @@
 'use client';
 
-import { CallControls } from '@/components/call/video/call-controls';
-import { MemberGrid } from '@/components/call/video/member-grid';
-import { SpotlightView } from '@/components/call/video/spotlight-view';
-import { useCall } from '@/hooks/call/useCall';
+import { LoadingPage } from '@/components/custom-ui/loading';
+import { CallControls } from '@/features/calls/components/video/call-controls';
+import { MemberGrid } from '@/features/calls/components/video/member-grid';
+import { SpotlightView } from '@/features/calls/components/video/spotlight-view';
+import { useCall } from '@/features/calls/hooks/use-call';
 import { notFound, useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -17,7 +18,6 @@ export default function VideoCallPage() {
         }
     }, [room, isLoading]);
 
-    console.log(members)
     const [focusedId, setFocusedId] = useState<string | null>(null);
     // const [sheetOpen, setSheetOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -33,7 +33,7 @@ export default function VideoCallPage() {
         }
     }
 
-    if (isLoading) return 'Loading.....';
+    if (isLoading) return <LoadingPage />;
 
     return (
         <div ref={containerRef} className="flex size-full flex-col ">
@@ -57,10 +57,7 @@ export default function VideoCallPage() {
                 )}
             </div>
 
-            <CallControls
-                myStream={myStream}
-                onToggleFullScreen={toggleFullscreen}
-            />
+            <CallControls myStream={myStream} onToggleFullScreen={toggleFullscreen} />
 
             {/* <MemberSheet open={sheetOpen} onOpenChange={setSheetOpen} members={members} /> */}
         </div>

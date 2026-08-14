@@ -1,8 +1,8 @@
 'use client';
 
-import { AddContactDialog } from '@/components/contacts/add-contact-dialog';
-import { ContactsSidebar } from '@/components/contacts/sidebar/contacts-sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { AddContactDialog } from '@/features/contacts/components/add-contact-dialog';
+import { ContactsSidebar } from '@/features/contacts/components/sidebar/contacts-sidebar';
 import { useEffect, useState, type ReactNode } from 'react';
 
 function useIsDesktop() {

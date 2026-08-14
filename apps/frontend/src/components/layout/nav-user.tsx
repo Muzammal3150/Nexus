@@ -11,11 +11,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { authClient } from '@/lib/auth/auth';
-import { CircleUser, KeyIcon, LockIcon, LogOut } from 'lucide-react';
+import { authClient } from '@/features/auth/lib/auth';
+import { CircleUser, LockIcon, LogOut } from 'lucide-react';
 import { useRouter } from 'next/dist/client/components/navigation';
 import Link from 'next/link';
-import { useSession } from '../providers/session-provider';
+import { useSession } from '../../features/auth/providers/session-provider';
 
 export function NavUser() {
     const { isMobile } = useSidebar();

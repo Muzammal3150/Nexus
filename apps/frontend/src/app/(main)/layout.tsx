@@ -1,12 +1,12 @@
-import { CallToaster } from '@/components/call/CallToaster';
-import { ContactsProvider } from '@/components/contacts/contact-provider';
 import { AppIconRail } from '@/components/layout/app-icon-rail';
-import { SessionProvider } from '@/components/providers/session-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toast';
-import { getSession } from '@/lib/auth/authServer';
-import { CallSocketProvider } from '@/lib/call/call-socket-provider';
-import { ChatSocketProvider } from '@/lib/chat/chat-socket-provider';
+import { getSession } from '@/features/auth/lib/auth-server';
+import { SessionProvider } from '@/features/auth/providers/session-provider';
+import { CallToaster } from '@/features/calls/components/call-toaster';
+import { CallSocketProvider } from '@/features/calls/providers/call-socket-provider';
+import { ChatSocketProvider } from '@/features/chats/providers/chat-socket-provider';
+import { ContactsProvider } from '@/features/contacts/components/contact-provider';
 import { headers } from 'next/headers';
 import type { ReactNode } from 'react';
 

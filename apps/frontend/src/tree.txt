@@ -1,12 +1,15 @@
 Folder PATH listing for volume Library
-Volume serial number is 0000008C E041:E7D5
+Volume serial number is 000000CA E041:E7D5
 D:.
 |   proxy.ts
 |   tree.txt
 |   
 +---app
+|   |   global-error.tsx
 |   |   globals.css
 |   |   layout.tsx
+|   |   loading.tsx
+|   |   not-found.tsx
 |   |   providers.tsx
 |   |   
 |   +---(auth)
@@ -20,6 +23,7 @@ D:.
 |   |           
 |   \---(main)
 |       |   layout.tsx
+|       |   loading.tsx
 |       |   page.tsx
 |       |   
 |       +---calls
@@ -30,17 +34,27 @@ D:.
 |       |           not-found.tsx
 |       |           page.tsx
 |       |           
-|       \---chats
-|           |   layout.tsx
-|           |   page.tsx
-|           |   
-|           \---[roomId]
-|                   page.tsx
-|                   
+|       +---chats
+|       |   |   layout.tsx
+|       |   |   page.tsx
+|       |   |   
+|       |   \---[roomId]
+|       |           not-found.tsx
+|       |           page.tsx
+|       |           
+|       +---contacts
+|       |   |   layout.tsx
+|       |   |   page.tsx
+|       |   |   
+|       |   \---[userId]
+|       |           page.tsx
+|       |           
+|       \---settings
+|               layout.tsx
+|               page.tsx
+|               
 +---components
 |   +---auth
-|   |   |   session-provider.tsx
-|   |   |   
 |   |   +---fields
 |   |   |       input-field.tsx
 |   |   |       password-input.tsx
@@ -55,12 +69,11 @@ D:.
 |   |           
 |   +---call
 |   |   |   CallToaster.tsx
-|   |   |   new-call-dialog.tsx
 |   |   |   
 |   |   +---audio
 |   |   |       audio-call-screen.tsx
 |   |   |       
-|   |   +---newCall
+|   |   +---new-call
 |   |   |       new-call-dialog.tsx
 |   |   |       selection-chip.tsx
 |   |   |       user-result-item.tsx
@@ -80,31 +93,60 @@ D:.
 |   |           spotlight-view.tsx
 |   |           
 |   +---chat
-|   |   |   chat-composer.tsx
-|   |   |   chat-header.tsx
-|   |   |   chat-thread.tsx
-|   |   |   file-view-grid.tsx
-|   |   |   new-chat-popover.tsx
-|   |   |   rooms-list-item.tsx
-|   |   |   rooms-list.tsx
-|   |   |   
-|   |   \---newChat
-|   |           create-room.ts
-|   |           direct-chat-form.tsx
-|   |           form-root-error.tsx
-|   |           group-chat-form.tsx
-|   |           member-chip-list.tsx
-|   |           mode-toggle.tsx
-|   |           new-chat-popover.tsx
-|   |           resolve-user.ts
+|   |   +---chat-page
+|   |   |       chat-composer.tsx
+|   |   |       chat-header.tsx
+|   |   |       chat-thread.tsx
+|   |   |       file-message.tsx
+|   |   |       file-view-grid.tsx
+|   |   |       
+|   |   +---new-chat
+|   |   |       create-room.ts
+|   |   |       direct-chat-form.tsx
+|   |   |       form-root-error.tsx
+|   |   |       group-chat-form.tsx
+|   |   |       member-chip-list.tsx
+|   |   |       mode-toggle.tsx
+|   |   |       new-chat-dialog.tsx
+|   |   |       resolve-user.ts
+|   |   |       
+|   |   \---sidebar
+|   |           rooms-list-item.tsx
+|   |           rooms-list.tsx
 |   |           
+|   +---contacts
+|   |   |   add-contact-dialog.tsx
+|   |   |   contact-provider.tsx
+|   |   |   contacts.ts
+|   |   |   
+|   |   \---sidebar
+|   |           contact-item.tsx
+|   |           contacts-sidebar.tsx
+|   |           save-contact-dialog.tsx
+|   |           
+|   +---custom-ui
+|   |       loading.tsx
+|   |       
 |   +---layout
 |   |       app-icon-rail.tsx
 |   |       nav-user.tsx
 |   |       
 |   +---providers
+|   |       session-provider.tsx
 |   |       theme-provider.tsx
 |   |       
+|   +---settings
+|   |   |   alert.tsx
+|   |   |   ConfirmAction.tsx
+|   |   |   profile-sidebar.tsx
+|   |   |   ProfileSection.tsx
+|   |   |   
+|   |   \---sections
+|   |           account.tsx
+|   |           change-avatar.tsx
+|   |           change-password.tsx
+|   |           delete-account.tsx
+|   |           
 |   \---ui
 |           alert-dialog.tsx
 |           alert.tsx
@@ -113,6 +155,7 @@ D:.
 |           badge.tsx
 |           breadcrumb.tsx
 |           bubble.tsx
+|           button-group.tsx
 |           button.tsx
 |           card.tsx
 |           collapsible.tsx
@@ -162,36 +205,41 @@ D:.
 +---lib
 |   |   axios.ts
 |   |   socket.ts
-|   |   types.ts
 |   |   utils.ts
 |   |   
 |   +---auth
-|   |   |   auth.ts
-|   |   |   authServer.ts
-|   |   |   
-|   |   \---permissions
-|   |           authorization.ts
-|   |           permissions.ts
-|   |           
+|   |       auth.ts
+|   |       authServer.ts
+|   |       users.ts
+|   |       
 |   +---call
-|   |       call-provider.tsx
 |   |       call-socket-provider.tsx
 |   |       get-room.ts
 |   |       init-call.ts
 |   |       utils.ts
-|   |       webrtc.ts
 |   |       
-|   \---chat
-|           chat-socket-provider.ts
-|           messages.ts
-|           rooms.ts
-|           utils-chat.ts
+|   +---chat
+|   |   |   chat-socket-provider.ts
+|   |   |   messages.ts
+|   |   |   rooms.ts
+|   |   |   utils-chat.ts
+|   |   |   
+|   |   \---file
+|   |           files.ts
+|   |           sendFile.ts
+|   |           utils.ts
+|   |           
+|   \---contacts
+|           contacts.ts
 |           
++---stores
+|       contactStore.ts
+|       uiStore.ts
+|       
 +---types
 |       calls.ts
 |       messages.ts
 |       room.ts
-|       types.ts
 |       
 \---validators
     \---auth

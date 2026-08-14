@@ -1,7 +1,7 @@
 'use client';
 
-import { RoomsList } from '@/components/chat/sidebar/rooms-list';
 import { Button } from '@/components/ui/button';
+import { RoomsList } from '@/features/chats/components/sidebar/rooms-list';
 import { useUiStore } from '@/stores/uiStore';
 import { MessageCircle, Plus } from 'lucide-react';
 

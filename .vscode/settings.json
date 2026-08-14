@@ -6,7 +6,6 @@
     "apps\\frontend/next-env.d.ts": true,
     "apps\\frontend/next.config.ts": true,
     "apps\\frontend/node_modules": true,
-    "apps\\frontend/package.json": true,
     "apps\\frontend/postcss.config.mjs": true,
     "apps\\frontend/README.md": true,
     "apps\\frontend/tsconfig.json": true,

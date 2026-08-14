@@ -1,12 +1,12 @@
 'use client';
 
-import { ChatComposer } from '@/components/chat/chat-page/chat-composer';
-import { ChatHeader } from '@/components/chat/chat-page/chat-header';
-import { ChatThread } from '@/components/chat/chat-page/chat-thread';
+import { ChatComposer } from '@/features/chats/components/chat/chat-composer';
+import { ChatHeader } from '@/features/chats/components/chat/chat-header';
+import { ChatThread } from '@/features/chats/components/chat/chat-thread';
 import { LoadingPage } from '@/components/custom-ui/loading';
 import { MessageScrollerProvider } from '@/components/ui/message-scroller';
-import { useActiveRoom } from '@/hooks/chat/useActiveRoom';
-import { useChats } from '@/hooks/chat/useChats';
+import { useActiveRoom } from '@/features/chats/hooks/use-active-room';
+import { useChats } from '@/features/chats/hooks/use-chats';
 import { notFound } from 'next/navigation';
 
 export default function ChatPanel() {

@@ -128,7 +128,7 @@ function MobileBottomNav() {
 
     return (
         <nav className="max-sm:order-last z-50 border-t bg-background/90 px-3 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden">
-            <div className="mx-auto flex h-[72px] max-w-md items-center justify-around gap-2">
+            <div className="mx-auto flex h-18 max-w-md items-center justify-around gap-2">
                 {Object.entries(sidebarItems).map(([key, item]) => {
                     const Icon = item.icon;
                     const isActive = pathname.startsWith(item.url);

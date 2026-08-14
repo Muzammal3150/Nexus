@@ -1,10 +1,10 @@
 'use client';
 
-import { useSession } from '@/components/providers/session-provider';
-import { AccountSection } from '@/components/settings/sections/account';
-import { AvatarSection } from '@/components/settings/sections/change-avatar';
-import { ChangePasswordForm } from '@/components/settings/sections/change-password';
-import { DeleteAccount } from '@/components/settings/sections/delete-account';
+import { useSession } from '@/features/auth/providers/session-provider';
+import { AccountSection } from '@/features/settings/components/sections/account';
+import { AvatarSection } from '@/features/settings/components/sections/change-avatar';
+import { ChangePasswordForm } from '@/features/settings/components/sections/change-password';
+import { DeleteAccount } from '@/features/settings/components/sections/delete-account';
 import { useRouter } from 'next/navigation';
 
 export default function Profile() {

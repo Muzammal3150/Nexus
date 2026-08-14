@@ -1,14 +1,14 @@
 'use client';
 
-import { InputField } from '@/components/auth/fields/input-field';
-import { PasswordInput } from '@/components/auth/fields/password-input';
-import { LoginFooter } from '@/components/auth/login/footer';
-import { LoginHeader } from '@/components/auth/login/header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { authClient } from '@/lib/auth/auth';
-import { loginValidator, loginValues } from '@/validators/auth/login';
+import { InputField } from '@/features/auth/components/fields/input-field';
+import { PasswordInput } from '@/features/auth/components/fields/password-input';
+import { LoginFooter } from '@/features/auth/components/login/footer';
+import { LoginHeader } from '@/features/auth/components/login/header';
+import { authClient } from '@/features/auth/lib/auth';
+import { loginValidator, loginValues } from '@/features/auth/validators/login';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, TriangleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';

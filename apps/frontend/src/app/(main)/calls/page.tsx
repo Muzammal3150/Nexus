@@ -1,7 +1,7 @@
 'use client';
 
-import { CallsSidebar } from '@/components/call/sidebar/calls-sidebar';
 import { Button } from '@/components/ui/button';
+import { CallsSidebar } from '@/features/calls/components/sidebar/calls-sidebar';
 import { useUiStore } from '@/stores/uiStore';
 import { Phone, Plus } from 'lucide-react';
 

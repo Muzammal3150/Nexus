@@ -1,8 +1,8 @@
 'use client';
 
-import { NewCallDialog } from '@/components/call/new-call/new-call-dialog';
-import { CallsSidebar } from '@/components/call/sidebar/calls-sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import { NewCallDialog } from '@/features/calls/components/new-call/new-call-dialog';
+import { CallsSidebar } from '@/features/calls/components/sidebar/calls-sidebar';
 import { useUiStore } from '@/stores/uiStore';
 import { type ReactNode, useEffect, useState } from 'react';
 
