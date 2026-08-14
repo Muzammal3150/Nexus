@@ -15,13 +15,13 @@ const server = createServer({
     key: fs.readFileSync("./certs/dev-key.pem"),
     cert: fs.readFileSync("./certs/dev-cert.pem"),
 }, app)
+// const server = createServer(app)
 
 
 await new SocketServer()
     .register(new ChatSocket())
     .register(new CallSocket())
     .init(server)
-
 
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }))
 app.use(morgan("dev"))

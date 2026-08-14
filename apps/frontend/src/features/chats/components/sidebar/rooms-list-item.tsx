@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from '@/features/auth/lib/auth';
 import { useSession } from '@/features/auth/providers/session-provider';
 import { getInitials } from '@/features/chats/lib/utils-chat';
@@ -12,6 +12,8 @@ import { UserPreview } from '@/features/auth/lib/users';
 import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
+
+
 
 interface RoomsListItemProps {
     room: Room;
@@ -32,6 +34,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
             >
                 <div className="relative shrink-0">
                     <Avatar className="size-11">
+                        <AvatarImage src={room.image ?? undefined} alt={room.name} />
                         <AvatarFallback className={cn('text-sm font-medium')}>
                             {getInitials(room.name)}
                         </AvatarFallback>

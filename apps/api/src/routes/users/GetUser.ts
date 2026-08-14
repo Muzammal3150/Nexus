@@ -85,7 +85,7 @@ router.get('/:username', async (req, res) => {
         where: {
             username: req.params.username,
         },
-        select: userSelect,
+        // select: userSelect,
     });
 
     if (!user) {

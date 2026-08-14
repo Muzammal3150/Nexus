@@ -188,7 +188,7 @@ export function ContactsSidebar() {
                                             key={user.id}
                                             contact={contact}
                                             active={user.id === activeId}
-                                            onSelect={() => router.push(`/contacts/${user.id}`)}
+                                            onSelect={() => router.push(`/contacts/${user.username}`)}
                                             onChat={() => onChat(contact)}
                                             onCall={() => onCall(contact)}
                                         />
@@ -209,7 +209,7 @@ export function ContactsSidebar() {
                                             key={user.id}
                                             contact={contact}
                                             active={user.id === activeId}
-                                            onSelect={() => router.push(`/contacts/${user.id}`)}
+                                            onSelect={() => router.push(`/contacts/${user.username}`)}
                                             onChat={() => onChat(contact)}
                                             onCall={() => onCall(contact)}
                                             onAdd={() => onAdd(contact)}

@@ -17,6 +17,8 @@ import { ChatMessage } from "@/features/chats/types/messages";
 import { useContactsStore } from "@/features/contacts/stores/contact-store";
 import { chatSocket } from "@/lib/socket";
 import { addCacheFile } from "../file/files";
+import { toast } from "@/components/ui/toast";
+import { api } from "@/lib/axios";
 
 
 interface TextMessageBroadcast {
@@ -105,66 +107,60 @@ export function useChats(roomId: string) {
             sentAt,
             attachment,
         }: FileMessageBroadcast) => {
-            // Store the sender globally.
             addUser(sender);
 
-            /*
-             * Download the attachment.
-             */
-            const response = await fetch(
-                `/uploads/chat/${attachment.filename}`,
-            );
-
-            if (!response.ok) {
-                console.error(
-                    "Failed to download chat attachment:",
-                    response.status,
+            try {
+                const response = await api.get(
+                    `../uploads/chat/${attachment.filename}`,
+                    {
+                        responseType: "blob",
+                    }
                 );
-                return;
+
+                const blob = response.data;
+
+                const file = new File(
+                    [blob],
+                    attachment.originalFilename,
+                    {
+                        type: attachment.mimeType || blob.type,
+                        lastModified: Date.now(),
+                    }
+                );
+
+                const fileId = await addCacheFile(file);
+
+                await addMessage({
+                    id,
+                    type: "file",
+                    roomId: incomingRoomId,
+                    senderId: sender.id,
+                    attachment: {
+                        fileId,
+                        originalFilename: attachment.originalFilename,
+                        mimeType: attachment.mimeType,
+                        size: attachment.size,
+                        status: "downloaded",
+                        uploadProgress: 0,
+                        downloadProgress: 100,
+                    },
+                    isRead: incomingRoomId === roomId,
+                    sentAt,
+                });
+
+                chatSocket.emit("chat:received", {
+                    streamId,
+                    roomId: incomingRoomId,
+                });
+            } catch (error) {
+                console.error("Failed to download chat attachment:", error);
+
+                toast.add({
+                    type: "error",
+                    description: "Failed to download chat attachment.",
+                });
             }
-
-            const blob = await response.blob();
-
-            const file = new File(
-                [blob],
-                attachment.originalFilename,
-                {
-                    type: attachment.mimeType,
-                },
-            );
-
-            const fileId = await addCacheFile(file);
-
-            /*
-             * Store the message in Dexie.
-             */
-            await addMessage({
-                id,
-                type: "file",
-                roomId: incomingRoomId,
-                senderId: sender.id,
-                attachment: {
-                    fileId,
-                    originalFilename: attachment.originalFilename,
-                    mimeType: attachment.mimeType,
-                    size: attachment.size,
-                    status: "downloaded",
-                    uploadProgress: 0,
-                    downloadProgress: 0,
-                },
-                isRead: incomingRoomId === roomId,
-                sentAt,
-            });
-
-            /*
-             * Tell the server that the message was received.
-             */
-            chatSocket.emit("chat:received", {
-                streamId,
-                roomId: incomingRoomId,
-            });
         };
-
         const handleText = async ({
             id,
             streamId,
