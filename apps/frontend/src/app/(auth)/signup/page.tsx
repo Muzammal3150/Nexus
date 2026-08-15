@@ -31,7 +31,6 @@ export default function SignupForm() {
     const onSubmit = async (values: signUpValues) => {
         try {
             const { error } = await authClient.signUp.email(values);
-
             if (error) {
                 form.setError('root', {
                     type: 'server',
@@ -41,7 +40,7 @@ export default function SignupForm() {
             }
 
             router.replace('/');
-        } catch {
+        } catch  {
             form.setError('root', {
                 type: 'server',
                 message: 'Internal Server Error.',
@@ -60,7 +59,7 @@ export default function SignupForm() {
             {form.formState.errors.root && (
                 <Alert variant="destructive" className="max-w-md">
                     <TriangleAlert />
-                    <AlertDescription>{form.formState.errors.form?.message}</AlertDescription>
+                    <AlertDescription>{form.formState.errors.root?.message}</AlertDescription>
                 </Alert>
             )}
             {/* NAME */}
