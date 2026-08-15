@@ -11,22 +11,21 @@ import { GroupChatForm } from './group-chat-form';
 import { ModeToggle } from './mode-toggle';
 
 import { Room } from '@/features/chats/types/room';
-import { useUiStore } from '@/stores/uiStore';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { useQueryClient } from '@tanstack/react-query';
-
-const dialogId = 'new-chat-dialog';
+import { UiState } from '@/stores/uiStore/uis';
 
 export function NewChatDialog() {
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    const open = useUiStore((s) => s.isOpen(dialogId));
+    const open = useUiStore((s) => s.isOpen(UiState.Chat.NewChatDialog));
     const setOpen = useUiStore((s) => s.setOpen);
 
     const [mode, setMode] = useState<'direct' | 'group'>('direct');
 
     function handleSuccess(newRoom: Room) {
-        setOpen(dialogId, false);
+        setOpen(UiState.Chat.NewChatDialog, false);
 
         queryClient.setQueryData(['get-rooms'], (prev: Room[] = []) => {
             if (prev.some((room) => room.id === newRoom.id)) {
@@ -43,14 +42,13 @@ export function NewChatDialog() {
         <Dialog
             open={open}
             onOpenChange={(next) => {
-                setOpen(dialogId, next);
+                setOpen(UiState.Chat.NewChatDialog, next);
 
                 if (!next) {
                     setMode('direct');
                 }
             }}
         >
-
             <DialogContent className="max-w-md p-0">
                 <Card className="border-0 shadow-none">
                     <CardHeader className="gap-3">

@@ -5,7 +5,7 @@ import { redis } from '../config/redis.js';
 
 export const router: Router = Router();
 
-const presenceKey = 'nexsus:presence';
+const presenceKey = 'nexus:presence';
 
 interface UserPresence {
     isOnline: boolean;

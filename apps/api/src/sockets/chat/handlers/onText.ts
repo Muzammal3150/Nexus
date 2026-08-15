@@ -54,7 +54,7 @@ export async function onText(socket: Socket, data: unknown) {
         roomId,
     };
 
-    const streamId = await redis.xAdd(`nexsus:chat:room:${roomId}`, '*', {
+    const streamId = await redis.xAdd(`nexus:chat:room:${roomId}`, '*', {
         event: "chat:text",
         payload: JSON.stringify(messagePayload),
     })

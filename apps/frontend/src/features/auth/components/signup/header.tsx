@@ -1,4 +1,5 @@
 import { FieldDescription } from '@/components/ui/field';
+import Image from 'next/image';
 
 import Link from 'next/link';
 
@@ -6,7 +7,8 @@ export function SignUpFormHeader() {
     return (
         <div className="flex flex-col items-center gap-2 text-center">
             <div className="flex flex-col items-center gap-2 font-medium">
-                <div className="flex size-8 items-center justify-center rounded-md"></div>
+                <Image src={'/icon.png'} width={32} height={32} alt={'logo'} />
+
                 <span className="sr-only">Acme Inc.</span>
             </div>
 

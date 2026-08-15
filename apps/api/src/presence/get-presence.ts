@@ -11,7 +11,7 @@ const defaultPresence: UserPresence = {
 };
 
 export async function getUserPresence(userId: string): Promise<UserPresence> {
-    const value = await redis.hGet('nexsus:presence', userId);
+    const value = await redis.hGet('nexus:presence', userId);
 
     if (!value) {
         return defaultPresence;
@@ -35,7 +35,7 @@ export async function getUsersPresence(
     }
 
     const values = await redis.hmGet(
-        'nexsus:presence',
+        'nexus:presence',
         userIds,
     );
 

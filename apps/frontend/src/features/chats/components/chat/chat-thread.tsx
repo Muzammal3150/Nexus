@@ -75,7 +75,8 @@ function MessageItem({
     prevMessage?: ChatMessage;
     room: Room;
 }) {
-    const isSameSender = prevMessage?.sender.id === message.sender.id;
+    // console.log(message)
+    const isSameSender = prevMessage?.sender?.id === message.sender?.id;
 
     const showAvatar = !message.isMine && room.isGroup && !isSameSender;
 

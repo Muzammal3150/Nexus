@@ -3,7 +3,8 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { NewCallDialog } from '@/features/calls/components/new-call/new-call-dialog';
 import { CallsSidebar } from '@/features/calls/components/sidebar/calls-sidebar';
-import { useUiStore } from '@/stores/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { type ReactNode, useEffect, useState } from 'react';
 
 function useIsDesktop() {
@@ -31,7 +32,7 @@ function useIsDesktop() {
 export default function ChatLayout({ children }: { children: ReactNode }) {
     const isDesktop = useIsDesktop();
 
-    const isOpen = useUiStore((s) => s.isOpen('new-call-dialog'));
+    const isOpen = useUiStore((s) => s.isOpen(UiState.Call.NewCallDialog));
     const setOpen = useUiStore((s) => s.setOpen);
 
     if (!isDesktop) {
@@ -41,7 +42,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
 
                 <NewCallDialog
                     open={isOpen}
-                    onOpenChange={(next) => setOpen('new-call-dialog', next)}
+                    onOpenChange={(next) => setOpen(UiState.Call.NewCallDialog, next)}
                 />
             </div>
         );
@@ -66,7 +67,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
 
                 <NewCallDialog
                     open={isOpen}
-                    onOpenChange={(next) => setOpen('new-call-dialog', next)}
+                    onOpenChange={(next) => setOpen(UiState.Call.NewCallDialog, next)}
                 />
             </ResizablePanel>
         </ResizablePanelGroup>

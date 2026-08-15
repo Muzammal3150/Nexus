@@ -18,7 +18,6 @@ export interface Room {
 }
 
 export interface RoomMember {
-    id: string;
     roomId: string;
     room: Room;
     userId: string;

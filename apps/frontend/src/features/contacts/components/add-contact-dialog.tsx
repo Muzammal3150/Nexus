@@ -18,7 +18,8 @@ import { Label } from '@/components/ui/label';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { useContactsStore } from '@/features/contacts/stores/contact-store';
 import { cn } from '@/lib/utils';
-import { useUiStore } from '@/stores/uiStore';
+import { useUiStore } from '@/stores/uiStore/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
 
 type SearchStatus = 'idle' | 'loading' | 'found' | 'not-found';
 
@@ -27,7 +28,7 @@ type UserResult = Awaited<
 >;
 
 export function AddContactDialog() {
-    const isOpen = useUiStore((state) => state.isOpen('add-contact-dialog'));
+    const isOpen = useUiStore((state) => state.isOpen(UiState.Contact.NewContactDialog));
 
     const setOpen = useUiStore((state) => state.setOpen);
 
@@ -50,7 +51,7 @@ export function AddContactDialog() {
     }
 
     function close() {
-        setOpen('add-contact-dialog', false);
+        setOpen(UiState.Contact.NewContactDialog, false);
         reset();
     }
 
@@ -114,7 +115,7 @@ export function AddContactDialog() {
         <Dialog
             open={isOpen}
             onOpenChange={(nextOpen) => {
-                setOpen('add-contact-dialog', nextOpen);
+                setOpen(UiState.Contact.NewContactDialog, nextOpen);
 
                 if (!nextOpen) {
                     reset();

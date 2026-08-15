@@ -8,6 +8,7 @@ import { MessageScrollerProvider } from '@/components/ui/message-scroller';
 import { useActiveRoom } from '@/features/chats/hooks/use-active-room';
 import { useChats } from '@/features/chats/hooks/use-chats';
 import { notFound } from 'next/navigation';
+import GroupInfo from '@/features/chats/components/room-info';
 
 export default function ChatPanel() {
     const { roomId, room, isLoading } = useActiveRoom();
@@ -15,6 +16,7 @@ export default function ChatPanel() {
 
     if (isLoading) return <LoadingPage />;
     if (!room) return notFound();
+    console.log(room);
     return (
         <MessageScrollerProvider autoScroll defaultScrollPosition="end">
             <div className="flex flex-col h-full! w-full ">
@@ -24,6 +26,7 @@ export default function ChatPanel() {
                     <ChatComposer className="" roomId={roomId} />
                 </div>
             </div>
+            <GroupInfo room={room} />
         </MessageScrollerProvider>
     );
 }

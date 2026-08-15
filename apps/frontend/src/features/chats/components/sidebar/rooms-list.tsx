@@ -11,10 +11,11 @@ import { AnimatePresence, motion } from 'motion/react';
 import { LoadingPage } from '@/components/custom-ui/loading';
 import { useRooms } from '@/features/chats/hooks/use-rooms';
 import { cn } from '@/lib/utils';
-import { useUiStore } from '@/stores/uiStore';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { RoomsListItem } from './rooms-list-item';
+import { UiState } from '@/stores/uiStore/uis';
 
 export function RoomsList({ className }: { className?: string }) {
     const { roomId: activeId } = useParams<{ roomId: string }>();
@@ -98,7 +99,7 @@ function RoomsListHeader({
                     variant="outline"
                     size="sm"
                     className="gap-2"
-                    onClick={() => open('new-chat-dialog')}
+                    onClick={() => open(UiState.Chat.NewChatDialog)}
                 >
                     <UserPlus className="h-4 w-4" />
                     New Chat

@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useUiStore } from '@/stores/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { Contact as ContactIcon, UserPlus } from 'lucide-react';
 
 export default function NoContactSelected() {
@@ -32,7 +33,10 @@ export default function NoContactSelected() {
                     </div>
 
                     {/* Action */}
-                    <Button className="mt-6 gap-2" onClick={() => open('add-contact-dialog')}>
+                    <Button
+                        className="mt-6 gap-2"
+                        onClick={() => open(UiState.Contact.NewContactDialog)}
+                    >
                         <UserPlus className="h-4 w-4" />
                         Add Contact
                     </Button>

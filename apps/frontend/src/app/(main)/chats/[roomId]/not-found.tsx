@@ -9,7 +9,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useUiStore } from '@/stores/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { ChevronLeft, MessageCirclePlus } from 'lucide-react';
 import Link from 'next/link';
 
@@ -39,7 +40,7 @@ export default function NotFoundPage() {
                         </Button>
                     </Link>
 
-                    <Button size="lg" onClick={() => open('new-chat-dialog')}>
+                    <Button size="lg" onClick={() => open(UiState.Chat.NewChatDialog)}>
                         <MessageCirclePlus />
                         New Chat
                     </Button>

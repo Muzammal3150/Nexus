@@ -44,14 +44,14 @@ export async function onMessageReceived(socket: Socket, data: unknown) {
     }
 
     // Make sure this stream ID actually exists in this room.
-    const message = await redis.xRange(`nexsus:chat:room:${roomId}`, streamId, streamId);
+    const message = await redis.xRange(`nexus:chat:room:${roomId}`, streamId, streamId);
 
     if (message.length === 0) {
         return;
     }
 
     await redis.hSet(
-        `nexsus:chat:sync:${roomId}`,
+        `nexus:chat:sync:${roomId}`,
         socket.data.session.id,
         streamId,
     );

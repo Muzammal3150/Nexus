@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { CallsSidebar } from '@/features/calls/components/sidebar/calls-sidebar';
-import { useUiStore } from '@/stores/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { Phone, Plus } from 'lucide-react';
 
 export default function NoCallSelected() {
@@ -31,7 +32,7 @@ export default function NoCallSelected() {
                     </div>
 
                     {/* Action */}
-                    <Button className="mt-6 gap-2" onClick={() => open('new-call-dialog')}>
+                    <Button className="mt-6 gap-2" onClick={() => open(UiState.Call.NewCallDialog)}>
                         <Plus className="h-4 w-4" />
                         New Call
                     </Button>

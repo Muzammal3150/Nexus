@@ -70,7 +70,7 @@ export class ChatSocket implements SocketHandler {
 
 
         const lastSeen = Date.now();
-        await redis.hSet('nexsus:presence', userId, JSON.stringify({
+        await redis.hSet('nexus:presence', userId, JSON.stringify({
             isOnline: true,
             lastSeen: Date.now(),
         }),
@@ -89,7 +89,7 @@ export class ChatSocket implements SocketHandler {
 
         const remainingSockets = await this.io.in(`user:${userId}`).fetchSockets();
         if (remainingSockets.length == 0) {
-            await redis.hSet('nexsus:presence', socket.data.user.id, JSON.stringify({
+            await redis.hSet('nexus:presence', socket.data.user.id, JSON.stringify({
                 isOnline: false,
                 lastSeen: Date.now(),
             })
@@ -124,14 +124,14 @@ export class ChatSocket implements SocketHandler {
         for (const room of rooms) {
             const streamId =
                 await redis.hGet(
-                    `nexsus:chat:sync:${room.id}`,
+                    `nexus:chat:sync:${room.id}`,
                     socket.data.session.id
                 ) ??
                 `${(socket.data.session as Session).createdAt.getTime()}-0`;
 
 
             const messages = await redis.xRange(
-                `nexsus:chat:room:${room.id}`,
+                `nexus:chat:room:${room.id}`,
                 `(${streamId}`,
                 "+"
             );
@@ -142,7 +142,7 @@ export class ChatSocket implements SocketHandler {
 
 
             await redis.hSet(
-                `nexsus:chat:sync:${room.id}`,
+                `nexus:chat:sync:${room.id}`,
                 socket.data.session.id,
                 messages.length > 0 ? messages.at(-1)!.id : `${Date.now()}-0`
             );

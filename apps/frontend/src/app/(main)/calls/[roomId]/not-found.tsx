@@ -8,7 +8,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useUiStore } from '@/stores/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { ChevronLeft, PhoneCall } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,7 +35,7 @@ export default function NotFoundPage() {
                             Back to calls
                         </Button>
                     </Link>
-                    <Button size={'lg'} onClick={() => open('new-call-dialog')}>
+                    <Button size={'lg'} onClick={() => open(UiState.Call.NewCallDialog)}>
                         <PhoneCall />
                         New Call
                     </Button>

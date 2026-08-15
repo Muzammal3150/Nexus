@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NavUser } from './nav-user';
-
+import Image from 'next/image';
 const sidebarItems = {
     chats: {
         url: '/chats',
@@ -62,8 +62,8 @@ function DesktopSidebar() {
     return (
         <Sidebar collapsible="none" className="h-screen w-17 border-r">
             <SidebarHeader className="items-center py-4">
-                <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <MessageCircle className="size-4.5" />
+                <div className="flex size-9 items-center justify-center rounded-lg text-primary-foreground">
+                    <Image src={'/icon.png'} width={25} height={25} alt={'logo'} />
                 </div>
             </SidebarHeader>
 

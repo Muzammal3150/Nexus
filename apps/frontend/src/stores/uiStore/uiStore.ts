@@ -26,3 +26,6 @@ export const useUiStore = create<UiStore>((set, get) => ({
     close: (id) => get().setOpen(id, false),
     toggle: (id) => get().setOpen(id, !get().isOpen(id)),
 }));
+
+
+

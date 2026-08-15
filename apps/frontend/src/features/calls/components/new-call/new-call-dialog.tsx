@@ -41,7 +41,7 @@ export function NewCallDialog({ open, onOpenChange }: NewCallDialogProps) {
     const [selected, setSelected] = useState<Contact[]>([]);
 
     const contacts = getContacts();
-console.log(contacts)
+    console.log(contacts);
     const q = query.trim().toLowerCase().replace(/^@/, '');
 
     const matches = useMemo(() => {
@@ -80,8 +80,6 @@ console.log(contacts)
         }
 
         try {
-
-
             const result = await fetchContact(q);
 
             if (!result || isSelected(result.id)) {
@@ -128,13 +126,13 @@ console.log(contacts)
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="gap-0 p-0 sm:max-w-md">
-                <DialogHeader className="px-4 pb-3 pt-4">
+            <DialogContent className="gap-4  sm:max-w-md">
+                <DialogHeader>
                     <DialogTitle>New call</DialogTitle>
                 </DialogHeader>
 
                 {selected.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 border-t px-4 py-3">
+                    <div className="flex flex-wrap gap-1.5 border-t">
                         {selected.map((contact) => (
                             <SelectionChip
                                 key={contact.id}
@@ -191,7 +189,7 @@ console.log(contacts)
                     </CommandList>
                 </Command>
 
-                <DialogFooter className="flex-row items-center justify-between gap-2 border-t p-2 sm:justify-between">
+                <DialogFooter className="flex-row items-center justify-between gap-2 border-t  sm:justify-between">
                     <p className="text-xs text-muted-foreground">
                         {selected.length === 0 ? 'No one selected' : `${selected.length} selected`}
                     </p>

@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { RoomsList } from '@/features/chats/components/sidebar/rooms-list';
-import { useUiStore } from '@/stores/uiStore';
+import { UiState } from '@/stores/uiStore/uis';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { MessageCircle, Plus } from 'lucide-react';
 
 export default function NoRoomSelected() {
@@ -33,7 +34,7 @@ export default function NoRoomSelected() {
                     </div>
 
                     {/* Action */}
-                    <Button className="mt-6 gap-2" onClick={() => open('new-chat-dialog')}>
+                    <Button className="mt-6 gap-2" onClick={() => open(UiState.Chat.NewChatDialog)}>
                         <Plus className="h-4 w-4" />
                         New Chat
                     </Button>

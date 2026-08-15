@@ -18,13 +18,14 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 
-import { useUiStore } from '@/stores/uiStore';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 
 import { ContactItem } from './contact-item';
 
 import { initCall } from '@/features/calls/lib/init-call';
 import { createRoom } from '@/features/chats/components/new-chat/create-room';
 import { Contact, useContactsStore } from '@/features/contacts/stores/contact-store';
+import { UiState } from '@/stores/uiStore/uis';
 
 export function ContactsSidebar() {
     const router = useRouter();
@@ -154,7 +155,7 @@ export function ContactsSidebar() {
                         variant="ghost"
                         size="icon"
                         className="size-8"
-                        onClick={() => open('add-contact-dialog')}
+                        onClick={() => open(UiState.Contact.NewContactDialog)}
                         aria-label="Add contact"
                     >
                         <UserRoundPlus className="size-4" />

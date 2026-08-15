@@ -8,9 +8,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 // import { FavouriteItem } from './favourite-item';
 // import { RecentCallItem } from './recent-call-item';
-import { useUiStore } from '@/stores/uiStore';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useUiStore } from '@/stores/uiStore/uiStore';
+import { useState } from 'react';
+import { UiState } from '@/stores/uiStore/uis';
 
 export function CallsSidebar({ className }: { className?: string }) {
     const [query, setQuery] = useState('');
@@ -33,7 +34,7 @@ export function CallsSidebar({ className }: { className?: string }) {
                     variant="ghost"
                     size="icon"
                     className="size-8"
-                    onClick={() => open('new-call-dialog')}
+                    onClick={() => open(UiState.Call.NewCallDialog)}
                 >
                     <SquarePen className="size-4" />
                 </Button>

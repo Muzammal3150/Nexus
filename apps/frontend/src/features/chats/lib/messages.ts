@@ -2,12 +2,21 @@ import { db } from "@/db/db";
 import { CachedMessage } from "@/db/db.d";
 
 
-export async function addMessage(message: CachedMessage) {
-    await db.transaction("rw", db.messages, async () => {
-        await db.messages.add(message)
-    })
-}
+export async function addMessage(message: CachedMessage): Promise<boolean> {
+    try {
+        await db.transaction('rw', db.messages, async () => {
+            await db.messages.add(message);
+        });
 
+        return true;
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'ConstraintError') {
+            return false;
+        }
+
+        throw error;
+    }
+}
 
 export async function deleteMessage(id: CachedMessage['id']) {
     await db.transaction("rw", db.messages, async () => {

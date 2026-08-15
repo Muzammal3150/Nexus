@@ -1,18 +1,20 @@
 'use client';
 
+import { formatDistanceToNow } from 'date-fns';
 import { MoreVertical, Phone, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { formatDistanceToNow } from 'date-fns';
 
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useContactsStore } from '@/features/contacts/stores/contact-store';
+import { useSession } from '@/features/auth/providers/session-provider';
 import { initCall } from '@/features/calls/lib/init-call';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Room } from '@/features/chats/types/room';
-import { useSession } from '@/features/auth/providers/session-provider';
+import { useContactsStore } from '@/features/contacts/stores/contact-store';
 import { cn } from '@/lib/utils';
+import { useUiStore } from '@/stores/uiStore/uiStore';
 import { useRoomTyping } from '../../hooks/use-room-typing';
+import { UiState } from '@/stores/uiStore/uis';
 
 export function ChatHeader({ room }: { room: Room }) {
     const router = useRouter();
@@ -39,10 +41,14 @@ export function ChatHeader({ room }: { room: Room }) {
 
         router.push(`/calls/${id}`);
     }
+    const open = useUiStore((s) => s.open);
 
     return (
-        <div className="sticky top-0 z-100 flex items-center justify-between border-b bg-background px-5 py-3">
-            <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-background px-5 py-3">
+            <div
+                className="flex items-center gap-3 flex-1 cursor-pointer"
+                onClick={() => open(UiState.Chat.GroupInfo.Drawer)}
+            >
                 <Avatar className="size-9">
                     <AvatarImage src={room.image ?? undefined} alt={room.name} />
 
