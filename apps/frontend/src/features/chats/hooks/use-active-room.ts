@@ -11,15 +11,11 @@ export function useActiveRoom() {
 
     const session = useSession()!;
 
-    const getContact = useContactsStore(
-        (state) => state.getContact,
-    );
+    const getContact = useContactsStore((state) => state.getContact);
 
-    const [isLoading, setIsLoading] =
-        useState(true);
+    const [isLoading, setIsLoading] =useState(true);
 
-    const [room, setRoom] =
-        useState<Room | null>(null);
+    const [room, setRoom] =useState<Room | null>(null);
 
     useEffect(() => {
         let cancelled = false;

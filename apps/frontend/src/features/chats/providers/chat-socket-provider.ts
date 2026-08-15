@@ -24,12 +24,12 @@ export function ChatSocketProvider({ children }: { children: React.ReactNode }) 
 
 
         return () => {
+            
             chatSocket.on("room:create-broadcast", handleRoomBroadCast)
-
             chatSocket.disconnect();
         };
 
-    }, []);
+    }, [queryClient]);
 
     return children;
 }

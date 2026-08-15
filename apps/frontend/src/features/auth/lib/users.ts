@@ -7,7 +7,7 @@ export interface UserPreview {
     image: string | null | undefined;
     email: string;
     isOnline: boolean;
-    lastSeen: number;
+    lastSeen: number | null;
 }
 
 // export async function getUser(username: string) {

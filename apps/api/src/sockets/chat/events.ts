@@ -3,7 +3,8 @@ export const ChatEvents = {
 
         Text: "chat:text",
         File: "chat:file",
-        Received: "chat:received"
+        Received: "chat:received",
+        Typing:"chat:typing"
     },
 
     Room: {

@@ -7,12 +7,14 @@ import { UserPreview } from '@/features/auth/lib/users';
 import { useSession } from '@/features/auth/providers/session-provider';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Room } from '@/features/chats/types/room';
+
 import { useContactsStore } from '@/features/contacts/stores/contact-store';
 import { cn } from '@/lib/utils';
 
 import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
+import { useRoomTyping } from '../../hooks/use-room-typing';
 
 interface RoomsListItemProps {
     room: Room;
@@ -30,6 +32,12 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
         otherUserId ? state.users[otherUserId]?.isOnline : false,
     );
 
+    const { typingUsers } = useRoomTyping(room.id);
+
+    const typingUserIds = typingUsers.filter((user) => user.userId !== session!.user.id);
+
+    const typingText = getTypingText(room, typingUserIds);
+
     return (
         <Link href={`/chats/${room.id}`}>
             <button
@@ -46,7 +54,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                         {getInitials(room.name)}
                     </AvatarFallback>
 
-                    {isOnline && <AvatarBadge className="bg-emerald-500" />}
+                    {!room.isGroup && isOnline && <AvatarBadge className="bg-emerald-500" />}
                 </Avatar>
 
                 <div className="min-w-0 flex-1">
@@ -66,25 +74,60 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                     </div>
 
                     <div className="mt-0.5 flex items-center justify-between gap-2">
-                        {room.lastMessage && (
+                        {typingText ? (
+                            <span className="truncate text-xs text-primary">{typingText}</span>
+                        ) : room.lastMessage ? (
                             <span className="flex items-center gap-1 truncate text-xs">
                                 {!room.unread && <CheckCheck className="size-3.5 shrink-0" />}
 
                                 <span className="truncate">
-                                    {formatUserName(room.lastMessage.sender, session!.user)}:{' '}
+                                    {room.isGroup &&
+                                        `${formatUserName(room.lastMessage.sender, session!.user)}:`}
                                     {room.lastMessage.type === 'text'
                                         ? room.lastMessage.text
                                         : room.lastMessage.attachment.originalFilename}
                                 </span>
                             </span>
-                        )}
+                        ) : null}
 
-                        {room.unread > 0 && <Badge>{room.unread}</Badge>}
+                        {room.unread > 0 && !typingText && <Badge>{room.unread}</Badge>}
                     </div>
                 </div>
             </button>
         </Link>
     );
+}
+
+function getTypingText(room: Room, typingUsers: { userId: string }[]) {
+    if (typingUsers.length === 0) {
+        return null;
+    }
+
+    if (!room.isGroup) {
+        return 'Typing...';
+    }
+
+    const names = typingUsers
+        .map((typingUser) => {
+            const member = room.members.find((member) => member.userId === typingUser.userId);
+
+            return member?.user?.name;
+        })
+        .filter((name): name is string => Boolean(name));
+
+    if (names.length === 0) {
+        return 'Typing...';
+    }
+
+    if (names.length === 1) {
+        return `${names[0]}: Typing...`;
+    }
+
+    if (names.length === 2) {
+        return `${names[0]} and ${names[1]}: Typing...`;
+    }
+
+    return `${names[0]} and ${names.length - 1} others: Typing...`;
 }
 
 function formatUserName(user: UserPreview, currUser: User) {

@@ -1,5 +1,8 @@
+'use client';
+
 import { MoreVertical, Phone, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { formatDistanceToNow } from 'date-fns';
 
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,7 +12,7 @@ import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Room } from '@/features/chats/types/room';
 import { useSession } from '@/features/auth/providers/session-provider';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { useRoomTyping } from '../../hooks/use-room-typing';
 
 export function ChatHeader({ room }: { room: Room }) {
     const router = useRouter();
@@ -22,6 +25,12 @@ export function ChatHeader({ room }: { room: Room }) {
     const user = useContactsStore((state) => (otherUserId ? state.users[otherUserId] : undefined));
 
     const isOnline = user?.isOnline ?? false;
+
+    const { typingUsers } = useRoomTyping(room.id);
+
+    const otherTypingUsers = typingUsers.filter(({ userId }) => userId !== session!.user.id);
+
+    const typingText = getTypingText(room, otherTypingUsers);
 
     async function onCall() {
         const { id } = await initCall({
@@ -37,24 +46,32 @@ export function ChatHeader({ room }: { room: Room }) {
                 <Avatar className="size-9">
                     <AvatarImage src={room.image ?? undefined} alt={room.name} />
 
-                    <AvatarFallback className={cn('text-xs font-medium')}>
+                    <AvatarFallback className="text-xs font-medium">
                         {getInitials(room.name)}
                     </AvatarFallback>
 
-                    {isOnline && <AvatarBadge className="bg-emerald-500" />}
+                    {!room.isGroup && isOnline && <AvatarBadge className="bg-emerald-500" />}
                 </Avatar>
 
-                <div>
+                <div className="min-w-0">
                     <p className="text-sm font-medium leading-tight">{room.name}</p>
 
-                    <p className="text-xs text-muted-foreground">
-                        {isOnline
-                            ? 'Online'
-                            : user?.lastSeen
-                              ? `Last seen ${formatDistanceToNow(user.lastSeen, {
-                                    addSuffix: true,
-                                })}`
-                              : ''}
+                    <p
+                        className={cn(
+                            'max-w-64 truncate text-xs',
+                            typingText ? 'text-primary' : 'text-muted-foreground',
+                        )}
+                    >
+                        {typingText ??
+                            (!room.isGroup
+                                ? isOnline
+                                    ? 'Online'
+                                    : user?.lastSeen
+                                      ? `Last seen ${formatDistanceToNow(user.lastSeen, {
+                                            addSuffix: true,
+                                        })}`
+                                      : ''
+                                : '')}
                     </p>
                 </div>
             </div>
@@ -74,4 +91,36 @@ export function ChatHeader({ room }: { room: Room }) {
             </div>
         </div>
     );
+}
+
+function getTypingText(room: Room, typingUsers: { userId: string }[]) {
+    if (typingUsers.length === 0) {
+        return null;
+    }
+
+    if (!room.isGroup) {
+        return 'typing...';
+    }
+
+    const names = typingUsers
+        .map((typingUser) => {
+            const member = room.members.find((member) => member.userId === typingUser.userId);
+
+            return member?.user?.name;
+        })
+        .filter((name): name is string => Boolean(name));
+
+    if (names.length === 0) {
+        return 'typing...';
+    }
+
+    if (names.length === 1) {
+        return `${names[0]} is typing...`;
+    }
+
+    if (names.length === 2) {
+        return `${names[0]} and ${names[1]} are typing...`;
+    }
+
+    return `${names[0]} and ${names.length - 1} others are typing...`;
 }
