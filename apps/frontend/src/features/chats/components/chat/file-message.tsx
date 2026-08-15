@@ -260,8 +260,8 @@ function MessageAttachment({
 
 function MessageTimestamp({ sentAt }: { sentAt: number }) {
     return (
-        <MessageFooter className="px-2 pb-1 text-[12px] text-muted-foreground">
-            <span>{format(sentAt, 'p')}</span>
+        <MessageFooter className="px-2 pb-1 text-[12px] text-right w-full text-muted-foreground">
+            <span className='ml-auto'>{format(sentAt, 'p')}</span>
         </MessageFooter>
     );
 }

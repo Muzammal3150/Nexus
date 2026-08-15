@@ -50,8 +50,13 @@ export function ChatThread({ messages, className, room }: ChatThreadProps) {
                                     <MarkerContent>{day}</MarkerContent>
                                 </Marker>
 
-                                {messages[day]!.map((message) => (
-                                    <MessageItem key={message.id} message={message} room={room} />
+                                {messages[day]!.map((message, index, dayMessages) => (
+                                    <MessageItem
+                                        key={message.id}
+                                        message={message}
+                                        prevMessage={index > 0 ? dayMessages[index - 1] : undefined}
+                                        room={room}
+                                    />
                                 ))}
                             </React.Fragment>
                         ))}
@@ -61,21 +66,38 @@ export function ChatThread({ messages, className, room }: ChatThreadProps) {
         </MessageScroller>
     );
 }
-function MessageItem({ message, room }: { message: ChatMessage; room: Room }) {
+function MessageItem({
+    message,
+    room,
+    prevMessage,
+}: {
+    message: ChatMessage;
+    prevMessage?: ChatMessage;
+    room: Room;
+}) {
+    const isSameSender = prevMessage?.sender.id === message.sender.id;
+
+    const showAvatar = !message.isMine && room.isGroup && !isSameSender;
+
     return (
         <MessageScrollerItem messageId={message.id}>
             <Message align={message.isMine ? 'end' : 'start'}>
                 {!message.isMine && room.isGroup && (
-                    <MessageAvatar className="translate-0! self-start">
-                        <Avatar>
-                            <AvatarImage src={message.sender.image ?? undefined} />
-                            <AvatarFallback className="text-[10px]">
-                                {getInitials(message.sender.name)}
-                            </AvatarFallback>
-                        </Avatar>
-                    </MessageAvatar>
+                    <div className="w-8 shrink-0">
+                        {showAvatar && (
+                            <MessageAvatar className="translate-0! self-start">
+                                <Avatar>
+                                    <AvatarImage src={message.sender.image ?? undefined} />
+                                    <AvatarFallback className="text-[10px]">
+                                        {getInitials(message.sender.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </MessageAvatar>
+                        )}
+                    </div>
                 )}
-                {message.type == 'text' ? (
+
+                {message.type === 'text' ? (
                     <MessageTextContent
                         text={message.text}
                         isMine={message.isMine}
@@ -92,7 +114,6 @@ function MessageItem({ message, room }: { message: ChatMessage; room: Room }) {
         </MessageScrollerItem>
     );
 }
-
 function MessageTextContent({
     text,
     isMine,
