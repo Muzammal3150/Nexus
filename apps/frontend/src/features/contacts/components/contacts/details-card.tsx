@@ -5,6 +5,7 @@ import CopyEmailButton from "./copy-email-button";
 import type { User } from "./types";
 
 export default function DetailsCard({ user }: { user: User }) {
+  console.log(user)
   return (
     <Card>
       <CardHeader>

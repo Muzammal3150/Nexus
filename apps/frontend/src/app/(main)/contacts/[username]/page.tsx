@@ -10,29 +10,21 @@ import { Group } from '@base-ui/react/internals/resolveValueLabel';
 
 import { ImagePlus, LogIn, UserPlus2 } from 'lucide-react';
 
+import { Loading } from '@/components/custom-ui/loading';
 import { User } from '@/features/auth/lib/auth';
+import { Presence } from '@/features/presence/types';
 import { api } from '@/lib/axios';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { Loading } from '@/components/custom-ui/loading';
 
-async function getUser(username: string): Promise<User> {
+async function getUser(username: string) {
     console.log(username);
     try {
-        const { data } = await api.get<User>(`/users/${username}`);
+        const { data } = await api.get<User & Presence>(`/users/${username}`);
         return data;
     } catch {
         notFound();
     }
-}
-
-async function getPresence(userId: string): Promise<Presence> {
-    return {
-        status: 'online',
-        lastSeen: new Date('2026-08-14T07:58:00Z'),
-        sharedGroups: 4,
-        mutualContacts: 12,
-    };
 }
 
 async function getSharedGroups(userId: string): Promise<Group[]> {
@@ -51,7 +43,7 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
     const { username } = await params;
     const user = await getUser(username);
-    const [presence, groups] = await Promise.all([getPresence(user.id), getSharedGroups(user.id)]);
+    const [groups] = await Promise.all([getSharedGroups(user.id)]);
 
     const activity: ActivityItem[] = [
         { id: 'a1', icon: ImagePlus, label: 'Updated profile photo', date: user.updatedAt },
@@ -67,7 +59,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     return (
         <div className="min-h-full w-full bg-background p-4 sm:p-6 lg:p-10">
             <div className="mx-auto w-full max-w-6xl">
-                <ProfileHeader user={user} presence={presence} />
+                <ProfileHeader user={user} />
 
                 <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr]">
                     <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">

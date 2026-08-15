@@ -9,11 +9,3 @@ export type User = {
   username: string;
 };
 
-export type PresenceStatus = "online" | "away" | "offline";
-
-export interface Presence {
-  status: PresenceStatus;
-  lastSeen: Date;
-  sharedGroups: number;
-  mutualContacts: number;
-}

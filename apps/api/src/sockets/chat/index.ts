@@ -11,6 +11,7 @@ import type { Session } from "better-auth";
 import type { Room } from "../../generated/prisma/client.js";
 import { redis } from "../../config/redis.js";
 import { onMessageReceived } from "./handlers/onMessageRecieved.js";
+import { onPresenceSubscribe } from "./handlers/onSubscribePresence.js";
 
 
 
@@ -35,11 +36,23 @@ export class ChatSocket implements SocketHandler {
 
 
     private async onConnect(socket: Socket) {
-        if (!socket.data?.user?.id) {
+        const userId = socket.data.user.id;
+        if (!userId) {
             console.error(`Chat socket ${socket.id} connected without user data, disconnecting`);
             socket.disconnect(true);
             return;
         }
+        const lastSeen = Date.now();
+        await redis.hSet('nexsus:presence', userId, JSON.stringify({
+            isOnline: true,
+            lastSeen: Date.now(),
+        }),
+        );
+        this.io.to(`presence:${userId}`).emit('presence:update', {
+            userId,
+            isOnline: true,
+            lastSeen,
+        });
 
         const safe = initSafe((err) => {
             console.error(`Error in chat handler for socket ${socket.id} (${socket.data.user?.name}):`, err);
@@ -50,12 +63,15 @@ export class ChatSocket implements SocketHandler {
         const rooms = await this.joinAllRooms(socket);
 
 
-
         socket.on(ChatEvents.Room.Create, safe((data, callback) => createRoom(this.ctx(), socket, data, callback)));
         socket.on(ChatEvents.Chat.Text, safe((data) => onText(socket, data)));
         socket.on(ChatEvents.Chat.File, safe((data) => onFileSend(socket, data)));
         socket.on(ChatEvents.Chat.Received, safe((data) => onMessageReceived(socket, data)));
 
+        socket.on(ChatEvents.Presence.Subscribe, safe((data) => onPresenceSubscribe(socket, data)));
+
+
+        socket.on("disconnect", safe(() => this.onDisconnect(socket)))
         socket.on("error", (err) => {
             console.error(`Chat socket transport error for ${socket.id} (${socket.data.user?.name}):`, err);
         });
@@ -64,6 +80,22 @@ export class ChatSocket implements SocketHandler {
     }
 
 
+    private async onDisconnect(socket: Socket) {
+        await redis.hSet(
+            'nexsus:presence',
+            socket.data.user.id,
+            JSON.stringify({
+                isOnline: false,
+                lastSeen: Date.now(),
+            }),
+        );
+        this.io.to(`presence:${socket.data.user.id}`).emit('presence:update', {
+            userId: socket.data.user.id,
+            isOnline: false,
+            lastSeen: Date.now(),
+        });
+        console.log("User disconnected.")
+    }
 
     private async joinAllRooms(socket: Socket) {
         try {

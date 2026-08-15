@@ -4,24 +4,24 @@ import { Card } from '@/components/ui/card';
 import AvatarWithStatus from './avatar-with-status';
 import ProfileActions from './profile-actions';
 import { statusLabel } from './utils';
-import type { Presence, User } from './types';
+import type { User } from './types';
+import { Presence } from '@/features/presence/types';
 
 interface ProfileHeaderProps {
-    user: User;
-    presence: Presence;
+    user: User & Presence;
 }
 
-export default function ProfileHeader({ user, presence }: ProfileHeaderProps) {
+export default function ProfileHeader({ user }: ProfileHeaderProps) {
     return (
         <Card className="overflow-hidden py-0!">
-            <div className="relative h-32 w-full bg-gradient-to-br from-primary via-primary/70 to-muted lg:h-44" />
+            <div className="relative h-32 w-full bg-linear-to-br from-primary via-primary/70 to-muted lg:h-44" />
 
             <div className="flex flex-col gap-5 px-6 pb-6 pt-0 lg:flex-row lg:items-end lg:justify-between lg:px-8">
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
                     <AvatarWithStatus
                         name={user.name}
                         image={user.image}
-                        status={presence.status}
+                        isOnline={user.isOnline}
                     />
 
                     <div className="pb-1">
@@ -40,12 +40,12 @@ export default function ProfileHeader({ user, presence }: ProfileHeaderProps) {
                             @{user.username}
                         </p>
                         <p className="mt-1.5 text-xs text-muted-foreground">
-                            {presence.status === 'online' ? (
+                            {user.isOnline ? (
                                 <span className="text-emerald-500">{statusLabel.online}</span>
                             ) : (
                                 <>
-                                    Last seen{' '}
-                                    {formatDistanceToNow(presence.lastSeen, { addSuffix: true })}
+                                    Last seen
+                                    {formatDistanceToNow(user.lastSeen, { addSuffix: true })}
                                 </>
                             )}
                         </p>

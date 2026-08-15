@@ -14,6 +14,11 @@ export interface Contact extends UserPreview {
     contact?: CachedContact;
 }
 
+interface UserPresence {
+    isOnline: boolean;
+    lastSeen: number | null;
+}
+
 interface ContactsState {
     users: Record<string, UserPreview>;
     contacts: Record<string, CachedContact>;
@@ -24,6 +29,8 @@ interface ContactsState {
 
     addUser: (user: UserPreview) => void;
     addUsers: (users: UserPreview[]) => void;
+
+    updateUserPresence: (userId: string,presence: UserPresence) => void;
 
     saveContact: (
         userId: string,
@@ -58,8 +65,8 @@ interface ContactsState {
     clearContacts: () => Promise<void>;
 }
 
-export const useContactsStore =
-    create<ContactsState>((set, get) => ({
+export const useContactsStore = create<ContactsState>(
+    (set, get) => ({
         users: {},
         contacts: {},
         initialized: false,
@@ -80,10 +87,17 @@ export const useContactsStore =
             for (const contact of cachedContacts) {
                 contacts[contact.userId] = contact;
             }
-            console.log("initialized")
 
+            // Load the persistent contact list first.
             set({
                 contacts,
+            });
+
+            // Get user information and the initial
+            // presence snapshot from the server.
+            await get().fetchContacts();
+
+            set({
                 initialized: true,
             });
         },
@@ -117,7 +131,36 @@ export const useContactsStore =
             });
         },
 
-        saveContact: async (userId, name) => {
+        updateUserPresence: (
+            userId,
+            presence,
+        ) => {
+            set((state) => {
+                const user = state.users[userId];
+
+                if (!user) {
+                    return state;
+                }
+
+                return {
+                    users: {
+                        ...state.users,
+                        [userId]: {
+                            ...user,
+                            isOnline:
+                                presence.isOnline,
+                            lastSeen:
+                                presence.lastSeen,
+                        },
+                    },
+                };
+            });
+        },
+
+        saveContact: async (
+            userId,
+            name,
+        ) => {
             const user = get().users[userId];
 
             if (!user) {
@@ -171,7 +214,9 @@ export const useContactsStore =
             }));
         },
 
-        removeContact: async (userId) => {
+        removeContact: async (
+            userId,
+        ) => {
             if (!get().contacts[userId]) {
                 return;
             }
@@ -196,7 +241,8 @@ export const useContactsStore =
         },
 
         getContact: (userId) => {
-            const user = get().users[userId];
+            const user =
+                get().users[userId];
 
             if (!user) {
                 return undefined;
@@ -204,17 +250,24 @@ export const useContactsStore =
 
             return {
                 ...user,
-                contact: get().contacts[userId],
+                contact:
+                    get().contacts[userId],
             };
         },
 
         getContacts: (): Contact[] => {
-            const { users, contacts } = get();
+            const {
+                users,
+                contacts,
+            } = get();
 
             const result: Contact[] = [];
 
-            for (const contact of Object.values(contacts)) {
-                const user = users[contact.userId];
+            for (const contact of Object.values(
+                contacts,
+            )) {
+                const user =
+                    users[contact.userId];
 
                 if (!user) {
                     continue;
@@ -232,21 +285,23 @@ export const useContactsStore =
         fetchUserByUsername: async (
             username,
         ) => {
-            const normalizedUsername = username
-                .trim()
-                .replace(/^@/, '');
+            const normalizedUsername =
+                username
+                    .trim()
+                    .replace(/^@/, '');
 
             if (!normalizedUsername) {
                 return undefined;
             }
 
-            const existingUser = Object.values(
-                get().users,
-            ).find(
-                (user) =>
-                    user.username.toLowerCase() ===
-                    normalizedUsername.toLowerCase(),
-            );
+            const existingUser =
+                Object.values(
+                    get().users,
+                ).find(
+                    (user) =>
+                        user.username.toLowerCase() ===
+                        normalizedUsername.toLowerCase(),
+                );
 
             if (existingUser) {
                 return {
@@ -277,25 +332,30 @@ export const useContactsStore =
         },
 
         fetchContacts: async () => {
-            const { contacts, users } = get();
+            const {
+                contacts,
+                users,
+            } = get();
 
             const missingUserIds =
                 Object.keys(contacts).filter(
-                    (userId) => !users[userId],
+                    (userId) =>
+                        !users[userId],
                 );
 
-            if (missingUserIds.length > 0) {
+            if (
+                missingUserIds.length > 0
+            ) {
                 const response =
-                    await api.get<UserPreview[]>(
-                        '/users',
-                        {
-                            params: {
-                                ids: missingUserIds.join(
-                                    ',',
-                                ),
-                            },
+                    await api.get<
+                        UserPreview[]
+                    >('/users', {
+                        params: {
+                            ids: missingUserIds.join(
+                                ',',
+                            ),
                         },
-                    );
+                    });
 
                 get().addUsers(
                     response.data,
@@ -312,4 +372,5 @@ export const useContactsStore =
                 contacts: {},
             });
         },
-    }));
+    }),
+);

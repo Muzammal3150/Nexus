@@ -1,4 +1,4 @@
-import { api } from "@/lib/axios";
+// import { api } from "@/lib/axios";
 
 export interface UserPreview {
     id: string;
@@ -6,38 +6,40 @@ export interface UserPreview {
     username: string;
     image: string | null | undefined;
     email: string;
+    isOnline: boolean;
+    lastSeen: number;
 }
 
-export async function getUser(username: string) {
-    const { data } = await api.get<UserPreview>(`/users/${username}`);
+// export async function getUser(username: string) {
+//     const { data } = await api.get<UserPreview>(`/users/${username}`);
 
-    return data;
-}
+//     return data;
+// }
 
-export async function getUsers(usernames: string[]) {
-    if (usernames.length === 0) {
-        return [];
-    }
+// export async function getUsers(usernames: string[]) {
+//     if (usernames.length === 0) {
+//         return [];
+//     }
 
-    const { data } = await api.get<UserPreview[]>("/users/many", {
-        params: {
-            usernames: usernames.join(","),
-        },
-    });
+//     const { data } = await api.get<UserPreview[]>("/users/many", {
+//         params: {
+//             usernames: usernames.join(","),
+//         },
+//     });
 
-    return data;
-}
+//     return data;
+// }
 
-export async function getUsersById(ids: string[]) {
-    if (ids.length === 0) {
-        return [];
-    }
+// export async function getUsersById(ids: string[]) {
+//     if (ids.length === 0) {
+//         return [];
+//     }
 
-    const { data } = await api.get<UserPreview[]>("/users/many/id", {
-        params: {
-            ids: ids.join(","),
-        },
-    });
+//     const { data } = await api.get<UserPreview[]>("/users/many/id", {
+//         params: {
+//             ids: ids.join(","),
+//         },
+//     });
 
-    return data;
-}
+//     return data;
+// }

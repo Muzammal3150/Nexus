@@ -100,10 +100,7 @@ export function useRooms() {
                     }
                     : null;
 
-                const formattedRoom = formatDirectRoom(
-                    room,
-                    session.user,
-                );
+                const formattedRoom = formatDirectRoom(room, session.user);
 
                 if (!formattedRoom.isGroup) {
                     const otherMember = room.members.find(

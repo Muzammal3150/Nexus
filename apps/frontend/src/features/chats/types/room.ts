@@ -13,6 +13,8 @@ export interface Room {
     members: RoomMember[]
     unread: number;
     lastMessage: ChatMessage | null;
+    
+
 }
 
 export interface RoomMember {

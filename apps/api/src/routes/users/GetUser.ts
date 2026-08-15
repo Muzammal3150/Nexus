@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import prisma from '../../config/prisma.js';
+import { getUserPresence, getUsersPresence } from '../../presence/get-presence.js';
 
 export const router: Router = Router();
 
@@ -33,32 +34,19 @@ function getQueryValues(value: unknown): string[] {
     return [];
 }
 
-/**
- * Get multiple users.
- *
- * Examples:
- * GET /users?ids=abc,def,ghi
- * GET /users?usernames=john,jane,bob
- * GET /users?ids=abc&ids=def
- * GET /users?usernames=john&usernames=jane
- */
 router.get('/', async (req, res) => {
     const ids = getQueryValues(req.query.ids);
-    const usernames = getQueryValues(
-        req.query.usernames,
-    );
+    const usernames = getQueryValues(req.query.usernames);
 
     if (ids.length === 0 && usernames.length === 0) {
         return res.status(400).json({
-            message:
-                'Provide at least one user id or username.',
+            message: 'Provide at least one user id or username.',
         });
     }
 
     if (ids.length > 0 && usernames.length > 0) {
         return res.status(400).json({
-            message:
-                'Provide either ids or usernames, not both.',
+            message: 'Provide either ids or usernames, not both.',
         });
     }
 
@@ -72,14 +60,18 @@ router.get('/', async (req, res) => {
         select: userSelect,
     });
 
-    return res.json(users);
+    const presence = await getUsersPresence(
+        users.map((user) => user.id),
+    );
+    console.log(presence, users.map((user) => user.id))
+    const usersWithPresence = users.map((user) => ({
+        ...user,
+        ...presence.get(user.id),
+    }));
+
+    return res.json(usersWithPresence);
 });
 
-/**
- * Get a single user by username.
- *
- * GET /users/:username
- */
 router.get('/:username', async (req, res) => {
     const user = await prisma.user.findUnique({
         where: {
@@ -94,5 +86,10 @@ router.get('/:username', async (req, res) => {
         });
     }
 
-    return res.json(user);
+    const presence = await getUserPresence(user.id);
+
+    return res.json({
+        ...user,
+        ...presence,
+    });
 });

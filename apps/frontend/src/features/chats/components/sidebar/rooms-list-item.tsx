@@ -1,19 +1,18 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { User } from '@/features/auth/lib/auth';
+import { UserPreview } from '@/features/auth/lib/users';
 import { useSession } from '@/features/auth/providers/session-provider';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Room } from '@/features/chats/types/room';
+import { useContactsStore } from '@/features/contacts/stores/contact-store';
 import { cn } from '@/lib/utils';
 
-import { Badge } from '@/components/ui/badge';
-import { UserPreview } from '@/features/auth/lib/users';
 import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
-
-
 
 interface RoomsListItemProps {
     room: Room;
@@ -22,6 +21,14 @@ interface RoomsListItemProps {
 
 export function RoomsListItem({ room, active }: RoomsListItemProps) {
     const session = useSession();
+
+    const otherUserId = !room.isGroup
+        ? room.members.find((member) => member.userId !== session!.user.id)?.userId
+        : undefined;
+
+    const isOnline = useContactsStore((state) =>
+        otherUserId ? state.users[otherUserId]?.isOnline : false,
+    );
 
     return (
         <Link href={`/chats/${room.id}`}>
@@ -32,21 +39,20 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                     active ? 'bg-accent' : 'hover:bg-accent/60',
                 )}
             >
-                <div className="relative shrink-0">
-                    <Avatar className="size-11">
-                        <AvatarImage src={room.image ?? undefined} alt={room.name} />
-                        <AvatarFallback className={cn('text-sm font-medium')}>
-                            {getInitials(room.name)}
-                        </AvatarFallback>
-                    </Avatar>
-                    {/* {room.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background bg-emerald-500" />
-                )} */}
-                </div>
+                <Avatar className="size-11">
+                    <AvatarImage src={room.image ?? undefined} alt={room.name} />
+
+                    <AvatarFallback className="text-sm font-medium">
+                        {getInitials(room.name)}
+                    </AvatarFallback>
+
+                    {isOnline && <AvatarBadge className="bg-emerald-500" />}
+                </Avatar>
 
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-medium">{room.name}</span>
+
                         <span
                             className={cn(
                                 'shrink-0 text-xs',
@@ -55,31 +61,24 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                                     : 'text-muted-foreground',
                             )}
                         >
-                            {room.lastMessage && format(room.lastMessage?.sentAt, 'p')}
+                            {room.lastMessage && format(room.lastMessage.sentAt, 'p')}
                         </span>
                     </div>
 
                     <div className="mt-0.5 flex items-center justify-between gap-2">
                         {room.lastMessage && (
-                            <span
-                                className={cn(
-                                    'flex items-center gap-1 truncate text-xs',
-                                    // room.typing ? 'text-primary' : 'text-muted-foreground',
-                                )}
-                            >
+                            <span className="flex items-center gap-1 truncate text-xs">
                                 {!room.unread && <CheckCheck className="size-3.5 shrink-0" />}
-                                {room.lastMessage && (
-                                    <span className="truncate">
-                                        {formatUserName(room.lastMessage.sender, session!.user)}:{' '}
-                                        {room.lastMessage.type == 'text' ? (
-                                            room.lastMessage.text
-                                        ) : (
-                                            <>{room.lastMessage.attachment.originalFilename}</>
-                                        )}
-                                    </span>
-                                )}
+
+                                <span className="truncate">
+                                    {formatUserName(room.lastMessage.sender, session!.user)}:{' '}
+                                    {room.lastMessage.type === 'text'
+                                        ? room.lastMessage.text
+                                        : room.lastMessage.attachment.originalFilename}
+                                </span>
                             </span>
                         )}
+
                         {room.unread > 0 && <Badge>{room.unread}</Badge>}
                     </div>
                 </div>
@@ -89,6 +88,9 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
 }
 
 function formatUserName(user: UserPreview, currUser: User) {
-    if (user?.id == currUser.id) return 'You';
+    if (user?.id === currUser.id) {
+        return 'You';
+    }
+
     return user?.name;
 }
