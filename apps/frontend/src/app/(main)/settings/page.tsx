@@ -4,6 +4,7 @@ import { useSession } from '@/features/auth/providers/session-provider';
 import { AccountSection } from '@/features/settings/components/sections/account';
 import { AvatarSection } from '@/features/settings/components/sections/change-avatar';
 import { ChangePasswordForm } from '@/features/settings/components/sections/change-password';
+import { DataControlsSection } from '@/features/settings/components/sections/data-controls';
 import { DeleteAccount } from '@/features/settings/components/sections/delete-account';
 import { useRouter } from 'next/navigation';
 
@@ -20,6 +21,7 @@ export default function Profile() {
             <AvatarSection displayName={user.name} avatarUrl={user.image} />
             <ChangePasswordForm />
             <DeleteAccount />
+            <DataControlsSection />
         </main>
     );
 }

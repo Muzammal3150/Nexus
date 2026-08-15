@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field';
 import { toast } from '@/components/ui/toast';
 import { authClient } from '@/features/auth/lib/auth';
-import ProfileSection from '@/features/settings/components/ProfileSection';
+import ProfileSection from '@/features/settings/components/profile-section';
 import { cn } from '@/lib/utils';
 import { CameraIcon, ImageIcon, Loader2Icon } from 'lucide-react';
 

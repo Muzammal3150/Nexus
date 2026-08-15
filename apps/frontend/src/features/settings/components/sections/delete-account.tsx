@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { authClient } from '@/features/auth/lib/auth';
-import ProfileSection from '@/features/settings/components/ProfileSection';
+import ProfileSection from '@/features/settings/components/profile-section';
 import { TrashIcon } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
@@ -38,6 +38,7 @@ export function DeleteAccount() {
         <ProfileSection
             id="delete-account"
             title={'Delete Account'}
+            className="grid grid-cols-[1fr_auto]"
             description="You're fully aware and sober—deleting your account will erase all data. There's no recovery, and you'll need to
                 create a new account to return."
         >

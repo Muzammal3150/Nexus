@@ -3,7 +3,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { toast } from '@/components/ui/toast';
 import { authClient } from '@/features/auth/lib/auth';
-import ProfileSection from '@/features/settings/components/ProfileSection';
+import ProfileSection from '@/features/settings/components/profile-section';
 
 import { baseSignUpValidator } from '@/features/auth/validators/signup';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -106,6 +106,7 @@ export function ChangePasswordForm() {
         <ProfileSection
             id={'change-password'}
             title={'Change Password'}
+            className="@container"
             description=" Update your password regularly to keep your account secure. You will need
                         your current password to make this change."
         >
@@ -137,7 +138,7 @@ export function ChangePasswordForm() {
                     )}
                 </Field>
 
-                <div className="flex gap-4 items-baseline-last">
+                <div className="flex flex-col @lg:flex-row gap-4 items-baseline-last">
                     <Field className="flex-1">
                         <FieldLabel htmlFor="new-password">New Password</FieldLabel>
 

@@ -4,7 +4,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { toast } from '@/components/ui/toast';
 import { authClient } from '@/features/auth/lib/auth';
 import { baseSignUpValidator } from '@/features/auth/validators/signup';
-import ProfileSection from '@/features/settings/components/ProfileSection';
+import ProfileSection from '@/features/settings/components/profile-section';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MailIcon, UserIcon } from 'lucide-react';
 
