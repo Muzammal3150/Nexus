@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Marker, MarkerContent } from '@/components/ui/marker';
@@ -15,8 +17,6 @@ import { getInitials } from '@/features/chats/lib/utils-chat';
 import { ChatMessage } from '@/features/chats/types/messages';
 import { Room } from '@/features/chats/types/room';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import React from 'react';
 import { MessageFileContent } from './file-message';
 import { MediaMessageGroup } from './FileGroup';
 
@@ -26,53 +26,37 @@ interface ChatThreadProps {
     room: Room;
 }
 
-// function StatusIcon({ status }: { status?: ChatMessage['status'] }) {
-//     if (status === 'read') {
-//         return <CheckCheck className="size-3.5 text-primary" />;
-//     }
-//     if (status === 'delivered') {
-//         return <CheckCheck className="size-3.5" />;
-//     }
-//     if (status === 'sent') {
-//         return <Check className="size-3.5" />;
-//     }
-//     return null;
-// }
-
 export function ChatThread({ messages, className, room }: ChatThreadProps) {
     return (
-        <MessageScroller className=" bg-muted/20  ">
+        <MessageScroller className="bg-muted/20">
             <MessageScrollerViewport>
-                <MessageScrollerContent className={cn('flex flex-col gap-1 px-6 py-4', className)}>
-                    {messages &&
-                        Object.keys(messages).map((day) => (
-                            <React.Fragment key={day}>
-                                <Marker variant="separator" className="py-4">
-                                    <MarkerContent>{day}</MarkerContent>
-                                </Marker>
-
-                                {messages[day] && renderDayMessages(messages[day], room)}
-                            </React.Fragment>
-                        ))}
+                <MessageScrollerContent className={cn('flex flex-col gap-2 px-6 py-4', className)}>
+                    {Object.entries(messages ?? {}).map(([day, dayMessages]) => (
+                        <React.Fragment key={day}>
+                            <Marker variant="separator" className="py-4">
+                                <MarkerContent>{day}</MarkerContent>
+                            </Marker>
+                            {dayMessages && renderMessages(dayMessages, room)}
+                        </React.Fragment>
+                    ))}
                 </MessageScrollerContent>
             </MessageScrollerViewport>
             <MessageScrollerButton />
         </MessageScroller>
     );
 }
+
 function MessageItem({
     message,
-    room,
     prevMessage,
+    room,
 }: {
     message: ChatMessage;
     prevMessage?: ChatMessage;
     room: Room;
 }) {
-    // console.log(message)
-    const isSameSender = prevMessage?.sender?.id === message.sender?.id;
-
-    const showAvatar = !message.isMine && room.isGroup && !isSameSender;
+    const sameSender = prevMessage?.sender?.id === message.sender?.id;
+    const showAvatar = !message.isMine && room.isGroup && !sameSender;
 
     return (
         <MessageScrollerItem messageId={message.id}>
@@ -93,70 +77,56 @@ function MessageItem({
                 )}
 
                 {message.type === 'text' ? (
-                    <MessageTextContent
-                        text={message.text}
-                        isMine={message.isMine}
-                        sentAt={message.sentAt}
-                    />
+                    <MessageTextContent message={message} showSender={showAvatar} />
                 ) : (
                     <MessageFileContent
                         isMine={message.isMine}
                         sentAt={message.sentAt}
                         attachment={message.attachment}
+                        showSender={showAvatar}
                     />
                 )}
             </Message>
         </MessageScrollerItem>
     );
 }
+
 function MessageTextContent({
-    text,
-    isMine,
-    sentAt,
+    message,
+    showSender,
 }: {
-    text: string;
-    isMine: boolean;
-    sentAt: number;
+    message: Extract<ChatMessage, { type: 'text' }>;
+    showSender: boolean;
 }) {
     return (
-        <MessageContent className="pb-0 gap-0 ">
-            <Bubble variant={isMine ? 'default' : 'muted'} className="">
-                <BubbleContent className="">
-                    <div className="">{text}</div>
-                    <div className="flex mt-0">
-                        <span className="text-[12px] font-light text-right ml-auto text-foreground/70 relative">
-                            {format(sentAt, 'p').toLowerCase()}
+        <MessageContent className="gap-0 pb-0">
+            <Bubble variant={message.isMine ? 'default' : 'muted'}>
+                <BubbleContent>
+                {showSender && (
+                    <div className="px-1 pt-0.5 text-[13px] font-semibold text-primary">
+                        {message.sender.name}
+                    </div>
+                )}
+                    <div>{message.text}</div>
+                    <div className="mt-0 flex">
+                        <span className="relative ml-auto text-right text-[12px] font-light text-foreground/70">
+                            {format(message.sentAt, 'p').toLowerCase()}
                         </span>
                     </div>
                 </BubbleContent>
             </Bubble>
-            {/* <MessageFooter className=" text-muted-foreground">
-                {isMine && <StatusIcon status={message.status} />}
-            </MessageFooter> */}
         </MessageContent>
     );
 }
 
-function renderDayMessages(messages: ChatMessage[], room: Room) {
+function renderMessages(messages: ChatMessage[], room: Room) {
     const result: React.ReactNode[] = [];
 
-    let i = 0;
-
-    while (i < messages.length) {
+    for (let i = 0; i < messages.length; ) {
         const message = messages[i];
 
         if (isGroupableMedia(message)) {
-            const group = [message];
-            let j = i + 1;
-
-            while (
-                j < messages.length &&
-                isGroupableMedia(messages[j]) &&
-                messages[j].sender?.id === message.sender?.id
-            ) {
-                group.push(messages[j]);
-                j++;
-            }
+            const group = getMediaGroup(messages, i);
 
             if (group.length > 4) {
                 result.push(
@@ -164,10 +134,10 @@ function renderDayMessages(messages: ChatMessage[], room: Room) {
                         key={message.id}
                         messages={group}
                         room={room}
-                        prevMessage={i > 0 ? messages[i - 1] : undefined}
+                        prevMessage={messages[i - 1]}
                     />,
                 );
-                i = j;
+                i += group.length;
                 continue;
             }
         }
@@ -176,7 +146,7 @@ function renderDayMessages(messages: ChatMessage[], room: Room) {
             <MessageItem
                 key={message.id}
                 message={message}
-                prevMessage={i > 0 ? messages[i - 1] : undefined}
+                prevMessage={messages[i - 1]}
                 room={room}
             />,
         );
@@ -187,11 +157,21 @@ function renderDayMessages(messages: ChatMessage[], room: Room) {
     return result;
 }
 
-function isGroupableMedia(message: ChatMessage) {
-    if (message.type !== 'file') return false;
+function getMediaGroup(messages: ChatMessage[], start: number) {
+    const first = messages[start];
+    if (!first || !isGroupableMedia(first)) return [];
 
-    return (
-        message.attachment.mimeType.startsWith('image/') ||
-        message.attachment.mimeType.startsWith('video/')
-    );
+    const group = [first];
+
+    for (let i = start + 1; i < messages.length; i++) {
+        const message = messages[i];
+        if (!isGroupableMedia(message) || message.sender?.id !== first.sender?.id) break;
+        group.push(message);
+    }
+
+    return group;
+}
+
+function isGroupableMedia(message: ChatMessage) {
+    return message.type === 'file' && /^(image|video)\//.test(message.attachment.mimeType);
 }

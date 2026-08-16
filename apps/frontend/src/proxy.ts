@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 
 const routes = {
-    protected: ["/chats", "/calls", "/settings"],
+    protected: ["/chats", "/calls", "/settings","/contacts"],
     guestOnly: ["/login", "/signup"],
 };
 const protectedRoutes = routes.protected;

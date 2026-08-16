@@ -110,24 +110,12 @@ export function useChats(roomId: string) {
             addUser(sender);
 
             try {
-                const response = await api.get(
-                    `../uploads/chat/${attachment.filename}`,
-                    {
-                        responseType: "blob",
-                    }
-                );
-
+                const response = await api.get(`../uploads/chat/${attachment.filename}`, { responseType: "blob" });
                 const blob = response.data;
-
-                const file = new File(
-                    [blob],
-                    attachment.originalFilename,
-                    {
-                        type: attachment.mimeType || blob.type,
-                        lastModified: Date.now(),
-                    }
-                );
-
+                const file = new File([blob], attachment.originalFilename, {
+                    type: attachment.mimeType || blob.type,
+                    lastModified: Date.now(),
+                });
                 const fileId = await addCacheFile(file);
 
                 await addMessage({
@@ -196,10 +184,7 @@ export function useChats(roomId: string) {
         };
     }, [roomId]);
 
-    /*
-     * If the component is unmounted/reloaded while files
-     * were uploading, mark them as failed.
-     */
+
     useEffect(() => {
         const markUploadingFilesAsFailed = async () => {
             await db.messages

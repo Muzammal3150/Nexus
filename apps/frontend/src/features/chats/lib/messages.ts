@@ -4,17 +4,10 @@ import { CachedMessage } from "@/db/db.d";
 
 export async function addMessage(message: CachedMessage): Promise<boolean> {
     try {
-        await db.transaction('rw', db.messages, async () => {
-            await db.messages.add(message);
-        });
-
+        await db.messages.add(message);
         return true;
     } catch (error) {
-        console.log("constraint error", message)
-        if (error instanceof DOMException && error.name === 'ConstraintError') {
-            return false;
-        }
-
+        if (error instanceof DOMException && error.name === "ConstraintError") return false;
         throw error;
     }
 }

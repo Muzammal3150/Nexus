@@ -1,6 +1,6 @@
-import { AlertCircleIcon, Download, FileIcon, Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
+import { AlertCircleIcon, Download, FileIcon, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import {
     Attachment,

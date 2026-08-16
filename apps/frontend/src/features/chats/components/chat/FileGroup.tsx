@@ -1,241 +1,158 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import {
-    ChevronLeft,
-    ChevronRight,
-    FileAudio,
-    File as FileIcon,
-    FileText,
-    FileVideo,
-    X,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { getCacheFile } from '../../file/files';
-import { formatFileSize } from '../../file/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Message, MessageAvatar, MessageContent } from '@/components/ui/message';
 import { MessageScrollerItem } from '@/components/ui/message-scroller';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { useCachedFile, useObjectUrl } from '../../hooks/file';
 import { getInitials } from '../../lib/utils-chat';
 import { ChatFileMessage, ChatMessage } from '../../types/messages';
 import { Room } from '../../types/room';
-import { MessageFileContent } from './file-message';
+import { FileGroupViewer } from './file/file-group-viewer';
 
-type ChatFile = {
-    fileId: string;
-    originalFilename: string;
-    mimeType: string;
-    size: number;
-};
-
-function getKind(file: ChatFile): 'image' | 'video' | 'audio' | 'other' {
-    if (file.mimeType.startsWith('image/')) return 'image';
-    if (file.mimeType.startsWith('video/')) return 'video';
-    if (file.mimeType.startsWith('audio/')) return 'audio';
+function getKind(mimeType: string): 'image' | 'video' | 'audio' | 'other' {
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.startsWith('video/')) return 'video';
+    if (mimeType.startsWith('audio/')) return 'audio';
     return 'other';
 }
 
-function FileIconFor({ file, className }: { file: ChatFile; className?: string }) {
-    const kind = getKind(file);
+// export function FileGroupViewer({
+//     messages,
+//     initialIndex = 0,
+//     onClose,
+// }: {
+//     messages: ChatFileMessage[];
+//     initialIndex?: number;
+//     onClose: () => void;
+// }) {
+//     const [activeIndex, setActiveIndex] = useState(initialIndex);
+//     const [activeFile, setActiveFile] = useState<File | null>(null);
+//     const [loading, setLoading] = useState(true);
 
-    if (kind === 'video') return <FileVideo className={className} />;
-    if (kind === 'audio') return <FileAudio className={className} />;
-    if (file.mimeType === 'application/pdf' || file.mimeType.includes('text')) {
-        return <FileText className={className} />;
-    }
+//     const activeMessage = messages[activeIndex];
+//     const url = useFileUrl(activeFile);
 
-    return <FileIcon className={className} />;
-}
+//     useEffect(() => {
+//         let cancelled = false;
 
-function useFileUrl(file: File | null) {
-    const [url, setUrl] = useState<string | null>(null);
+//         async function loadFile() {
+//             if (!activeMessage) return;
 
-    useEffect(() => {
-        if (!file) {
-            setUrl(null);
-            return;
-        }
+//             setLoading(true);
+//             setActiveFile(null);
 
-        const objectUrl = URL.createObjectURL(file);
-        setUrl(objectUrl);
+//             try {
+//                 const file = await getCacheFile(activeMessage.attachment.fileId);
 
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [file]);
+//                 if (!cancelled) {
+//                     setActiveFile(file);
+//                 }
+//             } finally {
+//                 if (!cancelled) {
+//                     setLoading(false);
+//                 }
+//             }
+//         }
 
-    return url;
-}
+//         loadFile();
 
-export function FileGroupViewer({
-    files,
-    initialIndex = 0,
-    onClose,
-}: {
-    files: ChatFile[];
-    initialIndex?: number;
-    onClose: () => void;
-}) {
-    const [activeIndex, setActiveIndex] = useState(initialIndex);
-    const [activeFile, setActiveFile] = useState<File | null>(null);
-    const [loading, setLoading] = useState(true);
+//         return () => {
+//             cancelled = true;
+//         };
+//     }, [activeMessage]);
 
-    const attachment = files[activeIndex];
-    const url = useFileUrl(activeFile);
+//     function previous() {
+//         setActiveIndex((index) => Math.max(0, index - 1));
+//     }
 
-    useEffect(() => {
-        let cancelled = false;
+//     function next() {
+//         setActiveIndex((index) => Math.min(messages.length - 1, index + 1));
+//     }
 
-        async function loadFile() {
-            if (!attachment) return;
+//     if (!activeMessage) return null;
 
-            setLoading(true);
-            setActiveFile(null);
+//     const kind = getKind(activeMessage.attachment.mimeType);
 
-            try {
-                const file = await getCacheFile(attachment.fileId);
+//     return (
+//         <div className="fixed inset-0 z-100000000000000  top-0 left-0 flex flex-col w-dvw h-dvh bg-red-500">
+//             <div className="flex items-center justify-between border-b px-4 py-3">
+//                 <div className="min-w-0">
+//                     <p className="truncate text-sm font-medium">
+//                         {activeMessage.attachment.originalFilename}
+//                     </p>
+//                     <p className="text-xs text-muted-foreground">
+//                         {formatFileSize(activeMessage.attachment.size)} · {activeIndex + 1} of{' '}
+//                         {messages.length}
+//                     </p>
+//                 </div>
 
-                if (!cancelled) {
-                    setActiveFile(file);
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            }
-        }
+//                 <Button variant="ghost" size="icon" onClick={onClose}>
+//                     <X />
+//                 </Button>
+//             </div>
 
-        loadFile();
+//             <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-muted/30 p-6">
+//                 {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
 
-        return () => {
-            cancelled = true;
-        };
-    }, [attachment]);
+//                 {!loading && activeFile && url && kind === 'image' && (
+//                     <img
+//                         src={url}
+//                         alt={activeMessage.attachment.originalFilename}
+//                         className="max-h-full max-w-full rounded-md object-contain"
+//                     />
+//                 )}
 
-    function previous() {
-        setActiveIndex((index) => Math.max(0, index - 1));
-    }
+//                 {!loading && activeFile && url && kind === 'video' && (
+//                     <video src={url} controls className="max-h-full max-w-full rounded-md" />
+//                 )}
 
-    function next() {
-        setActiveIndex((index) => Math.min(files.length - 1, index + 1));
-    }
+//                 {messages.length > 1 && (
+//                     <>
+//                         <Button
+//                             variant="secondary"
+//                             size="icon"
+//                             disabled={activeIndex === 0}
+//                             onClick={previous}
+//                             className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full"
+//                         >
+//                             <ChevronLeft />
+//                         </Button>
 
-    if (!attachment) return null;
+//                         <Button
+//                             variant="secondary"
+//                             size="icon"
+//                             disabled={activeIndex === messages.length - 1}
+//                             onClick={next}
+//                             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full"
+//                         >
+//                             <ChevronRight />
+//                         </Button>
+//                     </>
+//                 )}
+//             </div>
 
-    const kind = getKind(attachment);
-
-    return (
-        <div className="fixed inset-0 z-100 flex flex-col bg-background">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-                <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{attachment.originalFilename}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {formatFileSize(attachment.size)} · {activeIndex + 1} of {files.length}
-                    </p>
-                </div>
-
-                <Button variant="ghost" size="icon" onClick={onClose}>
-                    <X />
-                </Button>
-            </div>
-
-            <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-muted/30 p-6">
-                {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
-
-                {!loading && activeFile && url && kind === 'image' && (
-                    <img
-                        src={url}
-                        alt={attachment.originalFilename}
-                        className="max-h-full max-w-full rounded-md object-contain"
-                    />
-                )}
-
-                {!loading && activeFile && url && kind === 'video' && (
-                    <video src={url} controls className="max-h-full max-w-full rounded-md" />
-                )}
-
-                {!loading && activeFile && url && kind === 'audio' && (
-                    <div className="flex flex-col items-center gap-6">
-                        <FileIconFor
-                            file={attachment}
-                            className="h-20 w-20 text-muted-foreground"
-                        />
-
-                        <audio src={url} controls />
-                    </div>
-                )}
-
-                {!loading && activeFile && !['image', 'video', 'audio'].includes(kind) && (
-                    <div className="flex flex-col items-center gap-4 text-center">
-                        <FileIconFor
-                            file={attachment}
-                            className="h-20 w-20 text-muted-foreground"
-                        />
-
-                        <div>
-                            <p className="font-medium">{attachment.originalFilename}</p>
-                            <p className="text-sm text-muted-foreground">
-                                {formatFileSize(attachment.size)}
-                            </p>
-                        </div>
-
-                        {url && (
-                            <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-primary underline"
-                            >
-                                Open file
-                            </a>
-                        )}
-                    </div>
-                )}
-
-                {files.length > 1 && (
-                    <>
-                        <Button
-                            variant="secondary"
-                            size="icon"
-                            disabled={activeIndex === 0}
-                            onClick={previous}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full"
-                        >
-                            <ChevronLeft />
-                        </Button>
-
-                        <Button
-                            variant="secondary"
-                            size="icon"
-                            disabled={activeIndex === files.length - 1}
-                            onClick={next}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full"
-                        >
-                            <ChevronRight />
-                        </Button>
-                    </>
-                )}
-            </div>
-
-            {files.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto border-t p-3">
-                    {files.map((file, index) => (
-                        <button
-                            key={file.fileId}
-                            onClick={() => setActiveIndex(index)}
-                            className={cn(
-                                'flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border',
-                                index === activeIndex ? 'border-primary' : 'border-border',
-                            )}
-                        >
-                            <FileIconFor file={file} className="h-6 w-6 text-muted-foreground" />
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-}
+//             {messages.length > 1 && (
+//                 <div className="flex gap-2 overflow-x-auto border-t p-3">
+//                     {messages.map((message, index) => (
+//                         <button
+//                             key={message.id}
+//                             onClick={() => setActiveIndex(index)}
+//                             className={cn(
+//                                 'flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border',
+//                                 index === activeIndex ? 'border-primary' : 'border-border',
+//                             )}
+//                         >
+//                             {/* <FileIconFor file={message.a} className="h-6 w-6 text-muted-foreground" /> */}
+//                         </button>
+//                     ))}
+//                 </div>
+//             )}
+//         </div>
+//     );
+// }
 
 export function MediaMessageGroup({
     messages,
@@ -246,60 +163,144 @@ export function MediaMessageGroup({
     room: Room;
     prevMessage?: ChatMessage;
 }) {
+    const [viewerOpen, setViewerOpen] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(0);
+
     const firstMessage = messages[0];
     const isMine = firstMessage.isMine;
     const isSameSender = prevMessage?.sender?.id === firstMessage.sender?.id;
     const showAvatar = !isMine && room.isGroup && !isSameSender;
+    const visibleMessages = messages.slice(0, 4);
+    const extraCount = messages.length - 4;
+
+    const openViewer = (index: number) => {
+        setActiveIndex(index);
+        setViewerOpen(true);
+    };
 
     return (
-        <MessageScrollerItem messageId={firstMessage.id}>
-            <Message align={isMine ? 'end' : 'start'}>
-                {!isMine && room.isGroup && (
-                    <div className="w-8 shrink-0">
-                        {showAvatar && (
-                            <MessageAvatar className="translate-0! self-start">
-                                <Avatar>
-                                    <AvatarImage src={firstMessage.sender.image ?? undefined} />
-                                    <AvatarFallback className="text-[10px]">
-                                        {getInitials(firstMessage.sender.name)}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </MessageAvatar>
-                        )}
-                    </div>
-                )}
+        <>
+            <MessageScrollerItem messageId={firstMessage.id}>
+                <Message align={isMine ? 'end' : 'start'}>
+                    {!isMine && room.isGroup && (
+                        <div className="w-8 shrink-0">
+                            {showAvatar && (
+                                <MessageAvatar className="translate-0! self-start">
+                                    <Avatar>
+                                        <AvatarImage src={firstMessage.sender.image ?? undefined} />
+                                        <AvatarFallback className="text-[10px]">
+                                            {getInitials(firstMessage.sender.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </MessageAvatar>
+                            )}
+                        </div>
+                    )}
 
-                <MessageContent className="pb-0 gap-0">
-                    <div
+                    <MessageContent
                         className={cn(
-                            'grid max-w-sm grid-cols-2 gap-1 overflow-hidden rounded-xl',
-                            isMine ? 'bg-primary' : 'bg-muted',
+                            'max-w-md gap-2 rounded-lg pb-0 p-2',
+                            isMine ? 'bg-primary/80' : 'bg-muted',
                         )}
                     >
-                        {messages.map((message) => (
-                            <GroupedMediaItem key={message.id} message={message} />
-                        ))}
-                    </div>
+                        {showAvatar && (
+                            <div className="px-1 pt-0.5 text-[13px] font-semibold text-primary">
+                                {firstMessage.sender.name}
+                            </div>
+                        )}
 
-                    <div className="flex mt-0">
-                        <span className="ml-auto text-[12px] font-light text-foreground/70">
-                            {format(messages[messages.length - 1].sentAt, 'p').toLowerCase()}
-                        </span>
-                    </div>
-                </MessageContent>
-            </Message>
-        </MessageScrollerItem>
+                        <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-xl">
+                            {visibleMessages.map((message, index) => {
+                                const isLast = index === 3;
+                                const hasMore = extraCount > 0;
+
+                                return (
+                                    <div
+                                        key={message.id}
+                                        className="relative cursor-pointer"
+                                        onClick={() => openViewer(index)}
+                                    >
+                                        <GroupedMediaItem message={message as ChatFileMessage} />
+
+                                        {isLast && hasMore && (
+                                            <div
+                                                className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-lg bg-black/70 text-2xl font-semibold text-white"
+                                                onClick={() => setViewerOpen(true)}
+                                            >
+                                                +{extraCount}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-0 flex">
+                            <span className="ml-auto mr-2 text-[12px] font-light text-foreground/70">
+                                {format(messages.at(-1)!.sentAt, 'p').toLowerCase()}
+                            </span>
+                        </div>
+                    </MessageContent>
+                </Message>
+            </MessageScrollerItem>
+
+            {viewerOpen && (
+                <FileGroupViewer
+                    messages={messages as ChatFileMessage[]}
+                    initialIndex={activeIndex}
+                    onClose={() => setViewerOpen(false)}
+                />
+            )}
+        </>
     );
 }
 
 function GroupedMediaItem({ message }: { message: ChatFileMessage }) {
-    
-    return (
+    const mediaKind = useMemo(
+        () => getKind(message.attachment.mimeType),
+        [message.attachment.mimeType],
+    );
 
-            <MessageFileContent
-                isMine={message.isMine}
-                sentAt={message.sentAt}
-                attachment={message.attachment}
-            />
+    const isComplete =
+        message.attachment.status === 'uploaded' || message.attachment.status === 'downloaded';
+    const shouldLoadPreview = isComplete && (mediaKind === 'image' || mediaKind === 'video');
+
+    const { file, loading, error } = useCachedFile(
+        shouldLoadPreview ? message.attachment.fileId : undefined,
+    );
+    const fileUrl = useObjectUrl(file);
+
+    if (!shouldLoadPreview) {
+        return <div className="aspect-square rounded-lg bg-black" />;
+    }
+
+    return (
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-black">
+            {fileUrl && mediaKind === 'image' && (
+                <img src={fileUrl} alt="" className="h-full w-full object-cover" />
+            )}
+
+            {fileUrl && mediaKind === 'video' && (
+                <video
+                    src={fileUrl}
+                    className="h-full w-full object-cover"
+                    muted
+                    playsInline
+                    preload="metadata"
+                />
+            )}
+
+            {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                </div>
+            )}
+
+            {error && !loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs text-white">
+                    Failed to load
+                </div>
+            )}
+        </div>
     );
 }

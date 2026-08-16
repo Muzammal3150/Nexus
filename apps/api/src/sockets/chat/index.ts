@@ -128,14 +128,15 @@ export class ChatSocket implements SocketHandler {
 
 
     private async syncMessages(socket: Socket, rooms: Room[]) {
+        console.log("synicing ...", rooms.map(room => room.name))
         for (const room of rooms) {
-            const syncKey = `nexus: chat: sync:${room.id} `;
-            const streamKey = `nexus: chat: room:${room.id} `;
+            const syncKey = `nexus:chat:sync:${room.id}`;
+            const streamKey = `nexus:chat:room:${room.id}`;
             const sessionId = socket.data.session.id;
             const fallbackId = `${(socket.data.session as Session).createdAt.getTime()}-0`;
 
             const streamId = await redis.hGet(syncKey, sessionId) ?? fallbackId;
-
+            console.log(streamId)
             const messages = await redis.xRange(streamKey, `(${streamId}`, "+");
 
             for (const message of messages) {
@@ -145,9 +146,9 @@ export class ChatSocket implements SocketHandler {
                 );
             }
 
-            if (messages.length > 0) {
-                await redis.hSet(syncKey, sessionId, messages.at(-1)!.id);
-            }
+            // if (messages.length > 0) {
+            //     await redis.hSet(syncKey, sessionId, messages.at(-1)!.id);
+            // }
         }
     }
 

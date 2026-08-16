@@ -8,7 +8,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { useSession } from '@/features/auth/providers/session-provider';
 import { chatSocket } from '@/lib/socket';
 import { cn } from '@/lib/utils';
-import { FileViewGrid } from './file-view-grid';
+import { FileViewGrid } from './file/file-view-grid';
 import { sendChatFiles } from '../../file/send-file';
 
 export function ChatComposer({ roomId, className }: { roomId: string; className?: string }) {
