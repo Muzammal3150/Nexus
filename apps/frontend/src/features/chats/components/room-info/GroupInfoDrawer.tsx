@@ -27,7 +27,6 @@ export function GroupInfoDrawer({ room }: GroupInfoDrawerProps) {
             onOpenChange={(state) => setOpen(UiState.Chat.GroupInfo.Drawer, state)}
             swipeDirection={"right"}
         >
-            {/* <GroupInfoTrigger group={group} memberCount={members.length} /> */}
 
             <DrawerContent className="z-10000 flex h-screen w-full max-w-none flex-col gap-4 rounded-none! sm:h-auto sm:max-w-lg sm:rounded-lg">
                 <GroupHeader room={room} isAdmin={myMember?.role == 'admin'} />

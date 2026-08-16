@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { auth } from '../config/auth.js';
-import prisma from '../config/prisma.js';
-import { redis } from '../config/redis.js';
+import { auth } from '../../config/auth.js';
+import prisma from '../../config/prisma.js';
+import { redis } from '../../config/redis.js';
 
 export const router: Router = Router();
 

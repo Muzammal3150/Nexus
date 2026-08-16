@@ -49,10 +49,7 @@ export function MembersSection({ members }: MembersSectionProps) {
     const hasMore = filteredMembers.length > previewLimit && !showAll;
     console.log(previewMembers);
     const handleViewAll = () => {
-        if (onViewAll) {
-            onViewAll();
-            return;
-        }
+        throw new Error('Non implemented');
 
         setShowAll(true);
     };

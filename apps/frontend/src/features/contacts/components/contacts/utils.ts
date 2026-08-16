@@ -1,10 +1,5 @@
-import type { PresenceStatus } from "./types";
 
-
-
-
-
-export const statusLabel: Record<PresenceStatus, string> = {
+export const statusLabel = {
   online: "Online now",
   away: "Away",
   offline: "Offline",

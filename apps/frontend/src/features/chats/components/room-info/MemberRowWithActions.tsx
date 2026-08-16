@@ -35,9 +35,9 @@ export function MemberRowWithActions({
                         {getInitials(member.user.name)}
                     </AvatarFallback>
                 </Avatar>
-                {member.online && (
+                {/* {member.online && (
                     <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500" />
-                )}
+                )} */}
             </div>
 
             <div className="min-w-0 flex-1">

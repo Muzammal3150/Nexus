@@ -50,9 +50,6 @@ export function FileGroupViewer({
     const activeMessage = messages[activeIndex];
     const url = useFileUrl(activeFile);
 
-    useEffect(() => {
-        setActiveIndex(initialIndex);
-    }, [initialIndex]);
 
     useEffect(() => {
         let cancelled = false;
@@ -63,7 +60,8 @@ export function FileGroupViewer({
                 messages.map(async (message) => {
                     try {
                         const file = await getCacheFile(message.attachment.fileId);
-                        urls[message.id] = URL.createObjectURL(file);
+                        
+                        urls[message.id] = URL.createObjectURL(file!);
                     } catch {}
                 }),
             );

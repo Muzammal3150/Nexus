@@ -2,7 +2,7 @@
 
 // Swap these for real data from your backend / store.
 
-export const initialGroup: GroupInfo = {
+export const initialGroup = {
   id: "grp_1",
   name: "Design Weekly",
   description: "Sync on product design, critiques, and shipped work.",
@@ -10,7 +10,7 @@ export const initialGroup: GroupInfo = {
   createdAt: "Jan 12, 2025",
 };
 
-export const initialMembers: Member[] = [
+export const initialMembers = [
   // { id: "u1", name: "You", handle: "@you", role: "admin", online: true },
   // { id: "u2", name: "Amara Chen", handle: "@amarac", role: "admin", online: true },
   // { id: "u3", name: "Diego Ferreira", handle: "@dferreira", role: "member", online: false },
@@ -21,7 +21,7 @@ export const initialMembers: Member[] = [
   // { id: "u8", name: "Elena Popescu", handle: "@elenap", role: "member", online: false },
 ];
 
-export const allContacts: Contact[] = [
+export const allContacts = [
   // { id: "c1", name: "Jonas Weber", handle: "@jonasw" },
   // { id: "c2", name: "Lena Kowalski", handle: "@lenak" },
   // { id: "c3", name: "Marcus Reid", handle: "@mreid" },

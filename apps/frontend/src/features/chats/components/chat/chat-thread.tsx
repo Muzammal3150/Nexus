@@ -83,6 +83,7 @@ function MessageItem({
                         isMine={message.isMine}
                         sentAt={message.sentAt}
                         attachment={message.attachment}
+                        sender={message.sender}
                         showSender={showAvatar}
                     />
                 )}
@@ -102,11 +103,11 @@ function MessageTextContent({
         <MessageContent className="gap-0 pb-0">
             <Bubble variant={message.isMine ? 'default' : 'muted'}>
                 <BubbleContent>
-                {showSender && (
-                    <div className="px-1 pt-0.5 text-[13px] font-semibold text-primary">
-                        {message.sender.name}
-                    </div>
-                )}
+                    {showSender && (
+                        <div className="px-1 pt-0.5 text-[13px] font-semibold text-primary">
+                            {message.sender.name}
+                        </div>
+                    )}
                     <div>{message.text}</div>
                     <div className="mt-0 flex">
                         <span className="relative ml-auto text-right text-[12px] font-light text-foreground/70">

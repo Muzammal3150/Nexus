@@ -17,6 +17,7 @@ import { db } from '@/db/db';
 import { FileTransferStatus } from '@/db/db.d';
 import { formatFileSize } from '../../file/utils';
 import { useCachedFile, useObjectUrl } from '../../hooks/file';
+import { ChatFileMessage } from '../../types/messages';
 
 const supportedImageTypes = new Set([
     'image/jpeg',
@@ -54,6 +55,8 @@ interface MessageFileContentProps {
     isMine: boolean;
     sentAt: number;
     attachment: FileAttachment;
+    showSender: boolean;
+    sender: ChatFileMessage['sender'];
 }
 
 function getMediaKind(mimeType?: string | null): MediaKind {
@@ -82,7 +85,13 @@ function getTransferProgress(attachment: FileAttachment) {
     return undefined;
 }
 
-export function MessageFileContent({ isMine, sentAt, attachment }: MessageFileContentProps) {
+export function MessageFileContent({
+    isMine,
+    sender,
+    sentAt,
+    attachment,
+    showSender,
+}: MessageFileContentProps) {
     const mediaKind = useMemo(() => getMediaKind(attachment.mimeType), [attachment.mimeType]);
 
     const isComplete = attachment.status === 'uploaded' || attachment.status === 'downloaded';
@@ -102,6 +111,11 @@ export function MessageFileContent({ isMine, sentAt, attachment }: MessageFileCo
                 className={getBubbleClassName(mediaKind, isComplete)}
             >
                 <BubbleContent className="p-0 bg-transparent!">
+                    {showSender && (
+                        <div className="px-1 pt-0.5 text-[13px] font-semibold text-primary">
+                            {sender.name}
+                        </div>
+                    )}
                     <MessageAttachment
                         attachment={attachment}
                         mediaKind={mediaKind}

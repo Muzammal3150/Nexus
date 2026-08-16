@@ -45,7 +45,7 @@ export default function GroupInfo({ room }: { room: Room }) {
             />
             <EditGroupDialog room={room} onSave={() => {}} />
 
-            <AddMemberDialog room={room} onConfirm={() => {}} contacts={[]} />
+            <AddMemberDialog room={room}  />
 
             {/* <RemoveMemberDialog
                 member={removeTarget}

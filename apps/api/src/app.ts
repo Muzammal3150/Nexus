@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import morgan from "morgan";
-import { createServer } from "node:https";
+import { createServer } from "node:http";
 import { SocketServer } from "./config/socket.js";
 import { router } from "./routes/index.js";
 import { ChatSocket } from "./sockets/chat/index.js";
@@ -11,11 +11,11 @@ import path from "node:path";
 
 const app = express();
 
-const server = createServer({
-    key: fs.readFileSync("./certs/dev-key.pem"),
-    cert: fs.readFileSync("./certs/dev-cert.pem"),
-}, app)
-// const server = createServer(app)
+// const server = createServer({
+//     key: fs.readFileSync("./certs/dev-key.pem"),
+//     cert: fs.readFileSync("./certs/dev-cert.pem"),
+// }, app)
+const server = createServer(app)
 
 
 await new SocketServer()

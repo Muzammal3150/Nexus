@@ -6,7 +6,6 @@ import GroupsList from '@/features/contacts/components/contacts/groups-list';
 import MediaGrid from '@/features/contacts/components/contacts/media-grid';
 import ProfileHeader from '@/features/contacts/components/contacts/profile-header';
 import ProfileTabs from '@/features/contacts/components/contacts/profile-tabs';
-import { Group } from '@base-ui/react/internals/resolveValueLabel';
 
 import { ImagePlus, LogIn, UserPlus2 } from 'lucide-react';
 
@@ -27,15 +26,6 @@ async function getUser(username: string) {
     }
 }
 
-async function getSharedGroups(userId: string): Promise<Group[]> {
-    return [
-        { id: 'g1', name: 'Design Weekly', members: 24 },
-        { id: 'g2', name: 'Product Team', members: 11 },
-        { id: 'g3', name: 'Climbing Crew', members: 8 },
-        { id: 'g4', name: 'Family', members: 6 },
-    ];
-}
-
 interface ProfilePageProps {
     params: Promise<{ username: string }>;
 }
@@ -43,7 +33,6 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
     const { username } = await params;
     const user = await getUser(username);
-    const [groups] = await Promise.all([getSharedGroups(user.id)]);
 
     const activity: ActivityItem[] = [
         { id: 'a1', icon: ImagePlus, label: 'Updated profile photo', date: user.updatedAt },
@@ -81,13 +70,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             {
                                 key: 'groups',
                                 label: 'Shared groups',
-                                count: groups.length,
-                                content: <GroupsList groups={groups} />,
+                                count: 0,
+                                content: <GroupsList groups={[]} />,
                             },
                             {
                                 key: 'activity',
                                 label: 'Activity',
-                                count: activity.length,
+                                count: 0,
                                 content: <ActivityTimeline items={activity} />,
                             },
                         ]}
