@@ -3,9 +3,10 @@ import { ChatEvents } from "../events.js";
 import { redis } from "../../../config/redis.js";
 
 interface FilePayload {
+    id: string;
     roomId: string;
     attachment: {
-        id: string;
+        fileId: string;
         filename: string;
         originalFilename: string;
         mimeType: string;
@@ -13,35 +14,39 @@ interface FilePayload {
     };
 }
 
-function validate(socket: Socket, data: unknown) {
+function validate(socket: Socket, data: unknown): FilePayload | null {
     if (typeof data !== "object" || data === null) {
         socket.emit(ChatEvents.Error, { message: "Invalid file payload" });
-        return;
+        return null;
     }
 
-    const payload = data as Partial<FilePayload>;
+    const payload = data as Record<string, unknown>;
+
+    if (typeof payload.id !== "string" || !payload.id.trim()) {
+        socket.emit(ChatEvents.Error, { message: "A valid message id is required" });
+        return null;
+    }
 
     if (typeof payload.roomId !== "string" || !payload.roomId.trim()) {
         socket.emit(ChatEvents.Error, { message: "A valid roomId is required" });
-        return;
+        return null;
     }
 
     if (!socket.rooms.has(payload.roomId)) {
-        socket.emit(ChatEvents.Error, {
-            message: "You are not a member of this room",
-        });
-        return;
+        socket.emit(ChatEvents.Error, { message: "You are not a member of this room" });
+        return null;
     }
 
     if (typeof payload.attachment !== "object" || payload.attachment === null) {
         socket.emit(ChatEvents.Error, { message: "Invalid file" });
-        return;
+        return null;
     }
 
-    const attachment = payload.attachment;
+    const attachment = payload.attachment as Record<string, unknown>;
 
     if (
-        typeof attachment.id !== "string" ||
+        typeof attachment.fileId !== "string" ||
+        !attachment.fileId.trim() ||
         typeof attachment.filename !== "string" ||
         typeof attachment.originalFilename !== "string" ||
         typeof attachment.mimeType !== "string" ||
@@ -50,31 +55,49 @@ function validate(socket: Socket, data: unknown) {
         attachment.size < 0
     ) {
         socket.emit(ChatEvents.Error, { message: "Invalid file" });
-        return;
+        return null;
     }
 
-    return payload as FilePayload;
+    return {
+        id: payload.id,
+        roomId: payload.roomId,
+        attachment: {
+            fileId: attachment.fileId,
+            filename: attachment.filename,
+            originalFilename: attachment.originalFilename,
+            mimeType: attachment.mimeType,
+            size: attachment.size,
+        },
+    };
 }
 
 export async function onFileSend(socket: Socket, data: unknown) {
     const payload = validate(socket, data);
     if (!payload) return;
-    console.log("File send")
 
-    const { roomId, attachment } = payload;
+    const { id, roomId, attachment } = payload;
 
     const messagePayload = {
-        id: crypto.randomUUID(),
+        id,
         sender: socket.data.user,
         attachment,
         sentAt: Date.now(),
         roomId,
     };
 
-    const streamId = await redis.xAdd(`nexus:chat:room:${roomId}`, '*', {
+    const streamId = await redis.xAdd(`nexus:chat:room:${roomId}`, "*", {
         event: "chat:file",
         payload: JSON.stringify(messagePayload),
-    })
+    });
 
-    socket.to(roomId).emit(ChatEvents.Chat.File, { ...messagePayload, streamId });
+    await redis.hSet(
+        `nexus:chat:sync:${roomId}`,
+        socket.data.session.id,
+        streamId,
+    );
+    socket.to(roomId).emit(ChatEvents.Chat.File, {
+        ...messagePayload,
+        from: "message-broadcast",
+        streamId,
+    });
 }

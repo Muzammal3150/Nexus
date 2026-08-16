@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Marker, MarkerContent } from '@/components/ui/marker';
-import { Message, MessageAvatar, MessageContent, MessageFooter } from '@/components/ui/message';
+import { Message, MessageAvatar, MessageContent } from '@/components/ui/message';
 import {
     MessageScroller,
     MessageScrollerButton,
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import React from 'react';
 import { MessageFileContent } from './file-message';
+import { MediaMessageGroup } from './FileGroup';
 
 interface ChatThreadProps {
     messages?: Partial<Record<string, ChatMessage[]>>;
@@ -50,14 +51,7 @@ export function ChatThread({ messages, className, room }: ChatThreadProps) {
                                     <MarkerContent>{day}</MarkerContent>
                                 </Marker>
 
-                                {messages[day]!.map((message, index, dayMessages) => (
-                                    <MessageItem
-                                        key={message.id}
-                                        message={message}
-                                        prevMessage={index > 0 ? dayMessages[index - 1] : undefined}
-                                        room={room}
-                                    />
-                                ))}
+                                {messages[day] && renderDayMessages(messages[day], room)}
                             </React.Fragment>
                         ))}
                 </MessageScrollerContent>
@@ -136,11 +130,68 @@ function MessageTextContent({
                     </div>
                 </BubbleContent>
             </Bubble>
-            <MessageFooter className=" text-muted-foreground">
-                {/* {message.isMine && (
-                                                    <StatusIcon status={message.status} />
-                                                    )} */}
-            </MessageFooter>
+            {/* <MessageFooter className=" text-muted-foreground">
+                {isMine && <StatusIcon status={message.status} />}
+            </MessageFooter> */}
         </MessageContent>
+    );
+}
+
+function renderDayMessages(messages: ChatMessage[], room: Room) {
+    const result: React.ReactNode[] = [];
+
+    let i = 0;
+
+    while (i < messages.length) {
+        const message = messages[i];
+
+        if (isGroupableMedia(message)) {
+            const group = [message];
+            let j = i + 1;
+
+            while (
+                j < messages.length &&
+                isGroupableMedia(messages[j]) &&
+                messages[j].sender?.id === message.sender?.id
+            ) {
+                group.push(messages[j]);
+                j++;
+            }
+
+            if (group.length > 4) {
+                result.push(
+                    <MediaMessageGroup
+                        key={message.id}
+                        messages={group}
+                        room={room}
+                        prevMessage={i > 0 ? messages[i - 1] : undefined}
+                    />,
+                );
+                i = j;
+                continue;
+            }
+        }
+
+        result.push(
+            <MessageItem
+                key={message.id}
+                message={message}
+                prevMessage={i > 0 ? messages[i - 1] : undefined}
+                room={room}
+            />,
+        );
+
+        i++;
+    }
+
+    return result;
+}
+
+function isGroupableMedia(message: ChatMessage) {
+    if (message.type !== 'file') return false;
+
+    return (
+        message.attachment.mimeType.startsWith('image/') ||
+        message.attachment.mimeType.startsWith('video/')
     );
 }

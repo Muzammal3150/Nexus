@@ -68,12 +68,13 @@ export class CallSocket implements SocketHandler {
 
 
     private async onConnect(socket: Socket) {
-        // Guard against a broken auth middleware slipping a socket through without user data.
+
         if (!socket.data?.user?.id) {
             console.error(`Socket ${socket.id} connected without user data, disconnecting`);
             socket.disconnect(true);
             return;
         }
+        console.log("User connected to call Server", socket.data.user.name)
 
         const safe = initSafe((err) => {
             console.error(

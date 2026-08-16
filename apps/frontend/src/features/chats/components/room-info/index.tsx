@@ -31,8 +31,7 @@ export default function GroupInfo({ room }: { room: Room }) {
     const isAdmin = myMember?.role == 'admin';
 
     return (
-        <div className="mx-auto flex min-h-[560px] w-full max-w-md items-center justify-center bg-background p-6">
-            {/* <Banner message={banner} /> */}
+        <div className="">
 
             <GroupInfoDrawer room={room} />
 

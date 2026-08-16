@@ -10,6 +10,7 @@ export async function addMessage(message: CachedMessage): Promise<boolean> {
 
         return true;
     } catch (error) {
+        console.log("constraint error", message)
         if (error instanceof DOMException && error.name === 'ConstraintError') {
             return false;
         }

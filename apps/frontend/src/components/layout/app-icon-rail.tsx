@@ -61,7 +61,7 @@ function DesktopSidebar() {
 
     return (
         <Sidebar collapsible="none" className="h-screen w-17 border-r">
-            <SidebarHeader className="items-center py-4">
+            <SidebarHeader className="items-center py-4 select-none">
                 <div className="flex size-9 items-center justify-center rounded-lg text-primary-foreground">
                     <Image src={'/icon.png'} width={25} height={25} alt={'logo'} />
                 </div>

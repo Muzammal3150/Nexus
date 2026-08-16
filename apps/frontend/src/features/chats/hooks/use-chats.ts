@@ -169,7 +169,6 @@ export function useChats(roomId: string) {
             text,
             roomId: incomingRoomId,
         }: TextMessageBroadcast) => {
-            // Store the sender globally.
             addUser(sender);
 
             await addMessage({
@@ -195,7 +194,7 @@ export function useChats(roomId: string) {
             chatSocket.off("chat:file", handleFile);
             chatSocket.off("chat:text", handleText);
         };
-    }, [roomId, addUser]);
+    }, [roomId]);
 
     /*
      * If the component is unmounted/reloaded while files

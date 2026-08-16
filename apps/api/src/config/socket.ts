@@ -22,6 +22,7 @@ export class SocketServer {
     }
 
     async init(httpServer: HttpServer) {
+        console.log("init socket server", this.handlers.map((s) => s.namespace))
 
         const pubClient = redis.duplicate()
         const subClient = redis.duplicate()

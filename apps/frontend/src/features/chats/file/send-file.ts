@@ -51,6 +51,7 @@ export async function sendChatFiles({
             void uploadFile({
                 id,
                 roomId,
+                fileId,
                 file,
             });
         }),
@@ -59,10 +60,12 @@ export async function sendChatFiles({
 
 async function uploadFile({
     id,
+    fileId,
     roomId,
     file,
 }: {
     id: string;
+    fileId: string;
     roomId: string;
     file: File;
 }) {
@@ -93,9 +96,10 @@ async function uploadFile({
         });
 
         chatSocket.emit("chat:file", {
+            id,
             roomId,
             attachment: {
-                id,
+                fileId,
                 filename: data.file.filename,
                 originalFilename: data.file.originalname,
                 mimeType: data.file.mimetype,

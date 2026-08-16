@@ -1,5 +1,3 @@
-// lib/socket.js
-
 import { io } from "socket.io-client";
 
 const options = {
@@ -15,4 +13,3 @@ export const callSocket = io(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/call`,
     options
 );
-
