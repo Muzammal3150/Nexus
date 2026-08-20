@@ -11,6 +11,7 @@ import { getInitials } from '../../lib/utils-chat';
 import { ChatFileMessage, ChatMessage } from '../../types/messages';
 import { Room } from '../../types/room';
 import { FileGroupViewer } from './file/file-group-viewer';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 function getKind(mimeType: string): 'image' | 'video' | 'audio' | 'other' {
     if (mimeType.startsWith('image/')) return 'image';
@@ -187,7 +188,7 @@ export function MediaMessageGroup({
                             {showAvatar && (
                                 <MessageAvatar className="translate-0! self-start">
                                     <Avatar>
-                                        <AvatarImage src={firstMessage.sender.image ?? undefined} />
+                                        <AvatarImage src={getAvatar(firstMessage.sender.image)} />
                                         <AvatarFallback className="text-[10px]">
                                             {getInitials(firstMessage.sender.name)}
                                         </AvatarFallback>

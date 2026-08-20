@@ -9,7 +9,7 @@ interface GetRoomResponse {
         id: string;
         sender: unknown;
         memberIds: string[];
-        createdAt: string;
+        createdAt: number;
         started: boolean;
         acceptedUserIds: string[];
         joinedUserIds: string[];

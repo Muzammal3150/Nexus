@@ -74,7 +74,7 @@ export class CallSocket implements SocketHandler {
             socket.disconnect(true);
             return;
         }
-        console.log("User connected to call Server", socket.data.user.name)
+        console.log("CALL_SOCKET: User Connected", socket.data.user.name)
 
         const safe = initSafe((err) => {
             console.error(

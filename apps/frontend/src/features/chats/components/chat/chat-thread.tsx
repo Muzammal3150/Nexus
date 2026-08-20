@@ -56,14 +56,14 @@ function MessageItem({
     room: Room;
 }) {
     const sameSender = prevMessage?.sender?.id === message.sender?.id;
-    const showAvatar = !message.isMine && room.isGroup && !sameSender;
+    const showSender = !message.isMine && room.isGroup && !sameSender;
 
     return (
         <MessageScrollerItem messageId={message.id}>
             <Message align={message.isMine ? 'end' : 'start'}>
                 {!message.isMine && room.isGroup && (
                     <div className="w-8 shrink-0">
-                        {showAvatar && (
+                        {showSender && (
                             <MessageAvatar className="translate-0! self-start">
                                 <Avatar>
                                     <AvatarImage src={message.sender.image ?? undefined} />
@@ -77,14 +77,14 @@ function MessageItem({
                 )}
 
                 {message.type === 'text' ? (
-                    <MessageTextContent message={message} showSender={showAvatar} />
+                    <MessageTextContent message={message} showSender={showSender} />
                 ) : (
                     <MessageFileContent
                         isMine={message.isMine}
                         sentAt={message.sentAt}
                         attachment={message.attachment}
+                        showSender={showSender}
                         sender={message.sender}
-                        showSender={showAvatar}
                     />
                 )}
             </Message>

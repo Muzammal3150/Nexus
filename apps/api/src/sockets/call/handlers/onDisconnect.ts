@@ -5,6 +5,9 @@ import { onCallLeave } from "./onCallLeave.js";
 export async function onDisconnect(ctx: CallContext, socket: Socket) {
     if (!socket.data?.user?.id) return;
 
+    console.log("CALL_SOCKET: User Disconnected", socket.data.user.name)
+    
+    
     let rooms;
     try {
         rooms = ctx.callManager.getUserRooms(socket.data.user.id);
@@ -23,5 +26,4 @@ export async function onDisconnect(ctx: CallContext, socket: Socket) {
         }
     }
 
-    console.log(`${socket.data.user.name} disconnected`);
 }

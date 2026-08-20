@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/avatar';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../../components/ui/card';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 interface CallRoom {
     id: string;
@@ -21,7 +22,6 @@ export function CallToaster() {
     const router = useRouter();
     const [callToasts, setCallToasts] = useState<CallRoom[]>([]);
     useEffect(() => {
-
         const handleInvite = (room: CallRoom) => {
             setCallToasts((prev) => [...prev, room]);
         };
@@ -44,23 +44,24 @@ export function CallToaster() {
         callSocket.emit('call:reject', { roomId: callRoom.id });
     };
 
-    return (
-        <div className="fixed bottom-0 right-0 z-9999 flex flex-col items-end gap-2 p-4">
-            <div className="flex flex-col gap-2">
-                <AnimatePresence mode="popLayout">
-                    {callToasts.map((call) => (
-                        <CallToast
-                            key={call.id}
-                            callRoom={call}
-                            onAccept={handleAccept}
-                            onDecline={handleDecline}
-                            onCancel={handleDecline}
-                        />
-                    ))}
-                </AnimatePresence>
+    if (callToasts.length > 0)
+        return (
+            <div className="fixed bottom-0 right-0 z-9999 flex flex-col items-end gap-2 p-4">
+                <div className="flex flex-col gap-2">
+                    <AnimatePresence mode="popLayout">
+                        {callToasts.map((call) => (
+                            <CallToast
+                                key={call.id}
+                                callRoom={call}
+                                onAccept={handleAccept}
+                                onDecline={handleDecline}
+                                onCancel={handleDecline}
+                            />
+                        ))}
+                    </AnimatePresence>
+                </div>
             </div>
-        </div>
-    );
+        );
 }
 
 export function CallToast({
@@ -114,7 +115,7 @@ export function CallToast({
                     <div className="flex items-center gap-4">
                         <Avatar className="h-14 w-14 ring-2 ring-green-500/20">
                             <AvatarImage
-                                src={callRoom.sender.image || undefined}
+                                src={getAvatar(callRoom.sender.image)}
                                 alt={callRoom.sender.name}
                             />
                             <AvatarFallback>

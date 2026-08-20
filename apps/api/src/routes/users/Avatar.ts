@@ -23,18 +23,17 @@ router.post('/avatar', uploadAvatar.single('avatar'), async (req, res) => {
             });
         }
 
-        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/avatars/${req.file.filename}`;
 
         await auth.api.updateUser({
             headers: req.headers,
             body: {
-                image: imageUrl,
+                image: req.file.filename,
             },
         });
 
         return res.status(200).json({
             message: 'Avatar updated successfully.',
-            image: imageUrl,
+            image: req.file.filename,
         });
     } catch {
         return res.status(500).json({

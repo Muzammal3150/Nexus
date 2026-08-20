@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { useRoomTyping } from '../../hooks/use-room-typing';
 import { UiState } from '@/stores/uiStore/uis';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 export function ChatHeader({ room }: { room: Room }) {
     const router = useRouter();
@@ -50,7 +51,7 @@ export function ChatHeader({ room }: { room: Room }) {
                 onClick={() => open(UiState.Chat.GroupInfo.Drawer)}
             >
                 <Avatar className="size-9">
-                    <AvatarImage src={room.image ?? undefined} alt={room.name} />
+                    <AvatarImage src={getAvatar(room.image)} alt={room.name} />
 
                     <AvatarFallback className="text-xs font-medium">
                         {getInitials(room.name)}

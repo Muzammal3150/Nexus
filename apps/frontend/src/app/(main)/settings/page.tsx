@@ -1,5 +1,6 @@
 'use client';
 
+import { getAvatar } from '@/features/auth/lib/utils';
 import { useSession } from '@/features/auth/providers/session-provider';
 import { AccountSection } from '@/features/settings/components/sections/account';
 import { AvatarSection } from '@/features/settings/components/sections/change-avatar';
@@ -18,10 +19,11 @@ export default function Profile() {
     return (
         <main className="space-y-8 p-8 py-12 flex-1">
             <AccountSection displayName={user.name} username={user.username} email={user.email} />
-            <AvatarSection displayName={user.name} avatarUrl={user.image} />
+            <AvatarSection displayName={user.name} avatarUrl={getAvatar(user.image)} />
             <ChangePasswordForm />
             <DeleteAccount />
             <DataControlsSection />
+
         </main>
     );
 }

@@ -1,17 +1,17 @@
-import type { Session } from "better-auth";
 import type { Namespace, Socket } from "socket.io";
-import { redis } from "../../config/redis.js";
 import type { SocketHandler } from "../../config/socket.js";
-import type { Room } from "../../generated/prisma/client.js";
 import { authenticate } from "../authenticate.js";
 import { ChatEvents } from "./events.js";
 import { createRoom } from "./handlers/createRoom.js";
+import { onText } from "./handlers/onText.js";
+import { initSafe } from "./safeAck.js";
 import { onFileSend } from "./handlers/onFileSend.js";
+import type { Session } from "better-auth";
+import type { Room } from "../../generated/prisma/client.js";
+import { redis } from "../../config/redis.js";
 import { onMessageReceived } from "./handlers/onMessageRecieved.js";
 import { onPresenceSubscribe } from "./handlers/onSubscribePresence.js";
-import { onText } from "./handlers/onText.js";
 import { onTyping } from "./handlers/onTyping.js";
-import { initSafe } from "./safeAck.js";
 import { getAllRooms } from "../../routes/room/get-room.js";
 
 
@@ -23,6 +23,8 @@ export class ChatSocket implements SocketHandler {
     init(io: Namespace) {
         this.io = io;
         this.io.use((socket, next) => authenticate(socket, next));
+
+
         this.io.on("connection", async (socket) => {
             await this.
                 onConnect(socket)
@@ -33,22 +35,14 @@ export class ChatSocket implements SocketHandler {
     }
 
 
-    private validate(socket: Socket) {
+
+    private async onConnect(socket: Socket) {
         const userId = socket.data.user.id;
         if (!userId) {
             console.error(`Chat socket ${socket.id} connected without user data, disconnecting`);
             socket.disconnect(true);
-            return false;
+            return;
         }
-
-        return true;
-    }
-
-
-    private async onConnect(socket: Socket) {
-        if (!(this.validate(socket))) return;
-        const userId = socket.data.user.id;
-        console.log("User connected to chat Server", socket.data.user.name)
 
 
         const safe = initSafe((err) => {
@@ -86,12 +80,13 @@ export class ChatSocket implements SocketHandler {
             isOnline: true,
             lastSeen,
         });
-        if (rooms) await this.syncMessages(socket, rooms)
+        if (rooms) await this.syncMessages(socket, rooms);
+        console.log("CHAT_SOCKET: User Connected", socket.data.user.name)
+
     }
 
 
     private async onDisconnect(socket: Socket) {
-        console.log(`${socket.data.user.name} is disconnecting...`)
         const userId = socket.data.user.id;
 
         const remainingSockets = await this.io.in(`user:${userId}`).fetchSockets();
@@ -107,7 +102,7 @@ export class ChatSocket implements SocketHandler {
                 lastSeen: Date.now(),
             });
         }
-        console.log(`${socket.data.user.name} is disconnected`)
+        console.log("CHAT_SOCKET: User Disconnected", socket.data.user.name)
 
     }
 
@@ -121,23 +116,21 @@ export class ChatSocket implements SocketHandler {
             return rooms
 
         } catch (err) {
-            console.error(`Failed to join existing rooms for user ${socket.data.user.id}: `, err);
+            console.error(`Failed to join existing rooms for user ${socket.data.user.id}:`, err);
             socket.emit(ChatEvents.Error, { message: "Failed to load your conversations" });
         }
     }
 
 
     private async syncMessages(socket: Socket, rooms: Room[]) {
-        console.log("synicing ...", rooms.map(room => room.name))
         for (const room of rooms) {
             const syncKey = `nexus:chat:sync:${room.id}`;
             const streamKey = `nexus:chat:room:${room.id}`;
             const sessionId = socket.data.session.id;
-            const fallbackId = `${(socket.data.session as Session).createdAt.getTime()}-0`;
+            const fallbackId = `${socket.data.session.createdAt.getTime()}-0`;
 
-            const streamId = await redis.hGet(syncKey, sessionId) ?? fallbackId;
-            console.log(streamId)
-            const messages = await redis.xRange(streamKey, `(${streamId}`, "+");
+            const lastId = await redis.hGet(syncKey, sessionId) ?? fallbackId;
+            const messages = await redis.xRange(streamKey, `(${lastId}`, "+");
 
             for (const message of messages) {
                 socket.emit(
@@ -146,9 +139,9 @@ export class ChatSocket implements SocketHandler {
                 );
             }
 
-            // if (messages.length > 0) {
-            //     await redis.hSet(syncKey, sessionId, messages.at(-1)!.id);
-            // }
+            if (messages.length > 0) {
+                await redis.hSet(syncKey, sessionId, messages.at(-1)!.id);
+            }
         }
     }
 

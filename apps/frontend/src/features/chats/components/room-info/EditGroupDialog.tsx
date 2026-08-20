@@ -9,17 +9,17 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { DrawerClose } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { getAvatar } from '@/features/auth/lib/utils';
+import { UiState } from '@/stores/uiStore/uis';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { Camera } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { getInitials } from '../../lib/utils-chat';
 import { Room } from '../../types/room';
-import { UiState } from '@/stores/uiStore/uis';
 
 interface EditGroupForm {
     name: string;
@@ -82,7 +82,7 @@ export function EditGroupDialog({ room, onSave }: EditGroupDialogProps) {
                             aria-label="Change group photo"
                         >
                             <Avatar className="h-16 w-16">
-                                <AvatarImage src={room.image ?? undefined} alt={room.name} />
+                                <AvatarImage src={getAvatar(room.image)} alt={room.name} />
                                 <AvatarFallback>{getInitials(room.name)}</AvatarFallback>
                             </Avatar>
 
@@ -119,9 +119,8 @@ export function EditGroupDialog({ room, onSave }: EditGroupDialogProps) {
                     </div>
 
                     <DialogFooter>
-                        <DialogClose render={
-                            <Button type="button" variant="outline"/>}>
-                                Cancel
+                        <DialogClose render={<Button type="button" variant="outline" />}>
+                            Cancel
                         </DialogClose>
                         <Button type="submit" disabled={isSubmitting}>
                             Save changes

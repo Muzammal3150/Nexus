@@ -19,6 +19,7 @@ import { UiState } from '@/stores/uiStore/uis';
 import { Check, Loader2, Search } from 'lucide-react';
 import { getInitials } from '../../lib/utils-chat';
 import { Room } from '../../types/room';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 interface AddMemberDialogProps {
     room: Room;
@@ -167,7 +168,7 @@ export function AddMemberDialog({ room, onAdded }: AddMemberDialogProps) {
                                     >
                                         <Avatar className="h-8 w-8 shrink-0">
                                             <AvatarImage
-                                                src={contact.image ?? undefined}
+                                                src={getAvatar(contact.image)}
                                                 alt={contact.name}
                                             />
                                             <AvatarFallback className="text-xs">

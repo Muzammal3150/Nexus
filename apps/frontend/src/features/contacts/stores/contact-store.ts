@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-
 import { db } from '@/db/db';
 import { UserPreview } from '@/features/auth/lib/users';
 import { api } from '@/lib/axios';
+import { chatSocket } from '@/lib/socket';
 
 export interface CachedContact {
     userId: string;
@@ -22,355 +22,273 @@ interface UserPresence {
 interface ContactsState {
     users: Record<string, UserPreview>;
     contacts: Record<string, CachedContact>;
-
     initialized: boolean;
 
     initialize: () => Promise<void>;
 
     addUser: (user: UserPreview) => void;
     addUsers: (users: UserPreview[]) => void;
+    updateUserPresence: (userId: string, presence: UserPresence) => void;
 
-    updateUserPresence: (userId: string,presence: UserPresence) => void;
+    saveContact: (userId: string, name: string) => Promise<void>;
+    updateContactName: (userId: string, name: string) => Promise<void>;
+    removeContact: (userId: string) => Promise<void>;
 
-    saveContact: (
-        userId: string,
-        name: string,
-    ) => Promise<void>;
-
-    updateContactName: (
-        userId: string,
-        name: string,
-    ) => Promise<void>;
-
-    removeContact: (
-        userId: string,
-    ) => Promise<void>;
-
-    getUser: (
-        userId: string,
-    ) => UserPreview | undefined;
-
-    getContact: (
-        userId: string,
-    ) => Contact | undefined;
-
+    getUser: (userId: string) => UserPreview | undefined;
+    getContact: (userId: string) => Contact | undefined;
     getContacts: () => Contact[];
 
-    fetchUserByUsername: (
-        username: string,
-    ) => Promise<Contact | undefined>;
-
+    fetchUserByUsername: (username: string) => Promise<Contact | undefined>;
     fetchContacts: () => Promise<Contact[]>;
 
     clearContacts: () => Promise<void>;
 }
 
-export const useContactsStore = create<ContactsState>(
-    (set, get) => ({
-        users: {},
-        contacts: {},
-        initialized: false,
+const subscribeToPresence = (userId: string) => {
+    chatSocket.emit('presence:subscribe', { userId });
+};
 
-        initialize: async () => {
-            if (get().initialized) {
-                return;
+export const useContactsStore = create<ContactsState>((set, get) => ({
+    users: {},
+    contacts: {},
+    initialized: false,
+
+    initialize: async () => {
+        if (get().initialized) return;
+
+        const cachedContacts = await db.contacts.toArray();
+        const contacts: Record<string, CachedContact> = {};
+
+        for (const contact of cachedContacts) {
+            contacts[contact.userId] = contact;
+        }
+
+        set({ contacts });
+
+        await get().fetchContacts();
+
+        set({ initialized: true });
+    },
+
+    addUser: (user) => {
+        const exists = !!get().users[user.id];
+
+        set((state) => ({
+            users: {
+                ...state.users,
+                [user.id]: user,
+            },
+        }));
+
+        if (!exists) {
+            subscribeToPresence(user.id);
+        }
+    },
+
+    addUsers: (users) => {
+        if (!users.length) return;
+
+        const existingUsers = get().users;
+
+        set((state) => {
+            const nextUsers = { ...state.users };
+
+            for (const user of users) {
+                nextUsers[user.id] = user;
             }
 
-            const cachedContacts =
-                await db.contacts.toArray();
+            return { users: nextUsers };
+        });
 
-            const contacts: Record<
-                string,
-                CachedContact
-            > = {};
-
-            for (const contact of cachedContacts) {
-                contacts[contact.userId] = contact;
+        for (const user of users) {
+            if (!existingUsers[user.id]) {
+                subscribeToPresence(user.id);
             }
+        }
+    },
 
-            // Load the persistent contact list first.
-            set({
-                contacts,
-            });
+    updateUserPresence: (userId, presence) => {
+        set((state) => {
+            const user = state.users[userId];
 
-            // Get user information and the initial
-            // presence snapshot from the server.
-            await get().fetchContacts();
+            if (!user) return state;
 
-            set({
-                initialized: true,
-            });
-        },
-
-        addUser: (user) => {
-            set((state) => ({
+            return {
                 users: {
                     ...state.users,
-                    [user.id]: user,
-                },
-            }));
-        },
-
-        addUsers: (users) => {
-            if (users.length === 0) {
-                return;
-            }
-
-            set((state) => {
-                const nextUsers = {
-                    ...state.users,
-                };
-
-                for (const user of users) {
-                    nextUsers[user.id] = user;
-                }
-
-                return {
-                    users: nextUsers,
-                };
-            });
-        },
-
-        updateUserPresence: (
-            userId,
-            presence,
-        ) => {
-            set((state) => {
-                const user = state.users[userId];
-
-                if (!user) {
-                    return state;
-                }
-
-                return {
-                    users: {
-                        ...state.users,
-                        [userId]: {
-                            ...user,
-                            isOnline:
-                                presence.isOnline,
-                            lastSeen:
-                                presence.lastSeen,
-                        },
+                    [userId]: {
+                        ...user,
+                        isOnline: presence.isOnline,
+                        lastSeen: presence.lastSeen,
                     },
-                };
-            });
-        },
-
-        saveContact: async (
-            userId,
-            name,
-        ) => {
-            const user = get().users[userId];
-
-            if (!user) {
-                return;
-            }
-
-            const existingContact =
-                get().contacts[userId];
-
-            const contact: CachedContact = {
-                userId,
-                name: name.trim(),
-                createdAt:
-                    existingContact?.createdAt ??
-                    Date.now(),
-            };
-
-            await db.contacts.put(contact);
-
-            set((state) => ({
-                contacts: {
-                    ...state.contacts,
-                    [userId]: contact,
                 },
-            }));
-        },
-
-        updateContactName: async (
-            userId,
-            name,
-        ) => {
-            const existingContact =
-                get().contacts[userId];
-
-            if (!existingContact) {
-                return;
-            }
-
-            const contact: CachedContact = {
-                ...existingContact,
-                name: name.trim(),
             };
+        });
+    },
 
-            await db.contacts.put(contact);
+    saveContact: async (userId, name) => {
+        const user = get().users[userId];
 
-            set((state) => ({
-                contacts: {
-                    ...state.contacts,
-                    [userId]: contact,
+        if (!user) return;
+
+        const existingContact = get().contacts[userId];
+
+        const contact: CachedContact = {
+            userId,
+            name: name.trim(),
+            createdAt: existingContact?.createdAt ?? Date.now(),
+        };
+
+        await db.contacts.put(contact);
+
+        set((state) => ({
+            contacts: {
+                ...state.contacts,
+                [userId]: contact,
+            },
+        }));
+
+        if (!get().users[userId]) {
+            subscribeToPresence(userId);
+        }
+    },
+
+    updateContactName: async (userId, name) => {
+        const existingContact = get().contacts[userId];
+
+        if (!existingContact) return;
+
+        const contact: CachedContact = {
+            ...existingContact,
+            name: name.trim(),
+        };
+
+        await db.contacts.put(contact);
+
+        set((state) => ({
+            contacts: {
+                ...state.contacts,
+                [userId]: contact,
+            },
+        }));
+    },
+
+    removeContact: async (userId) => {
+        if (!get().contacts[userId]) return;
+
+        await db.contacts.delete(userId);
+
+        set((state) => {
+            const contacts = { ...state.contacts };
+            delete contacts[userId];
+
+            return { contacts };
+        });
+    },
+
+    getUser: (userId) => {
+        return get().users[userId];
+    },
+
+    getContact: (userId) => {
+        const user = get().users[userId];
+
+        if (!user) return undefined;
+
+        return {
+            ...user,
+            contact: get().contacts[userId],
+        };
+    },
+
+    getContacts: () => {
+        const { users, contacts } = get();
+        const result: Contact[] = [];
+
+        for (const contact of Object.values(contacts)) {
+            const user = users[contact.userId];
+
+            if (!user) continue;
+
+            result.push({
+                ...user,
+                contact,
+            });
+        }
+
+        return result;
+    },
+
+    fetchUserByUsername: async (username) => {
+        const normalizedUsername = username.trim().replace(/^@/, '');
+
+        if (!normalizedUsername) return undefined;
+
+        const existingUser = Object.values(get().users).find(
+            (user) => user.username.toLowerCase() === normalizedUsername.toLowerCase(),
+        );
+
+        if (existingUser) {
+            return {
+                ...existingUser,
+                contact: get().contacts[existingUser.id],
+            };
+        }
+
+        const response = await api.get<UserPreview>(
+            `/users/${encodeURIComponent(normalizedUsername)}`,
+        );
+
+        const user = response.data;
+
+        get().addUser(user);
+
+        return {
+            ...user,
+            contact: get().contacts[user.id],
+        };
+    },
+
+    fetchContacts: async () => {
+        const { contacts, users } = get();
+
+        const missingUserIds = Object.keys(contacts).filter(
+            (userId) => !users[userId],
+        );
+
+        if (missingUserIds.length) {
+            const response = await api.get<UserPreview[]>('/users', {
+                params: {
+                    ids: missingUserIds.join(','),
                 },
-            }));
-        },
-
-        removeContact: async (
-            userId,
-        ) => {
-            if (!get().contacts[userId]) {
-                return;
-            }
-
-            await db.contacts.delete(userId);
-
-            set((state) => {
-                const contacts = {
-                    ...state.contacts,
-                };
-
-                delete contacts[userId];
-
-                return {
-                    contacts,
-                };
             });
-        },
 
-        getUser: (userId) => {
-            return get().users[userId];
-        },
+            get().addUsers(response.data);
+        }
 
-        getContact: (userId) => {
-            const user =
-                get().users[userId];
+        return get().getContacts();
+    },
 
-            if (!user) {
-                return undefined;
-            }
+    clearContacts: async () => {
+        await db.contacts.clear();
 
-            return {
-                ...user,
-                contact:
-                    get().contacts[userId],
-            };
-        },
+        set({
+            contacts: {},
+        });
+    },
+}));
 
-        getContacts: (): Contact[] => {
-            const {
-                users,
-                contacts,
-            } = get();
+chatSocket.on('connect', () => {
+    const { users } = useContactsStore.getState();
 
-            const result: Contact[] = [];
+    for (const user of Object.values(users)) {
+        subscribeToPresence(user.id);
+    }
+});
 
-            for (const contact of Object.values(
-                contacts,
-            )) {
-                const user =
-                    users[contact.userId];
-
-                if (!user) {
-                    continue;
-                }
-
-                result.push({
-                    ...user,
-                    contact,
-                });
-            }
-
-            return result;
-        },
-
-        fetchUserByUsername: async (
-            username,
-        ) => {
-            const normalizedUsername =
-                username
-                    .trim()
-                    .replace(/^@/, '');
-
-            if (!normalizedUsername) {
-                return undefined;
-            }
-
-            const existingUser =
-                Object.values(
-                    get().users,
-                ).find(
-                    (user) =>
-                        user.username.toLowerCase() ===
-                        normalizedUsername.toLowerCase(),
-                );
-
-            if (existingUser) {
-                return {
-                    ...existingUser,
-                    contact:
-                        get().contacts[
-                        existingUser.id
-                        ],
-                };
-            }
-
-            const response =
-                await api.get<UserPreview>(
-                    `/users/${encodeURIComponent(
-                        normalizedUsername,
-                    )}`,
-                );
-
-            const user = response.data;
-
-            get().addUser(user);
-
-            return {
-                ...user,
-                contact:
-                    get().contacts[user.id],
-            };
-        },
-
-        fetchContacts: async () => {
-            const {
-                contacts,
-                users,
-            } = get();
-
-            const missingUserIds =
-                Object.keys(contacts).filter(
-                    (userId) =>
-                        !users[userId],
-                );
-
-            if (
-                missingUserIds.length > 0
-            ) {
-                const response =
-                    await api.get<
-                        UserPreview[]
-                    >('/users', {
-                        params: {
-                            ids: missingUserIds.join(
-                                ',',
-                            ),
-                        },
-                    });
-
-                get().addUsers(
-                    response.data,
-                );
-            }
-
-            return get().getContacts();
-        },
-
-        clearContacts: async () => {
-            await db.contacts.clear();
-
-            set({
-                contacts: {},
-            });
-        },
-    }),
-);
+chatSocket.on('presence:update', (data: UserPresence & { userId: string }) => {
+    useContactsStore.getState().updateUserPresence(data.userId, {
+        isOnline: data.isOnline,
+        lastSeen: data.lastSeen,
+    });
+});

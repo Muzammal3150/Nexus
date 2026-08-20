@@ -6,6 +6,7 @@ import ProfileActions from './profile-actions';
 import { statusLabel } from './utils';
 import type { User } from './types';
 import { Presence } from '@/features/presence/types';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 interface ProfileHeaderProps {
     user: User & Presence;
@@ -20,7 +21,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
                     <AvatarWithStatus
                         name={user.name}
-                        image={user.image}
+                        image={getAvatar(user.image)}
                         isOnline={user.isOnline}
                     />
 

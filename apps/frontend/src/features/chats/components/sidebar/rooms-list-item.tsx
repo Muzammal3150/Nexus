@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRoomTyping } from '../../hooks/use-room-typing';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 interface RoomsListItemProps {
     room: Room;
@@ -48,7 +49,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                 )}
             >
                 <Avatar className="size-11">
-                    <AvatarImage src={room.image ?? undefined} alt={room.name} />
+                    <AvatarImage src={getAvatar(room.image)} alt={room.name} />
 
                     <AvatarFallback className="text-sm font-medium">
                         {getInitials(room.name)}

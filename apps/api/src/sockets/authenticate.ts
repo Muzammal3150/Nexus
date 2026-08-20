@@ -18,7 +18,6 @@ export async function authenticate(socket: Socket, next: (err?: ExtendedError) =
 
         socket.join(`user:${socket.data.user.id}`);
 
-        console.log("User connected to chat server", socket.data.user.name);
         next();
 
     } catch (err) {

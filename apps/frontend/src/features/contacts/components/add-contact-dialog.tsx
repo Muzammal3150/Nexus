@@ -20,6 +20,7 @@ import { useContactsStore } from '@/features/contacts/stores/contact-store';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { UiState } from '@/stores/uiStore/uis';
+import { getAvatar } from '@/features/auth/lib/utils';
 
 type SearchStatus = 'idle' | 'loading' | 'found' | 'not-found';
 
@@ -169,7 +170,7 @@ export function AddContactDialog() {
                         <div className="overflow-hidden rounded-xl border bg-card">
                             <div className="flex items-center gap-3 border-b px-4 py-3">
                                 <Avatar className="size-11 shrink-0">
-                                    <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                                    <AvatarImage src={getAvatar(user.image)} alt={user.name} />
 
                                     <AvatarFallback
                                         className={cn('bg-primary/10 text-primary', 'font-medium')}

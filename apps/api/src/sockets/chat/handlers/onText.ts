@@ -58,11 +58,6 @@ export async function onText(socket: Socket, data: unknown) {
         event: "chat:text",
         payload: JSON.stringify(messagePayload),
     })
-    await redis.hSet(
-        `nexus:chat:sync:${roomId}`,
-        socket.data.session.id,
-        streamId,
-    );
 
     socket.to(roomId).emit(ChatEvents.Chat.Text, { ...messagePayload, streamId });
     socket.emit(ChatEvents.Chat.Text, {
@@ -70,4 +65,10 @@ export async function onText(socket: Socket, data: unknown) {
         isMine: true,
         streamId,
     });
+    
+    await redis.hSet(
+        `nexus:chat:sync:${roomId}`,
+        socket.data.session.id,
+        streamId,
+    );
 }
