@@ -2,7 +2,7 @@ import type { Namespace, Socket } from "socket.io";
 import type { SocketHandler } from "../../config/socket.js";
 import { authenticate } from "../authenticate.js";
 import { ChatEvents } from "./events.js";
-import { createRoom } from "./handlers/createRoom.js";
+import { onRoomCreate } from "./handlers/createRoom.js";
 import { onText } from "./handlers/onText.js";
 import { initSafe } from "./safeAck.js";
 import { onFileSend } from "./handlers/onFileSend.js";
@@ -54,7 +54,7 @@ export class ChatSocket implements SocketHandler {
         const rooms = await this.joinAllRooms(socket);
 
 
-        socket.on(ChatEvents.Room.Create, safe((data, callback) => createRoom(this.ctx(), socket, data, callback)));
+        socket.on(ChatEvents.Room.Create, safe((data) => onRoomCreate(this.ctx(), socket, data)));
         socket.on(ChatEvents.Chat.Text, safe((data) => onText(socket, data)));
         socket.on(ChatEvents.Chat.File, safe((data) => onFileSend(socket, data)));
         socket.on(ChatEvents.Chat.Received, safe((data) => onMessageReceived(socket, data)));

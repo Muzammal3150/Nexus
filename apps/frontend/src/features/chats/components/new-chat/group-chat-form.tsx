@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -40,30 +40,37 @@ export function GroupChatForm({ onSuccess }: { onSuccess: (room: Room) => void }
         fields: members,
         append,
         remove,
-    } = useFieldArray({ control: form.control, name: 'members', keyName: 'fieldId' });
+    } = useFieldArray({
+        control: form.control,
+        name: 'members',
+        keyName: 'fieldId',
+    });
 
+    const searchInputRef = useRef<HTMLInputElement>(null);
     const [search, setSearch] = useState('');
     const [searchError, setSearchError] = useState<string | null>(null);
     const [isInviting, setIsInviting] = useState(false);
 
-    // Only ever called from an explicit user action (Enter / Add button) —
-    // never on keystroke.
     async function handleInvite() {
         const query = search.trim();
         if (!query) return;
 
         setIsInviting(true);
         setSearchError(null);
+
         try {
             const user = await resolveUser(query);
+
             if (!user) {
                 setSearchError('No user found with that username, email, or phone number.');
                 return;
             }
+
             if (members.some((m) => m.id === user.id)) {
                 setSearchError('This member has already been added.');
                 return;
             }
+
             if (members.length >= MAX_GROUP_MEMBERS) {
                 setSearchError(`Groups are limited to ${MAX_GROUP_MEMBERS} members.`);
                 return;
@@ -72,6 +79,10 @@ export function GroupChatForm({ onSuccess }: { onSuccess: (room: Room) => void }
             append({ id: user.id, name: user.name ?? '' });
             setSearch('');
             form.clearErrors('members');
+
+            requestAnimationFrame(() => {
+                searchInputRef.current?.focus();
+            });
         } catch (err) {
             setSearchError(
                 errorMessage(err, 'Something went wrong while searching. Please try again.'),
@@ -88,6 +99,7 @@ export function GroupChatForm({ onSuccess }: { onSuccess: (room: Room) => void }
                 name: values.groupName,
                 memberIds: values.members.map((m) => m.id),
             });
+
             onSuccess(newRoom);
         } catch (err) {
             form.setError('root', {
@@ -101,6 +113,7 @@ export function GroupChatForm({ onSuccess }: { onSuccess: (room: Room) => void }
     return (
         <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="flex flex-col gap-4">
+                <FormRootError message={form.formState.errors.root?.message} />
                 <Field data-invalid={Boolean(form.formState.errors.groupName)}>
                     <FieldLabel htmlFor="group-name">Group name</FieldLabel>
                     <Input
@@ -121,6 +134,7 @@ export function GroupChatForm({ onSuccess }: { onSuccess: (room: Room) => void }
                     <div className="flex gap-2">
                         <InputGroup className="flex-1">
                             <InputGroupInput
+                                ref={searchInputRef}
                                 id="group-search"
                                 placeholder="Username"
                                 maxLength={MAX_NAME_LENGTH}
@@ -176,8 +190,6 @@ export function GroupChatForm({ onSuccess }: { onSuccess: (room: Room) => void }
                     )}
                 </Button>
             </CardContent>
-
-            <FormRootError message={form.formState.errors.root?.message} />
         </form>
     );
 }
