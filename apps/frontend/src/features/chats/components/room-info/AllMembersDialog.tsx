@@ -23,19 +23,9 @@ interface AllMembersDialogProps {
     groupName: string;
     members: RoomMember[];
     isAdmin: boolean;
-    onToggleRole: (member: RoomMember) => void;
-    onRemove: (member: RoomMember) => void;
-    onAddMembers: () => void;
 }
 
-export function AllMembersDialog({
-    groupName,
-    members,
-    isAdmin,
-    onToggleRole,
-    onRemove,
-    onAddMembers,
-}: AllMembersDialogProps) {
+export function AllMembersDialog({ groupName, members, isAdmin }: AllMembersDialogProps) {
     const session = useSession();
     const isOpen = useUiStore((s) => s.isOpen(UiState.Chat.GroupInfo.MembersDialog));
     const setOpen = useUiStore((s) => s.setOpen);
@@ -55,7 +45,7 @@ export function AllMembersDialog({
             open={isOpen}
             onOpenChange={(state) => setOpen(UiState.Chat.GroupInfo.MembersDialog, state)}
         >
-            <DialogContent className="sm:max-w-sm">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <div className="flex items-center gap-1.5">
                         <DialogTitle>All members</DialogTitle>
@@ -92,8 +82,6 @@ export function AllMembersDialog({
                                     member={m}
                                     isYou={m.user.id === session?.user.id}
                                     canManage={isAdmin}
-                                    onToggleRole={onToggleRole}
-                                    onRemove={onRemove}
                                 />
                             ))}
                         </div>
@@ -101,7 +89,10 @@ export function AllMembersDialog({
                 </div>
 
                 <DialogFooter>
-                    <Button variant="secondary" className="w-full" onClick={onAddMembers}>
+                    <Button
+                        className="w-full"
+                        onClick={() => setOpen(UiState.Chat.GroupInfo.AddMemberDialog, true)}
+                    >
                         <Plus className="mr-1.5 h-4 w-4" />
                         Add members
                     </Button>

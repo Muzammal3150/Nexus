@@ -19,7 +19,7 @@ model RoomMembers {
     room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    role RoomRole @default(client)
+    role RoomRole @default(member)
 
     joinedAt DateTime @default(now())
 
@@ -28,5 +28,5 @@ model RoomMembers {
 
 enum RoomRole {
     admin
-    client
+    member
 }

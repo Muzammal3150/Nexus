@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { LogOut, MessageSquareOff, Trash2 } from 'lucide-react';
-import { Room } from '../../types/room';
-import { db } from '@/db/db';
 import { toast } from '@/components/ui/toast';
+import { db } from '@/db/db';
 import { api } from '@/lib/axios';
 import { useQueryClient } from '@tanstack/react-query';
+import { LogOut, MessageSquareOff, Trash2 } from 'lucide-react';
+import { Room } from '../../types/room';
+import { useRouter } from 'next/navigation';
 
 interface GroupActionsProps {
     isAdmin: boolean;
@@ -14,9 +14,12 @@ interface GroupActionsProps {
 
 export function GroupActions({ isAdmin, room }: GroupActionsProps) {
     const queryClient = useQueryClient();
+    const router = useRouter();
+
     async function onClearChat() {
         try {
             await db.messages.where('roomId').equals(room.id).delete();
+
             toast.add({
                 type: 'success',
                 description: 'Chats cleared successfully.',
@@ -32,15 +35,16 @@ export function GroupActions({ isAdmin, room }: GroupActionsProps) {
     async function onLeave() {
         try {
             const res = await api.post(`/rooms/${room.id}/leave`);
+
             toast.add({
                 type: 'success',
                 description: `Group ${room.name} leaved successfully.`,
             });
+            router.push('/chats');
             await queryClient.invalidateQueries({
                 queryKey: ['rooms'],
             });
         } catch (error: any) {
-            console.log(Object.entries(error));
             toast.add({
                 type: 'error',
                 description: error?.response?.data?.message ?? 'Something went wrong.',
@@ -58,8 +62,8 @@ export function GroupActions({ isAdmin, room }: GroupActionsProps) {
             await queryClient.invalidateQueries({
                 queryKey: ['rooms'],
             });
+            router.push('/chats');
         } catch (error: any) {
-            console.log(Object.entries(error));
             toast.add({
                 type: 'error',
                 description: error?.response?.data?.message ?? 'Something went wrong.',
@@ -78,8 +82,6 @@ export function GroupActions({ isAdmin, room }: GroupActionsProps) {
         </div>
         <Switch checked={muted} onCheckedChange={onMutedChange} />
       </div> */}
-
-            <Separator />
 
             <div className="space-y-1 ">
                 <Button

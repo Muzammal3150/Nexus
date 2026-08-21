@@ -1,53 +1,66 @@
-import type { Request, Response } from "express";
-import { auth } from "../../config/auth.js";
-import prisma from "../../config/prisma.js";
+import type { Request, Response } from 'express';
+import { z } from 'zod';
+import { auth } from '../../config/auth.js';
+import prisma from '../../config/prisma.js';
 
 const MAX_GROUP_MEMBERS = 200;
 
-interface CreateRoomBody {
-    name?: string;
-    memberIds: string[];
-    isGroup: boolean;
-}
+const createRoomSchema = z.object({
+    name: z
+        .string()
+        .trim()
+        .optional(),
+    memberIds: z
+        .array(z
+            .string()
+            .trim()
+            .min(1))
+        .min(1),
+    isGroup: z.boolean(),
+    
+}).superRefine((data, ctx) => {
+    if (data.isGroup && !data.name) {
+        ctx.addIssue({
+            code: 'custom',
+            path: ['name'],
+            message: 'Group chats require a name',
+        });
+    }
+});
 
 export async function createRoom(req: Request, res: Response) {
-    const session = await auth.api.getSession({
-        headers: req.headers,
-    });
 
-    if (!session) {
-        return res.status(401).json({
-            message: 'Unauthorized',
+
+    const userId = req.user.id;
+    const result = createRoomSchema.safeParse(req.body);
+
+    if (!result.success) {
+        return res.status(400).json({
+            message: 'Invalid room data',
+            errors: result.error.flatten().fieldErrors,
         });
     }
 
-    const userId = session.user.id;
-    const body = req.body as Partial<CreateRoomBody>;
+    const { name, memberIds: requestedMemberIds, isGroup } = result.data;
 
-    if (!Array.isArray(body.memberIds)) {
-        return res.status(400).json({ error: "memberIds must be an array" });
-    }
-
-    if (typeof body.isGroup !== "boolean") {
-        return res.status(400).json({ error: "isGroup must be a boolean" });
-    }
-
-    if (body.isGroup && (!body.name?.trim())) {
-        return res.status(400).json({ error: "Group chats require a name" });
-    }
-
-    const memberIds = [...new Set([...body.memberIds, userId].filter((id) => typeof id === "string" && id.trim()))];
+    const memberIds = [...new Set([...requestedMemberIds, userId])];
 
     if (memberIds.length < 2) {
-        return res.status(400).json({ error: "A room needs at least one other member" });
+        return res.status(400).json({
+            message: 'A room needs at least one other member',
+        });
     }
 
-    if (!body.isGroup && memberIds.length !== 2) {
-        return res.status(400).json({ error: "Direct messages must have exactly two members" });
+    if (!isGroup && memberIds.length !== 2) {
+        return res.status(400).json({
+            message: 'Direct messages must have exactly two members',
+        });
     }
 
-    if (body.isGroup && memberIds.length > MAX_GROUP_MEMBERS) {
-        return res.status(400).json({ error: `A group cannot have more than ${MAX_GROUP_MEMBERS} members` });
+    if (isGroup && memberIds.length > MAX_GROUP_MEMBERS) {
+        return res.status(400).json({
+            message: `A group cannot have more than ${MAX_GROUP_MEMBERS} members`,
+        });
     }
 
     const users = await prisma.user.findMany({
@@ -60,18 +73,22 @@ export async function createRoom(req: Request, res: Response) {
         const missingIds = memberIds.filter((id) => !existingIds.has(id));
 
         return res.status(400).json({
-            error: `Some members could not be found: ${missingIds.join(", ")}`,
+            message: 'Some members could not be found',
+            missingIds,
         });
     }
 
-    if (!body.isGroup) {
+    if (!isGroup) {
+        const otherUserId = memberIds.find((id) => id !== userId)!;
+
         const existingRoom = await prisma.room.findFirst({
             where: {
                 isGroup: false,
-                AND: [
-                    { members: { some: { userId } } },
-                    { members: { some: { userId: memberIds.find((id) => id !== userId)! } } },
-                ],
+                members: {
+                    every: {
+                        userId: { in: [userId, otherUserId] },
+                    },
+                },
             },
             include: {
                 members: {
@@ -90,12 +107,12 @@ export async function createRoom(req: Request, res: Response) {
 
     const room = await prisma.room.create({
         data: {
-            name: body.isGroup ? body.name!.trim() : body.name?.trim() ?? "",
-            isGroup: body.isGroup,
+            name: isGroup ? name! : name ?? '',
+            isGroup,
             members: {
                 create: memberIds.map((memberId) => ({
                     user: { connect: { id: memberId } },
-                    role: body.isGroup && memberId === userId ? "admin" : "client",
+                    role: isGroup && memberId === userId ? 'admin' : 'member',
                 })),
             },
         },
@@ -106,7 +123,5 @@ export async function createRoom(req: Request, res: Response) {
         },
     });
 
-    return res.status(201).json({
-        room,
-    });
+    return res.status(201).json({ room });
 }

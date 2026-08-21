@@ -1,173 +1,269 @@
-// import { Router } from 'express';
-// import { prisma } from '../lib/prisma';
-
-// const router = Router();
-
-// async function requireRoomMember(roomId: string, userId: string) {
-//     const member = await prisma.roomMembers.findUnique({
-//         where: { roomId_userId: { roomId, userId } },
-//     });
-
-//     if (!member) throw new Error('NOT_MEMBER');
-
-//     return member;
-// }
-
-// async function addMember(roomId: string, actorId: string, userId: string) {
-//     const actor = await requireRoomMember(roomId, actorId);
-
-//     if (actor.role !== 'admin') throw new Error('FORBIDDEN');
-
-//     const user = await prisma.user.findUnique({
-//         where: { id: userId },
-//         select: { id: true },
-//     });
-
-//     if (!user) throw new Error('USER_NOT_FOUND');
-
-//     return prisma.roomMembers.create({
-//         data: { roomId, userId, role: 'client' },
-//         include: { user: true },
-//     });
-// }
-
-// async function removeMember(roomId: string, actorId: string, userId: string) {
-//     const actor = await requireRoomMember(roomId, actorId);
-
-//     if (actorId !== userId && actor.role !== 'admin') {
-//         throw new Error('FORBIDDEN');
-//     }
-
-//     const member = await prisma.roomMembers.findUnique({
-//         where: { roomId_userId: { roomId, userId } },
-//     });
-
-//     if (!member) throw new Error('NOT_MEMBER');
-
-//     return prisma.roomMembers.delete({
-//         where: { roomId_userId: { roomId, userId } },
-//     });
-// }
-
-// async function updateMemberRole(
-//     roomId: string,
-//     actorId: string,
-//     userId: string,
-//     role: 'admin' | 'client',
-// ) {
-//     const actor = await requireRoomMember(roomId, actorId);
-
-//     if (actor.role !== 'admin') throw new Error('FORBIDDEN');
-
-//     const member = await prisma.roomMembers.findUnique({
-//         where: { roomId_userId: { roomId, userId } },
-//     });
-
-//     if (!member) throw new Error('NOT_MEMBER');
-
-//     if (member.role === 'admin' && role === 'client') {
-//         const adminCount = await prisma.roomMembers.count({
-//             where: { roomId, role: 'admin' },
-//         });
-
-//         if (adminCount <= 1) {
-//             throw new Error('LAST_ADMIN');
-//         }
-//     }
-
-//     return prisma.roomMembers.update({
-//         where: { roomId_userId: { roomId, userId } },
-//         data: { role },
-//         include: { user: true },
-//     });
-// }
+import type { Request, Response } from "express";
+import prisma from "../../config/prisma.js";
+import z from "zod";
+import { RoomRole } from "../../generated/prisma/enums.js";
 
 
-// router.post('/:roomId/members', async (req, res) => {
-//     try {
-//         const { roomId } = req.params;
-//         const { userId } = req.body;
+interface MemberParams {
+    roomId: string;
+    userId: string;
+}
+interface AddMembersBody {
+    userIds: string[];
+}
+interface RoomParams {
+    roomId: string;
+}
 
-//         if (!userId) {
-//             return res.status(400).json({ error: 'userId is required' });
-//         }
+export async function addMembers(req: Request<RoomParams, unknown, AddMembersBody>, res: Response) {
+    try {
+        const { roomId } = req.params;
+        const { userIds } = req.body;
+        const userId = req.user.id;
 
-//         const member = await addMember(roomId, req.user.id, userId);
+        const admin = await prisma.roomMembers.findUnique({
+            where: { roomId_userId: { roomId, userId } }
+        });
 
-//         return res.status(201).json(member);
-//     } catch (error) {
-//         if (error instanceof Error) {
-//             if (error.message === 'FORBIDDEN') {
-//                 return res.status(403).json({ error: 'Forbidden' });
-//             }
+        if (!admin) {
+            return res.status(403).json({ message: "You are not a member of this room" });
+        }
 
-//             if (error.message === 'NOT_MEMBER') {
-//                 return res.status(403).json({ error: 'You are not a room member' });
-//             }
+        if (admin.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can add members" });
+        }
 
-//             if (error.message === 'USER_NOT_FOUND') {
-//                 return res.status(404).json({ error: 'User not found' });
-//             }
-//         }
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true }
+        });
 
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        if (users.length !== userIds.length) {
+            return res.status(400).json({ message: "One or more users do not exist" });
+        }
 
-// router.delete('/:roomId/members/:userId', async (req, res) => {
-//     try {
-//         const { roomId, userId } = req.params;
+        const existingMembers = await prisma.roomMembers.findMany({
+            where: {
+                roomId,
+                userId: { in: userIds }
+            },
+            select: { userId: true }
+        });
 
-//         await removeMember(roomId, req.user.id, userId);
+        const existingIds = new Set(existingMembers.map(member => member.userId));
 
-//         return res.sendStatus(204);
-//     } catch (error) {
-//         if (error instanceof Error) {
-//             if (error.message === 'FORBIDDEN') {
-//                 return res.status(403).json({ error: 'Forbidden' });
-//             }
+        const membersToAdd = userIds
+            .filter(id => !existingIds.has(id))
+            .map(userId => ({
+                roomId,
+                userId,
+                role: "member" as const
+            }));
 
-//             if (error.message === 'NOT_MEMBER') {
-//                 return res.status(404).json({ error: 'Member not found' });
-//             }
-//         }
+        if (membersToAdd.length === 0) {
+            return res.status(400).json({ message: "All users are already members" });
+        }
 
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        await prisma.roomMembers.createMany({ data: membersToAdd });
 
-// router.patch('/:roomId/members/:userId', async (req, res) => {
-//     try {
-//         const { roomId, userId } = req.params;
-//         const { role } = req.body;
+        return res.status(201).json({
+            message: "Members added successfully",
+            addedUserIds: membersToAdd.map(member => member.userId)
+        });
+    } catch (error) {
+        console.error(error);
 
-//         if (role !== 'admin' && role !== 'client') {
-//             return res.status(400).json({
-//                 error: 'role must be admin or client',
-//             });
-//         }
+        return res.status(500).json({ message: "Failed to add members" });
+    }
+}
 
-//         const member = await updateMemberRole(
-//             roomId,
-//             req.user.id,
-//             userId,
-//             role,
-//         );
+export async function removeMember(req: Request<MemberParams>, res: Response) {
+    try {
+        const { roomId, userId: targetUserId } = req.params;
+        const userId = req.user.id;
 
-//         return res.json(member);
-//     } catch (error) {
-//         if (error instanceof Error) {
-//             if (error.message === 'FORBIDDEN') {
-//                 return res.status(403).json({ error: 'Forbidden' });
-//             }
+        if (userId === targetUserId) {
+            return res.status(400).json({ message: "Use the leave endpoint to remove yourself" });
+        }
 
-//             if (error.message === 'NOT_MEMBER') {
-//                 return res.status(404).json({ error: 'Member not found' });
-//             }
-//         }
+        const admin = await prisma.roomMembers.findUnique({
+            where: { roomId_userId: { roomId, userId } }
+        });
 
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        if (!admin) {
+            return res.status(403).json({ message: "You are not a member of this room" });
+        }
 
-// export {router};
+        if (admin.role !== "admin") {
+            return res.status(403).json({ message: "Only admins can remove members" });
+        }
+
+        const targetMember = await prisma.roomMembers.findUnique({
+            where: { roomId_userId: { roomId, userId: targetUserId } }
+        });
+
+        if (!targetMember) {
+            return res.status(404).json({ message: "User is not a member of this room" });
+        }
+
+        await prisma.roomMembers.delete({
+            where: { roomId_userId: { roomId, userId: targetUserId } }
+        });
+
+        return res.json({ message: "Member removed successfully" });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({ message: "Failed to remove member" });
+    }
+}
+
+const updateMemberSchema = z.object({
+    role: z.enum([RoomRole.admin, RoomRole.member]).optional(),
+});
+
+export async function updateMember(req: Request<MemberParams>, res: Response) {
+    try {
+        const { roomId, userId: targetUserId } = req.params;
+        const userId = req.user.id;
+
+        const result = updateMemberSchema.safeParse(req.body);
+
+        if (!result.success) {
+            return res.status(400).json({
+                message: 'Invalid member update',
+                errors: result.error.flatten().fieldErrors,
+            });
+        }
+
+        const data = result.data;
+
+        if (!Object.keys(data).length) {
+            return res.status(400).json({
+                message: 'No updates provided',
+            });
+        }
+
+        if (userId === targetUserId) {
+            return res.status(400).json({
+                message: 'You cannot update your own member settings',
+            });
+        }
+
+        const admin = await prisma.roomMembers.findUnique({
+            where: { roomId_userId: { roomId, userId } },
+            select: { role: true },
+        });
+
+        if (!admin) {
+            return res.status(403).json({
+                message: 'You are not a member of this room',
+            });
+        }
+
+        if (admin.role !== 'admin') {
+            return res.status(403).json({
+                message: 'Only admins can update members',
+            });
+        }
+
+        const targetMember = await prisma.roomMembers.findUnique({
+            where: { roomId_userId: { roomId, userId: targetUserId } },
+        });
+
+        if (!targetMember) {
+            return res.status(404).json({
+                message: 'User is not a member of this room',
+            });
+        }
+
+        const updatedMember = await prisma.roomMembers.update({
+            where: { roomId_userId: { roomId, userId: targetUserId } },
+            data: { role: data.role! },
+        });
+
+        return res.json({
+            message: 'Member updated successfully',
+            member: updatedMember,
+        });
+    } catch (error) {
+        console.error('Failed to update member:', error);
+
+        return res.status(500).json({
+            message: 'Failed to update member',
+        });
+    }
+}
+export async function leaveRoom(req: Request<RoomParams>, res: Response) {
+    try {
+        const { roomId } = req.params;
+        const userId = req.user.id;
+
+        const member = await prisma.roomMembers.findUnique({
+            where: { roomId_userId: { roomId, userId } },
+        });
+
+        if (!member) {
+            return res.status(404).json({
+                message: 'You are not a member of this room',
+            });
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const remainingMembers = await tx.roomMembers.count({
+                where: {
+                    roomId,
+                    userId: { not: userId },
+                },
+            });
+
+            if (remainingMembers < 2) {
+                await tx.room.delete({
+                    where: { id: roomId },
+                });
+
+                return;
+            }
+
+            if (member.role === 'admin') {
+                const otherAdmin = await tx.roomMembers.findFirst({
+                    where: {
+                        roomId,
+                        role: 'admin',
+                        userId: { not: userId },
+                    },
+                    select: { userId: true },
+                });
+
+                if (!otherAdmin) {
+                    throw new Error('LAST_ADMIN');
+                }
+            }
+
+            await tx.roomMembers.delete({
+                where: {
+                    roomId_userId: {
+                        roomId,
+                        userId,
+                    },
+                },
+            });
+        });
+
+        return res.json({
+            message: 'You left the room successfully',
+        });
+    } catch (error) {
+        if (error instanceof Error && error.message === 'LAST_ADMIN') {
+            return res.status(400).json({
+                message: 'You cannot leave while you are the only admin',
+            });
+        }
+
+        console.error(error);
+
+        return res.status(500).json({
+            message: 'Failed to leave room',
+        });
+    }
+}

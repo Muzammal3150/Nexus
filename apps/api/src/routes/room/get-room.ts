@@ -7,6 +7,10 @@ export const router: Router = Router();
 
 const presenceKey = 'nexus:presence';
 
+interface RoomParams {
+    roomId: string;
+}
+
 interface UserPresence {
     isOnline: boolean;
     lastSeen: number | null;
@@ -47,18 +51,11 @@ async function addPresenceToRooms(rooms: any[]) {
         return rooms;
     }
 
-    const presenceValues = await redis.hmGet(
-        presenceKey,
-        userIds,
-    );
-
+    const presenceValues = await redis.hmGet(presenceKey, userIds);
     const presenceMap = new Map<string, UserPresence>();
 
     userIds.forEach((userId, index) => {
-        presenceMap.set(
-            userId,
-            parsePresence(presenceValues[index]),
-        );
+        presenceMap.set(userId, parsePresence(presenceValues[index] ?? null));
     });
 
     return rooms.map((room) => ({
@@ -73,7 +70,7 @@ async function addPresenceToRooms(rooms: any[]) {
     }));
 }
 
-router.get('/:roomId', async (req, res) => {
+router.get<RoomParams>('/:roomId', async (req, res) => {
     const session = await auth.api.getSession({
         headers: req.headers,
     });
@@ -86,9 +83,14 @@ router.get('/:roomId', async (req, res) => {
 
     const { roomId } = req.params;
 
-    const room = await prisma.room.findUnique({
+    const room = await prisma.room.findFirst({
         where: {
             id: roomId,
+            members: {
+                some: {
+                    userId: session.user.id,
+                },
+            },
         },
         include: {
             members: {
@@ -108,7 +110,8 @@ router.get('/:roomId', async (req, res) => {
     const [roomWithPresence] = await addPresenceToRooms([room]);
 
     return res.json(roomWithPresence);
-});
+},
+);
 
 router.get('/', async (req, res) => {
     const session = await auth.api.getSession({
@@ -116,9 +119,7 @@ router.get('/', async (req, res) => {
     });
 
     if (!session) {
-        return res.status(401).json({
-            message: 'Unauthorized',
-        });
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const rooms = await getAllRooms(session.user.id);
