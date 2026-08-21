@@ -4,7 +4,7 @@ import { createRoom } from "./create-room.js";
 import { updateRoom, addMembers, removeMember, leaveRoom } from "./update-room.js";
 import { authorize } from "../authorize.js";
 import { uploadRoomAvatar } from "../../config/roomAvatarUpload.js";
-// import { router as memberRouter } from './member.js'
+
 export const router: Router = Router();
 
 

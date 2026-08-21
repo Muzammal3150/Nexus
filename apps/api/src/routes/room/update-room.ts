@@ -267,7 +267,7 @@ export async function leaveRoom(req: Request<RoomParams>, res: Response) {
                 });
 
                 if (otherAdmins.length === 0) {
-                    return res.json({
+                    return res.status(500).json({
                         message: "Don't leave."
                     });
                 }

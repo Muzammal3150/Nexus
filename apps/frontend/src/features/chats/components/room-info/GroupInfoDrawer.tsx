@@ -17,17 +17,12 @@ export function GroupInfoDrawer({ room }: GroupInfoDrawerProps) {
     const session = useSession();
     const myMember = room.members.find(({ user }) => user.id == session?.user.id);
 
-    function clearChat(arg0: boolean): void {
-        throw new Error('Function not implemented.');
-    }
-
     return (
         <Drawer
             open={isOpen}
             onOpenChange={(state) => setOpen(UiState.Chat.GroupInfo.Drawer, state)}
-            swipeDirection={"right"}
+            swipeDirection={'right'}
         >
-
             <DrawerContent className="z-10000 flex h-screen w-full max-w-none flex-col gap-4 rounded-none! sm:h-auto sm:max-w-lg sm:rounded-lg">
                 <GroupHeader room={room} isAdmin={myMember?.role == 'admin'} />
 
@@ -38,12 +33,7 @@ export function GroupInfoDrawer({ room }: GroupInfoDrawerProps) {
                 )}
 
                 <DrawerFooter className="pt-2">
-                    <GroupActions
-                        isAdmin={myMember?.role == 'admin'}
-                        onClearChat={() => clearChat(true)}
-                        onLeave={() => {}}
-                        onDelete={() => {}}
-                    />
+                    <GroupActions isAdmin={myMember?.role == 'admin'} room={room} />
                 </DrawerFooter>
             </DrawerContent>
         </Drawer>
