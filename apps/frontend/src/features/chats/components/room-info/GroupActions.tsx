@@ -5,6 +5,7 @@ import { Room } from '../../types/room';
 import { db } from '@/db/db';
 import { toast } from '@/components/ui/toast';
 import { api } from '@/lib/axios';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface GroupActionsProps {
     isAdmin: boolean;
@@ -12,6 +13,7 @@ interface GroupActionsProps {
 }
 
 export function GroupActions({ isAdmin, room }: GroupActionsProps) {
+    const queryClient = useQueryClient();
     async function onClearChat() {
         try {
             await db.messages.where('roomId').equals(room.id).delete();
@@ -34,6 +36,9 @@ export function GroupActions({ isAdmin, room }: GroupActionsProps) {
                 type: 'success',
                 description: `Group ${room.name} leaved successfully.`,
             });
+            await queryClient.invalidateQueries({
+                queryKey: ['rooms'],
+            });
         } catch (error: any) {
             console.log(Object.entries(error));
             toast.add({
@@ -50,6 +55,9 @@ export function GroupActions({ isAdmin, room }: GroupActionsProps) {
                 type: 'success',
                 description: `Group ${room.name} leaved successfully.`,
             });
+            await queryClient.invalidateQueries({
+                queryKey: ['rooms'],
+            });
         } catch (error: any) {
             console.log(Object.entries(error));
             toast.add({
@@ -58,8 +66,6 @@ export function GroupActions({ isAdmin, room }: GroupActionsProps) {
             });
         }
     }
-
-
 
     return (
         <div className="space-y-6">

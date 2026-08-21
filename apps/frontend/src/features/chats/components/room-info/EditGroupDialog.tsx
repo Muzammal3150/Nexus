@@ -1,3 +1,10 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
+import { Camera, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,13 +23,11 @@ import { api } from '@/lib/axios';
 import { getUpload } from '@/lib/utils';
 import { UiState } from '@/stores/uiStore/uis';
 import { useUiStore } from '@/stores/uiStore/uiStore';
-import { Camera, Loader2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+
 import { getInitials } from '../../lib/utils-chat';
 import { Room } from '../../types/room';
+
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 const editGroupSchema = z.object({
     name: z
@@ -35,7 +40,7 @@ const editGroupSchema = z.object({
         .instanceof(File)
         .nullable()
         .refine((file) => !file || file.type.startsWith('image/'), 'Please select an image file')
-        .refine((file) => !file || file.size <= 5 * 1024 * 1024, 'Image must be smaller than 5 MB'),
+        .refine((file) => !file || file.size <= MAX_AVATAR_SIZE, 'Image must be smaller than 5 MB'),
 });
 
 type EditGroupForm = z.infer<typeof editGroupSchema>;
@@ -63,9 +68,12 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
     });
 
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const queryClient = useQueryClient();
 
     const isOpen = useUiStore((s) => s.isOpen(UiState.Chat.GroupInfo.EditHeaderDialog));
+
     const setOpen = useUiStore((s) => s.setOpen);
 
     useEffect(() => {
@@ -86,7 +94,9 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
 
     useEffect(() => {
         return () => {
-            if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+            if (avatarPreview) {
+                URL.revokeObjectURL(avatarPreview);
+            }
         };
     }, [avatarPreview]);
 
@@ -96,20 +106,62 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
         clearErrors('avatar');
 
         if (!file) {
-            setValue('avatar', null, { shouldValidate: true });
+            setValue('avatar', null, {
+                shouldDirty: true,
+                shouldValidate: true,
+            });
+
             setAvatarPreview(null);
             return;
         }
 
+        const isImage = file.type.startsWith('image/');
+        const isWithinSizeLimit = file.size <= MAX_AVATAR_SIZE;
+
+        if (!isImage) {
+            setValue('avatar', null, {
+                shouldDirty: true,
+                shouldValidate: false,
+            });
+
+            setError('avatar', {
+                type: 'validate',
+                message: 'Please select an image file',
+            });
+
+            event.target.value = '';
+            setAvatarPreview(null);
+
+            return;
+        }
+
+        if (!isWithinSizeLimit) {
+            setValue('avatar', null, {
+                shouldDirty: true,
+                shouldValidate: false,
+            });
+
+            setError('avatar', {
+                type: 'validate',
+                message: 'Image must be smaller than 5 MB',
+            });
+
+            event.target.value = '';
+            setAvatarPreview(null);
+
+            return;
+        }
+
+        if (avatarPreview) {
+            URL.revokeObjectURL(avatarPreview);
+        }
+
         setValue('avatar', file, {
-            shouldValidate: true,
             shouldDirty: true,
+            shouldValidate: true,
         });
 
-        if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
-            if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-            setAvatarPreview(URL.createObjectURL(file));
-        }
+        setAvatarPreview(URL.createObjectURL(file));
     };
 
     const onSubmit = async (data: EditGroupForm) => {
@@ -126,6 +178,10 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
             }
 
             await api.patch(`/rooms/${room.id}`, formData);
+
+            await queryClient.invalidateQueries({
+                queryKey: ['rooms'],
+            });
 
             setOpen(UiState.Chat.GroupInfo.EditHeaderDialog, false);
         } catch (error: any) {
@@ -157,6 +213,7 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
             <DialogContent className="sm:max-w-sm">
                 <DialogHeader>
                     <DialogTitle>Edit group info</DialogTitle>
+
                     <DialogDescription>
                         Changes are visible to everyone in the group.
                     </DialogDescription>
@@ -167,13 +224,14 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
                         <div className="relative">
                             <button
                                 type="button"
-                                className="group relative overflow-hidden rounded-full disabled:pointer-events-none disabled:opacity-50"
-                                aria-label="Change group photo"
                                 disabled={isSubmitting}
+                                aria-label="Change group photo"
                                 onClick={() => fileInputRef.current?.click()}
+                                className="group relative overflow-hidden rounded-full disabled:pointer-events-none disabled:opacity-50"
                             >
                                 <Avatar className="h-16 w-16">
                                     <AvatarImage src={avatarSrc} alt={room.name} />
+
                                     <AvatarFallback>{getInitials(room.name)}</AvatarFallback>
                                 </Avatar>
 
@@ -188,14 +246,13 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
                                 accept="image/jpeg,image/png,image/webp,image/gif"
                                 className="hidden"
                                 disabled={isSubmitting}
-                                {...register('avatar')}
                                 onChange={handleAvatarChange}
                             />
                         </div>
                     </div>
 
                     {errors.avatar && (
-                        <p className="text-center text-sm text-destructive">
+                        <p role="alert" className="text-center text-sm text-destructive">
                             {errors.avatar.message}
                         </p>
                     )}
@@ -214,7 +271,9 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
                             />
 
                             {errors.name && (
-                                <p className="text-sm text-destructive">{errors.name.message}</p>
+                                <p role="alert" className="text-sm text-destructive">
+                                    {errors.name.message}
+                                </p>
                             )}
                         </div>
 
@@ -232,7 +291,7 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
                             />
 
                             {errors.description && (
-                                <p className="text-sm text-destructive">
+                                <p role="alert" className="text-sm text-destructive">
                                     {errors.description.message}
                                 </p>
                             )}
@@ -259,6 +318,7 @@ export function EditGroupDialog({ room }: EditGroupDialogProps) {
 
                         <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
                             {isSubmitting ? 'Saving...' : 'Save changes'}
                         </Button>
                     </DialogFooter>

@@ -1,24 +1,30 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ButtonGroup } from '@/components/ui/button-group';
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { SelectionChip } from '@/features/calls/components/new-call/selection-chip';
+import { UserResultItem } from '@/features/calls/components/new-call/user-result-item';
 import { Contact, useContactsStore } from '@/features/contacts/stores/contact-store';
-import { getUpload } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { UiState } from '@/stores/uiStore/uis';
-import axios from 'axios';
-import { Check, Loader2, Search } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { getInitials } from '../../lib/utils-chat';
+
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandList,
+} from '@/components/ui/command';
+import { toast } from '@/components/ui/toast';
+import { api } from '@/lib/axios';
+import { useQueryClient } from '@tanstack/react-query';
+import { UserPlus } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Room } from '../../types/room';
 
 interface AddMemberDialogProps {
@@ -26,208 +32,203 @@ interface AddMemberDialogProps {
     onAdded?: (members: Contact[]) => void;
 }
 
-export function AddMemberDialog({ room, onAdded }: AddMemberDialogProps) {
+export function AddMemberDialog({ room }: AddMemberDialogProps) {
     const isOpen = useUiStore((state) => state.isOpen(UiState.Chat.GroupInfo.AddMemberDialog));
     const setOpen = useUiStore((state) => state.setOpen);
 
-    // Select the stable object instead of creating a new array in the selector.
-    const users = useContactsStore((state) => state.users);
+    const queryClient = useQueryClient();
 
-    const [search, setSearch] = useState('');
-    const [selected, setSelected] = useState<Set<string>>(() => new Set());
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const getContacts = useContactsStore((state) => state.getContacts);
+    const fetchContact = useContactsStore((state) => state.fetchUserByUsername);
 
-    const contacts = useMemo(() => Object.values(users), [users]);
+    const [query, setQuery] = useState('');
+    const [selected, setSelected] = useState<Contact[]>([]);
 
-    const existingMemberIds = useMemo(
-        () => new Set(room.members?.map((member) => member.userId) ?? []),
-        [room.members],
-    );
+    const contacts = getContacts();
+    console.log(contacts);
+    const q = query.trim().toLowerCase().replace(/^@/, '');
 
-    const availableContacts = useMemo(
-        () => contacts.filter((contact) => !existingMemberIds.has(contact.id)),
-        [contacts, existingMemberIds],
-    );
+    const matches = useMemo(() => {
+        if (!q) {
+            return contacts;
+        }
 
-    const filteredContacts = useMemo(() => {
-        const query = search.trim().toLowerCase();
+        return contacts.filter((contact) => {
+            const name = contact.contact?.name ?? contact.name;
 
-        if (!query) return availableContacts;
-
-        return availableContacts.filter(
-            (contact) =>
-                contact.name?.toLowerCase().includes(query) ||
-                contact.username?.toLowerCase().includes(query),
-        );
-    }, [availableContacts, search]);
-
-    useEffect(() => {
-        if (isOpen) return;
-
-        setSearch('');
-        setSelected(new Set());
-        setError(null);
-        setLoading(false);
-    }, [isOpen]);
-
-    const toggleSelected = (contactId: string) => {
-        setSelected((current) => {
-            const next = new Set(current);
-
-            if (next.has(contactId)) {
-                next.delete(contactId);
-            } else {
-                next.add(contactId);
-            }
-
-            return next;
+            return name.toLowerCase().includes(q) || contact.username.toLowerCase().includes(q);
         });
-    };
+    }, [contacts, q]);
 
-    const handleOpenChange = (open: boolean) => {
-        if (loading) return;
-        setOpen(UiState.Chat.GroupInfo.AddMemberDialog, open);
-    };
+    const exactUsernameMatch = contacts.some((contact) => contact.username.toLowerCase() === q);
 
-    const handleConfirm = async () => {
-        if (loading || selected.size === 0) return;
+    const canAddUnknown = q.length > 0 && !exactUsernameMatch;
 
-        setLoading(true);
-        setError(null);
+    function isSelected(userId: string) {
+        return selected.some((contact) => contact.id === userId);
+    }
 
-        const userIds = Array.from(selected);
+    function toggleContact(contact: Contact) {
+        setSelected((current) =>
+            isSelected(contact.id)
+                ? current.filter((item) => item.id !== contact.id)
+                : [...current, contact],
+        );
+
+        setQuery('');
+    }
+
+    async function addUnknownUser() {
+        if (!canAddUnknown) {
+            return;
+        }
 
         try {
-            await axios.post(`/rooms/${room.id}/members`, { userIds });
+            const result = await fetchContact(q);
 
-            const addedContacts = availableContacts.filter((contact) => selected.has(contact.id));
-
-            onAdded?.(addedContacts);
-            setOpen(UiState.Chat.GroupInfo.AddMemberDialog, false);
-        } catch (error: unknown) {
-            if (!axios.isAxiosError(error)) {
-                setError('Failed to add members. Please try again.');
+            if (!result || isSelected(result.id)) {
+                setQuery('');
                 return;
             }
 
-            const status = error.response?.status;
+            setSelected((current) => [...current, result]);
 
-            if (status === 403) {
-                setError('You do not have permission to add members.');
-            } else if (status === 404) {
-                setError('The room or one of the users could not be found.');
-            } else if (status === 409) {
-                setError('One or more users are already members of this room.');
-            } else {
-                setError(error.response?.data?.error ?? 'Failed to add members. Please try again.');
-            }
-        } finally {
-            setLoading(false);
+            setQuery('');
+        } catch (error) {
+            console.error('Failed to fetch contact:', error);
         }
-    };
+    }
+
+    function removeSelection(userId: string) {
+        setSelected((current) => current.filter((contact) => contact.id !== userId));
+    }
+
+    async function onSubmit() {
+        if (selected.length === 0) {
+            return;
+        }
+        try {
+            const res = await api.post(`/rooms/${room.id}/members`, {
+                userIds: selected.map((s) => s.id),
+            });
+        } catch (err: any) {
+            toast.add({
+                type: 'error',
+                description: err?.response?.data?.message ?? 'Something went wrong.',
+            });
+            return;
+        }
+        toast.add({
+            type: 'success',
+            description: `${selected.length} Members added succesfully.`,
+        });
+        await queryClient.invalidateQueries({
+            queryKey: ['rooms'],
+        });
+
+        setSelected([]);
+        setQuery('');
+        setOpen(UiState.Chat.GroupInfo.AddMemberDialog, false);
+    }
+
+    function handleOpenChange(nextOpen: boolean) {
+        setOpen(UiState.Chat.GroupInfo.AddMemberDialog, nextOpen);
+
+        if (!nextOpen) {
+            setSelected([]);
+            setQuery('');
+        }
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-sm">
+            <DialogContent className="gap-4  sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Add members</DialogTitle>
-                    <DialogDescription>
-                        Select people to add to &quot;{room.name}&quot;.
-                    </DialogDescription>
+                    <DialogTitle>Add member</DialogTitle>
                 </DialogHeader>
 
-                <div className="relative">
-                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-                    <Input
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search contacts"
-                        className="pl-8"
-                        disabled={loading}
-                    />
-                </div>
-
-                <ScrollArea className="h-64 rounded-md border">
-                    <div className="divide-y">
-                        {filteredContacts.length === 0 ? (
-                            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                                {search ? 'No matching contacts' : 'No contacts available'}
-                            </p>
-                        ) : (
-                            filteredContacts.map((contact) => {
-                                const checked = selected.has(contact.id);
-                                const checkboxId = `contact-${contact.id}`;
-
-                                return (
-                                    <label
-                                        key={contact.id}
-                                        htmlFor={checkboxId}
-                                        className="flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:bg-accent/50"
-                                    >
-                                        <Avatar className="h-8 w-8 shrink-0">
-                                            <AvatarImage
-                                                src={getUpload(contact.image)}
-                                                alt={contact.name}
-                                            />
-                                            <AvatarFallback className="text-xs">
-                                                {getInitials(contact.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
-
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium">
-                                                {contact.name}
-                                            </p>
-                                            <p className="truncate text-xs text-muted-foreground">
-                                                @{contact.username}
-                                            </p>
-                                        </div>
-
-                                        <Checkbox
-                                            id={checkboxId}
-                                            checked={checked}
-                                            disabled={loading}
-                                            onCheckedChange={() => toggleSelected(contact.id)}
-                                        />
-                                    </label>
-                                );
-                            })
-                        )}
+                {selected.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 border-t pt-4">
+                        {selected.map((contact) => (
+                            <SelectionChip
+                                key={contact.id}
+                                selection={{
+                                    ...contact,
+                                    name: contact.contact?.name ?? contact.name,
+                                }}
+                                onRemove={() => removeSelection(contact.id)}
+                            />
+                        ))}
                     </div>
-                </ScrollArea>
+                )}
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                <Command shouldFilter={false}>
+                    <CommandInput
+                        value={query}
+                        onValueChange={setQuery}
+                        placeholder="Search by name or username…"
+                    />
 
-                <DialogFooter>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        disabled={loading}
-                        onClick={() => handleOpenChange(false)}
-                    >
-                        Cancel
-                    </Button>
+                    <CommandList className="max-h-72 py-2">
+                        <CommandEmpty className="p-0">
+                            {canAddUnknown ? (
+                                <button
+                                    type="button"
+                                    onClick={addUnknownUser}
+                                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm hover:bg-accent"
+                                >
+                                    <UserPlus className="size-4 text-primary" />
+                                    Add <span className="font-medium">@{q}</span>
+                                </button>
+                            ) : (
+                                <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                                    No one found.
+                                </p>
+                            )}
+                        </CommandEmpty>
 
-                    <Button
-                        type="button"
-                        onClick={handleConfirm}
-                        disabled={selected.size === 0 || loading}
-                        className="gap-1.5"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Adding...
-                            </>
-                        ) : (
-                            <>
-                                <Check className="h-4 w-4" />
-                                Add{selected.size ? ` ${selected.size}` : ''}
-                            </>
+                        {matches.length > 0 && (
+                            <CommandGroup className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+                                {matches.map((contact) => (
+                                    <UserResultItem
+                                        key={contact.id}
+                                        user={{
+                                            ...contact,
+                                            name: contact.contact?.name ?? contact.name,
+                                        }}
+                                        selected={isSelected(contact.id)}
+                                        onSelect={() => toggleContact(contact)}
+                                    />
+                                ))}
+                            </CommandGroup>
                         )}
-                    </Button>
+                    </CommandList>
+                </Command>
+
+                <DialogFooter className="flex-row items-center justify-between gap-2 border-t  sm:justify-between">
+                    <p className="text-xs text-muted-foreground">
+                        {selected.length === 0 ? 'No one selected' : `${selected.length} selected`}
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setOpen(UiState.Chat.GroupInfo.AddMemberDialog, false)}
+                        >
+                            Cancel
+                        </Button>
+
+                        <ButtonGroup>
+                            <Button
+                                disabled={selected.length === 0}
+                                onClick={onSubmit}
+                                aria-label="Start audio call"
+                            >
+                                <UserPlus />
+                                Add Member
+                            </Button>
+                        </ButtonGroup>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

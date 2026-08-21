@@ -38,7 +38,7 @@ export function useRooms() {
         isLoading,
         isError,
     } = useQuery({
-        queryKey: ['get-rooms'],
+        queryKey: ['rooms', 'list'],
         queryFn: async () => {
             const response = await api.get<Room[]>('/rooms');
 
