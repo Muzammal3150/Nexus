@@ -2,6 +2,7 @@
 import { callSocket } from '@/lib/socket';
 
 import { User } from '@/features/auth/lib/auth';
+import { getUpload } from '@/lib/utils';
 import { Phone, PhoneOff, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
@@ -9,7 +10,6 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/avatar';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader } from '../../../components/ui/card';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 interface CallRoom {
     id: string;
@@ -115,7 +115,7 @@ export function CallToast({
                     <div className="flex items-center gap-4">
                         <Avatar className="h-14 w-14 ring-2 ring-green-500/20">
                             <AvatarImage
-                                src={getAvatar(callRoom.sender.image)}
+                                src={getUpload(callRoom.sender.image)}
                                 alt={callRoom.sender.name}
                             />
                             <AvatarFallback>

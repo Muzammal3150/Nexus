@@ -6,8 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Contact } from '@/features/contacts/stores/contact-store';
-import { cn } from '@/lib/utils';
-import { getAvatar } from '@/features/auth/lib/utils';
+import { cn, getUpload } from '@/lib/utils';
 
 interface ContactItemProps {
     contact: Contact;
@@ -42,7 +41,7 @@ export function ContactItem({
             >
                 <div className="relative shrink-0">
                     <Avatar className="size-10">
-                        <AvatarImage src={getAvatar(contact.image)} alt={name} />
+                        <AvatarImage src={getUpload(contact.image)} alt={name} />
                         <AvatarFallback className={cn('text-sm font-medium')}>
                             {getInitials(name)}
                         </AvatarFallback>

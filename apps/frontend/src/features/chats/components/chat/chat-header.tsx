@@ -11,11 +11,10 @@ import { initCall } from '@/features/calls/lib/init-call';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Room } from '@/features/chats/types/room';
 import { useContactsStore } from '@/features/contacts/stores/contact-store';
-import { cn } from '@/lib/utils';
+import { cn, getUpload } from '@/lib/utils';
+import { UiState } from '@/stores/uiStore/uis';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { useRoomTyping } from '../../hooks/use-room-typing';
-import { UiState } from '@/stores/uiStore/uis';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 export function ChatHeader({ room }: { room: Room }) {
     const router = useRouter();
@@ -51,7 +50,7 @@ export function ChatHeader({ room }: { room: Room }) {
                 onClick={() => open(UiState.Chat.GroupInfo.Drawer)}
             >
                 <Avatar className="size-9">
-                    <AvatarImage src={getAvatar(room.image)} alt={room.name} />
+                    <AvatarImage src={getUpload(room.avatar)} alt={room.name} />
 
                     <AvatarFallback className="text-xs font-medium">
                         {getInitials(room.name)}
@@ -78,7 +77,7 @@ export function ChatHeader({ room }: { room: Room }) {
                                             addSuffix: true,
                                         })}`
                                       : ''
-                                : '')}
+                                : (room.description ?? null))}
                     </p>
                 </div>
             </div>

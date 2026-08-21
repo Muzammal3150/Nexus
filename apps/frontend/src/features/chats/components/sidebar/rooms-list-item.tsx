@@ -11,11 +11,11 @@ import { Room } from '@/features/chats/types/room';
 import { useContactsStore } from '@/features/contacts/stores/contact-store';
 import { cn } from '@/lib/utils';
 
+import { getUpload } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRoomTyping } from '../../hooks/use-room-typing';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 interface RoomsListItemProps {
     room: Room;
@@ -49,7 +49,7 @@ export function RoomsListItem({ room, active }: RoomsListItemProps) {
                 )}
             >
                 <Avatar className="size-11">
-                    <AvatarImage src={getAvatar(room.image)} alt={room.name} />
+                    <AvatarImage src={getUpload(room.avatar)} alt={room.name} />
 
                     <AvatarFallback className="text-sm font-medium">
                         {getInitials(room.name)}

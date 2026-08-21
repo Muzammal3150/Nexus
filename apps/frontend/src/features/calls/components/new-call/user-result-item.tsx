@@ -6,8 +6,7 @@ import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/u
 import { CommandItem } from '@/components/ui/command';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { Contact } from '@/features/contacts/stores/contact-store';
-import { cn } from '@/lib/utils';
-import { getAvatar } from '@/features/auth/lib/utils';
+import { cn, getUpload } from '@/lib/utils';
 
 interface UserResultItemProps {
     user: Contact;
@@ -27,7 +26,7 @@ export function UserResultItem({ user, selected, onSelect }: UserResultItemProps
         >
             <div className="relative shrink-0">
                 <Avatar className="size-8">
-                    <AvatarImage src={getAvatar(user.image)} />
+                    <AvatarImage src={getUpload(user.image)} />
                     <AvatarFallback className={cn('text-xs font-medium')}>
                         {getInitials(user.name)}
                     </AvatarFallback>

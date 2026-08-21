@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Message, MessageAvatar, MessageContent } from '@/components/ui/message';
 import { MessageScrollerItem } from '@/components/ui/message-scroller';
-import { cn } from '@/lib/utils';
+import { cn, getUpload } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { useCachedFile, useObjectUrl } from '../../hooks/file';
@@ -11,7 +11,6 @@ import { getInitials } from '../../lib/utils-chat';
 import { ChatFileMessage, ChatMessage } from '../../types/messages';
 import { Room } from '../../types/room';
 import { FileGroupViewer } from './file/file-group-viewer';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 function getKind(mimeType: string): 'image' | 'video' | 'audio' | 'other' {
     if (mimeType.startsWith('image/')) return 'image';
@@ -188,7 +187,7 @@ export function MediaMessageGroup({
                             {showAvatar && (
                                 <MessageAvatar className="translate-0! self-start">
                                     <Avatar>
-                                        <AvatarImage src={getAvatar(firstMessage.sender.image)} />
+                                        <AvatarImage src={getUpload(firstMessage.sender.image)} />
                                         <AvatarFallback className="text-[10px]">
                                             {getInitials(firstMessage.sender.name)}
                                         </AvatarFallback>

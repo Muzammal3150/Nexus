@@ -1,9 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { getUpload } from '@/lib/utils';
 import { Shield } from 'lucide-react';
 import { getInitials } from '../../lib/utils-chat';
 import { RoomMember } from '../../types/room';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 interface MemberRowProps {
     member: RoomMember;
@@ -15,7 +15,7 @@ export function MemberRow({ member, isYou }: MemberRowProps) {
         <div className="flex items-center gap-3 px-3 py-2.5">
             <div className="relative">
                 <Avatar className="h-9 w-9">
-                    <AvatarImage src={getAvatar(member.user.image)} alt={member.user.name} />
+                    <AvatarImage src={getUpload(member.user.image)} alt={member.user.name} />
                     <AvatarFallback className="text-xs">
                         {getInitials(member.user.name)}
                     </AvatarFallback>

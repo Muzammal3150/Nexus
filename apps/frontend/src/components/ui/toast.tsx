@@ -183,7 +183,7 @@ function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager()
 
   return toasts.map((toastItem) => (
-    <Toast key={toastItem.id} toast={toastItem}>
+    <Toast key={toastItem.id} toast={toastItem} className={'z-[10000000000000]'}>
       <ToastContent>
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -207,7 +207,7 @@ function Toaster({
       {children}
       <ToastPortal>
         <ToastViewport>
-          <ToastList />
+          <ToastList  />
         </ToastViewport>
       </ToastPortal>
     </ToastProvider>

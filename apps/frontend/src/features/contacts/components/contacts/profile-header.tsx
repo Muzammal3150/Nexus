@@ -1,12 +1,12 @@
+import { Card } from '@/components/ui/card';
+import { Presence } from '@/features/presence/types';
+import { getUpload } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { BadgeCheck } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import AvatarWithStatus from './avatar-with-status';
 import ProfileActions from './profile-actions';
-import { statusLabel } from './utils';
 import type { User } from './types';
-import { Presence } from '@/features/presence/types';
-import { getAvatar } from '@/features/auth/lib/utils';
+import { statusLabel } from './utils';
 
 interface ProfileHeaderProps {
     user: User & Presence;
@@ -21,7 +21,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
                     <AvatarWithStatus
                         name={user.name}
-                        image={getAvatar(user.image)}
+                        image={getUpload(user.image)}
                         isOnline={user.isOnline}
                     />
 

@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,12 +12,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Contact, useContactsStore } from '@/features/contacts/stores/contact-store';
+import { getUpload } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { UiState } from '@/stores/uiStore/uis';
+import axios from 'axios';
 import { Check, Loader2, Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { getInitials } from '../../lib/utils-chat';
 import { Room } from '../../types/room';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 interface AddMemberDialogProps {
     room: Room;
@@ -168,7 +168,7 @@ export function AddMemberDialog({ room, onAdded }: AddMemberDialogProps) {
                                     >
                                         <Avatar className="h-8 w-8 shrink-0">
                                             <AvatarImage
-                                                src={getAvatar(contact.image)}
+                                                src={getUpload(contact.image)}
                                                 alt={contact.name}
                                             />
                                             <AvatarFallback className="text-xs">

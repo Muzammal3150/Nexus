@@ -7,10 +7,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getUpload } from '@/lib/utils';
 import { MoreVertical, Shield, ShieldOff, UserMinus } from 'lucide-react';
-import { RoomMember } from '../../types/room';
 import { getInitials } from '../../lib/utils-chat';
-import { getAvatar } from '@/features/auth/lib/utils';
+import { RoomMember } from '../../types/room';
 
 interface MemberRowWithActionsProps {
     member: RoomMember;
@@ -31,7 +31,7 @@ export function MemberRowWithActions({
         <div className="flex items-center gap-3 px-3 py-2.5">
             <div className="relative">
                 <Avatar className="h-9 w-9">
-                    <AvatarImage src={getAvatar(member.user.image)} alt={member.user.name} />
+                    <AvatarImage src={getUpload(member.user.image)} alt={member.user.name} />
                     <AvatarFallback className="text-xs">
                         {getInitials(member.user.name)}
                     </AvatarFallback>

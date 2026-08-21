@@ -3,7 +3,7 @@ import { UserPreview } from '@/features/auth/lib/users';
 import { ChatMessage } from "./messages";
 
 export interface Room {
-    image?: string | null;
+    avatar?: string | null;
     createdAt: string;
     updateAt: string;
     description?: string;

@@ -1,13 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DrawerClose, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { getUpload } from '@/lib/utils';
+import { UiState } from '@/stores/uiStore/uis';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { format } from 'date-fns';
 import { Camera, Pencil, Users, X } from 'lucide-react';
 import { getInitials } from '../../lib/utils-chat';
 import { Room } from '../../types/room';
-import { UiState } from '@/stores/uiStore/uis';
-import { getAvatar } from '@/features/auth/lib/utils';
 
 interface GroupHeaderProps {
     room: Room;
@@ -40,7 +40,7 @@ export function GroupHeader({ room, isAdmin }: GroupHeaderProps) {
                 className="group relative mx-auto overflow-hidden rounded-full"
             >
                 <Avatar className="h-20 w-20">
-                    <AvatarImage src={getAvatar(room.image)} alt={room.name} />
+                    <AvatarImage src={getUpload(room.avatar)} alt={room.name} />
                     <AvatarFallback className="text-lg">{getInitials(room.name)}</AvatarFallback>
                 </Avatar>
 

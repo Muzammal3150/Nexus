@@ -2,7 +2,7 @@ import type { Namespace, Socket } from "socket.io";
 import type { SocketHandler } from "../../config/socket.js";
 import { authenticate } from "../authenticate.js";
 import { ChatEvents } from "./events.js";
-import { onRoomCreate } from "./handlers/createRoom.js";
+import { onRoomCreate } from "./handlers/onRoomCreate.js";
 import { onText } from "./handlers/onText.js";
 import { initSafe } from "./safeAck.js";
 import { onFileSend } from "./handlers/onFileSend.js";
