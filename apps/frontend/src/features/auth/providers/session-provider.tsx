@@ -1,34 +1,36 @@
 'use client';
 
 import { authClient } from '@/features/auth/lib/auth';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+export const sessionQueryKey = ['session'];
 export type SessionType = ReturnType<typeof authClient.useSession>['data'];
 
-type SessionContextValue = {
-    session: SessionType | null;
-    refetch: () => Promise<void>;
-};
+export function useSession(): SessionType | null {
+    const { data } = useQuery({
+        queryKey: sessionQueryKey,
+        
+        queryFn: async () => {
+            const { data, error } = await authClient.getSession({
+                query: { disableCookieCache: true },
+            });
 
-export const SessionContext = createContext<SessionContextValue | null>(null);
+            if (error) return null;
 
-export function useSession() {
-    const context = useContext(SessionContext);
+            return data;
+        },
+        staleTime: Infinity,
+        gcTime: Infinity,
+        retry: false,
+    });
 
-    // if (!context) {
-    //     throw new Error('useSession must be used inside SessionProvider');
-    // }
-
-    return context?.session ?? null;
+    return data ?? null;
 }
 
-// Call this after any mutation that changes session data (avatar, name,
-// username, email, etc.) to pull the latest session and update everything
-// consuming useSession(), without a full page reload.
 export function useRefetchSession() {
-    const context = useContext(SessionContext);
+    const queryClient = useQueryClient();
 
-    return context?.refetch ?? (async () => {});
+    return () => queryClient.invalidateQueries({ queryKey: sessionQueryKey });
 }
 
 export function SessionProvider({
@@ -38,36 +40,8 @@ export function SessionProvider({
     session: SessionType | null;
     children: React.ReactNode;
 }) {
-    const [currentSession, setCurrentSession] = useState<SessionType | null>(session);
+    const queryClient = useQueryClient();
+    queryClient.setQueryData(sessionQueryKey, session);
 
-    // Keep local state in sync if a new server-rendered session prop comes
-    // down (e.g. on navigation), without clobbering client-side refetches.
-    useEffect(() => {
-        setCurrentSession(session);
-    }, [session]);
-
-    const refetch = useCallback(async () => {
-        try {
-            // disableCookieCache forces a real fetch instead of returning the
-            // short-lived cached cookie value, so the update shows up immediately.
-            const { data, error } = await authClient.getSession({
-                query: { disableCookieCache: true },
-            });
-
-            if (error) {
-                console.error('Failed to refresh session', error);
-                return;
-            }
-
-            setCurrentSession(data);
-        } catch (error) {
-            console.error('Failed to refresh session', error);
-        }
-    }, []);
-
-    return (
-        <SessionContext.Provider value={{ session: currentSession, refetch }}>
-            {children}
-        </SessionContext.Provider>
-    );
+    return children;
 }

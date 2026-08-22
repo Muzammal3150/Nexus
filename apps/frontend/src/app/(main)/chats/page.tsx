@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { RoomsList } from '@/features/chats/components/sidebar/rooms-list';
+import { RoomsSidebar } from '@/features/chats/components/sidebar/rooms-sidebar';
 import { UiState } from '@/stores/uiStore/uis';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { MessageCircle, Plus } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function NoRoomSelected() {
                 </div>
             </div>
 
-            <RoomsList className="sm:hidden w-full" />
+            <RoomsSidebar className="sm:hidden w-full" />
         </>
     );
 }

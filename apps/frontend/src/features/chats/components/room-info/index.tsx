@@ -39,11 +39,8 @@ export default function GroupInfo({ room }: { room: Room }) {
                 groupName={room.name}
                 members={room.members}
                 isAdmin={isAdmin}
-                onToggleRole={() => {}}
-                onRemove={(m) => {}}
-                onAddMembers={() => {}}
             />
-            <EditGroupDialog room={room} onSave={() => {}} />
+            <EditGroupDialog room={room}/>
 
             <AddMemberDialog room={room}  />
 

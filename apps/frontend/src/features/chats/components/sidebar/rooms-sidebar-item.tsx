@@ -17,12 +17,12 @@ import { CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRoomTyping } from '../../hooks/use-room-typing';
 
-interface RoomsListItemProps {
+interface RoomsSidebarItemProps {
     room: Room;
     active: boolean;
 }
 
-export function RoomsListItem({ room, active }: RoomsListItemProps) {
+export function RoomsSidebarItem({ room, active }: RoomsSidebarItemProps) {
     const session = useSession();
 
     const otherUserId = !room.isGroup

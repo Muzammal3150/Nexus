@@ -1,7 +1,7 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { MoreVertical, Phone, Video } from 'lucide-react';
+import { Phone, Video } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -91,9 +91,6 @@ export function ChatHeader({ room }: { room: Room }) {
                     <Phone className="size-4" />
                 </Button>
 
-                <Button variant="ghost" size="icon" className="size-8">
-                    <MoreVertical className="size-4" />
-                </Button>
             </div>
         </div>
     );

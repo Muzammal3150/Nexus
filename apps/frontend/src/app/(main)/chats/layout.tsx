@@ -2,7 +2,7 @@
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { NewChatDialog } from '@/features/chats/components/new-chat/new-chat-dialog';
-import { RoomsList } from '@/features/chats/components/sidebar/rooms-list';
+import { RoomsSidebar } from '@/features/chats/components/sidebar/rooms-sidebar';
 import { useEffect, useState, type ReactNode } from 'react';
 
 function useIsDesktop() {
@@ -48,7 +48,7 @@ export default function ChatLayout({ children }: { children: ReactNode }) {
                 maxSize="50%"
                 id="chats-sidebar"
             >
-                <RoomsList />
+                <RoomsSidebar />
             </ResizablePanel>
 
             <ResizableHandle />

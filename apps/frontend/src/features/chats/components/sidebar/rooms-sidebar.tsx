@@ -11,13 +11,13 @@ import { AnimatePresence, motion } from 'motion/react';
 import { LoadingPage } from '@/components/custom-ui/loading';
 import { useRooms } from '@/features/chats/hooks/use-rooms';
 import { cn } from '@/lib/utils';
+import { UiState } from '@/stores/uiStore/uis';
 import { useUiStore } from '@/stores/uiStore/uiStore';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { RoomsListItem } from './rooms-list-item';
-import { UiState } from '@/stores/uiStore/uis';
+import { RoomsSidebarItem } from './rooms-sidebar-item';
 
-export function RoomsList({ className }: { className?: string }) {
+export function RoomsSidebar({ className }: { className?: string }) {
     const { roomId: activeId } = useParams<{ roomId: string }>();
     const { rooms, isLoading } = useRooms();
     const [search, setSearch] = useState('');
@@ -40,7 +40,7 @@ export function RoomsList({ className }: { className?: string }) {
     if (isLoading) return <LoadingPage />;
     return (
         <div className={cn('flex  flex-col border-r h-full', className)}>
-            <RoomsListHeader query={search} onQueryChange={setSearch} />
+            <RoomsSidebarHeader query={search} onQueryChange={setSearch} />
             <Separator />
 
             <ScrollArea className="flex-1">
@@ -54,7 +54,7 @@ export function RoomsList({ className }: { className?: string }) {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                             >
-                                <RoomsListItem
+                                <RoomsSidebarItem
                                     key={room.id}
                                     room={{
                                         ...room,
@@ -82,7 +82,7 @@ export function RoomsList({ className }: { className?: string }) {
     );
 }
 
-function RoomsListHeader({
+function RoomsSidebarHeader({
     query,
     onQueryChange,
 }: {
@@ -105,9 +105,6 @@ function RoomsListHeader({
                     New Chat
                 </Button>
 
-                <Button variant="ghost" size="icon" className="size-8">
-                    <MoreVertical className="size-4" />
-                </Button>
             </div>
 
             <div className="px-3 pb-2">
