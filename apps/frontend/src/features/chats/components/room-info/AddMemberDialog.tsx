@@ -45,7 +45,7 @@ export function AddMemberDialog({ room }: AddMemberDialogProps) {
     const [selected, setSelected] = useState<Contact[]>([]);
 
     const contacts = getContacts();
-    console.log(contacts);
+
     const q = query.trim().toLowerCase().replace(/^@/, '');
 
     const matches = useMemo(() => {

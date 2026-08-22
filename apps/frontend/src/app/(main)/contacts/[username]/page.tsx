@@ -17,7 +17,6 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 async function getUser(username: string) {
-    console.log(username);
     try {
         const { data } = await api.get<User & Presence>(`/users/${username}`);
         return data;

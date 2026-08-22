@@ -36,11 +36,13 @@ export function ChatThread({ messages, className, room }: ChatThreadProps) {
                             <Marker variant="separator" className="py-4">
                                 <MarkerContent>{day}</MarkerContent>
                             </Marker>
+
                             {dayMessages && renderMessages(dayMessages, room)}
                         </React.Fragment>
                     ))}
                 </MessageScrollerContent>
             </MessageScrollerViewport>
+
             <MessageScrollerButton />
         </MessageScroller>
     );
@@ -55,6 +57,10 @@ function MessageItem({
     prevMessage?: ChatMessage;
     room: Room;
 }) {
+    if (message.type === 'system') {
+        return <SystemMessageItem message={message} />;
+    }
+
     const sameSender = prevMessage?.sender?.id === message.sender?.id;
     const showSender = !message.isMine && room.isGroup && !sameSender;
 
@@ -92,6 +98,21 @@ function MessageItem({
     );
 }
 
+function SystemMessageItem({ message }: { message: Extract<ChatMessage, { type: 'system' }> }) {
+    return (
+        <MessageScrollerItem messageId={message.id}>
+            <div className="flex justify-center py-1">
+                <div className="rounded-full bg-muted px-3 py-1 text-center text-xs text-muted-foreground">
+                    <span>{message.message}</span>
+                    <span className="ml-2 opacity-60">
+                        {format(message.sentAt, 'p').toLowerCase()}
+                    </span>
+                </div>
+            </div>
+        </MessageScrollerItem>
+    );
+}
+
 function MessageTextContent({
     message,
     showSender,
@@ -108,7 +129,9 @@ function MessageTextContent({
                             {message.sender.name}
                         </div>
                     )}
+
                     <div>{message.text}</div>
+
                     <div className="mt-0 flex">
                         <span className="relative ml-auto text-right text-[12px] font-light text-foreground/70">
                             {format(message.sentAt, 'p').toLowerCase()}
@@ -126,6 +149,13 @@ function renderMessages(messages: ChatMessage[], room: Room) {
     for (let i = 0; i < messages.length; ) {
         const message = messages[i];
 
+        if (message.type === 'system') {
+            result.push(<SystemMessageItem key={message.id} message={message} />);
+
+            i++;
+            continue;
+        }
+
         if (isGroupableMedia(message)) {
             const group = getMediaGroup(messages, i);
 
@@ -138,6 +168,7 @@ function renderMessages(messages: ChatMessage[], room: Room) {
                         prevMessage={messages[i - 1]}
                     />,
                 );
+
                 i += group.length;
                 continue;
             }
@@ -160,13 +191,20 @@ function renderMessages(messages: ChatMessage[], room: Room) {
 
 function getMediaGroup(messages: ChatMessage[], start: number) {
     const first = messages[start];
-    if (!first || !isGroupableMedia(first)) return [];
+
+    if (!first || !isGroupableMedia(first)) {
+        return [];
+    }
 
     const group = [first];
 
     for (let i = start + 1; i < messages.length; i++) {
         const message = messages[i];
-        if (!isGroupableMedia(message) || message.sender?.id !== first.sender?.id) break;
+
+        if (!isGroupableMedia(message) || message.sender?.id !== first.sender?.id) {
+            break;
+        }
+
         group.push(message);
     }
 

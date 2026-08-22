@@ -55,15 +55,9 @@ router.get('/', async (req, res) => {
             ? { id: { in: ids } }
             : { username: { in: usernames } };
 
-    const users = await prisma.user.findMany({
-        where,
-        select: userSelect,
-    });
+    const users = await prisma.user.findMany({ where, select: userSelect, });
 
-    const presence = await getUsersPresence(
-        users.map((user) => user.id),
-    );
-    console.log(presence, users.map((user) => user.id))
+    const presence = await getUsersPresence(users.map((user) => user.id));
     const usersWithPresence = users.map((user) => ({
         ...user,
         ...presence.get(user.id),
@@ -74,10 +68,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:username', async (req, res) => {
     const user = await prisma.user.findUnique({
-        where: {
-            username: req.params.username,
-        },
-        // select: userSelect,
+        where: { username: req.params.username },
     });
 
     if (!user) {

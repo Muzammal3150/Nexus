@@ -16,6 +16,8 @@ export default function ChatPanel() {
 
     if (isLoading) return <LoadingPage />;
     if (!room) return notFound();
+
+    
     return (
         <MessageScrollerProvider autoScroll defaultScrollPosition="end">
             <div className="flex flex-col h-full! w-full ">

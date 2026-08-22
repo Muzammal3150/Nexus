@@ -4,7 +4,7 @@ export const ChatEvents = {
         Text: "chat:text",
         File: "chat:file",
         Received: "chat:received",
-        Typing:"chat:typing"
+        Typing: "chat:typing"
     },
 
     Room: {
@@ -17,6 +17,7 @@ export const ChatEvents = {
         Broadcast: "presence:broadcast"
     },
 
-    Error: "chat:error"
+    Error: "chat:error",
+    Sys: "chat:system"
 
 } as const

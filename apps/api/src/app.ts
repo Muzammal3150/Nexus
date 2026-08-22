@@ -2,13 +2,10 @@ import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import { createServer } from "node:http";
-import { SocketServer } from "./config/socket.js";
 import { router } from "./routes/index.js";
-import { ChatSocket } from "./sockets/chat/index.js";
-import { CallSocket } from "./sockets/call/index.js";
 import fs from "fs"
 import path from "node:path";
-
+import { socketServer } from "./config/socket.js";
 const app = express();
 
 // const server = createServer({
@@ -18,10 +15,7 @@ const app = express();
 const server = createServer(app)
 
 
-await new SocketServer()
-    .register(new ChatSocket())
-    .register(new CallSocket())
-    .init(server)
+socketServer.init(server)
 
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }))
 app.use(morgan("dev"))

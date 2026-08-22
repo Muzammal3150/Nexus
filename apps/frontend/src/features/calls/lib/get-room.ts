@@ -58,7 +58,6 @@ export function getRoom(roomId: string): Promise<CallRoom> {
             "call:get-room",
             roomId,
             (response: GetRoomResponse) => {
-                console.log("GET ROM", response)
                 if (settled) return; // e.g. timeout/disconnect already fired
                 settled = true;
                 clearTimeout(timeout);

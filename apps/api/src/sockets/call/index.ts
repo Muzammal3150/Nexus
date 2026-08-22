@@ -20,7 +20,7 @@ import { initSafe } from "../chat/safeAck.js";
 
 export class CallSocket implements SocketHandler {
     namespace = "/call";
-    private io!: Namespace;
+    io!: Namespace;
     callManager!: CallManager;
 
     init(io: Namespace) {

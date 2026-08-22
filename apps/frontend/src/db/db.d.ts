@@ -71,3 +71,13 @@ export interface CachedContact {
     name: string;
     createdAt: number;
 }
+
+
+
+export interface SysMessage {
+    id: string;
+    roomId: string;
+    code: string;
+    sentAt: timestamp;
+    message: string;
+}

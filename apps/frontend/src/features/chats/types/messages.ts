@@ -1,10 +1,16 @@
 
-import { CachedFileData } from "@/db/db.d";
+import { CachedFileData, SysMessage } from "@/db/db.d";
 import { UserPreview } from "@/features/auth/lib/users";
 import { Contact } from "@/features/contacts/stores/contact-store";
 
 
-export type ChatMessage = ChatFileMessage | ChatTextMessage;
+export type ChatMessage = ChatFileMessage | ChatTextMessage | ChatSysMessage;
+
+export interface ChatSysMessage extends SysMessage {
+    type: "system";
+    sender: undefined;
+}
+
 
 export interface BaseChatMessage {
     id: string;

@@ -12,39 +12,47 @@ import { useEffect } from "react";
 import { db } from "@/db/db";
 import { UserPreview } from "@/features/auth/lib/users";
 import { useSession } from "@/features/auth/providers/session-provider";
-import { addMessage } from "@/features/chats/lib/messages";
-import { ChatMessage } from "@/features/chats/types/messages";
+import { addMessage, addSystemMessage } from "@/features/chats/lib/messages";
+import { ChatMessage, ChatSysMessage } from "@/features/chats/types/messages";
 import { useContactsStore } from "@/features/contacts/stores/contact-store";
 import { chatSocket } from "@/lib/socket";
 import { addCacheFile } from "../file/files";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/axios";
 
-
 interface TextMessageBroadcast {
-    id: string,
-    streamId: string,
-    sender: UserPreview,
-    sentAt: number,
-    text: string,
-    roomId: string,
+    id: string;
+    streamId: string;
+    sender: UserPreview;
+    sentAt: number;
+    text: string;
+    roomId: string;
 }
 
 interface FileMessageBroadcast {
-    id: string,
-    streamId: string,
-    sender: UserPreview,
-    sentAt: number,
+    id: string;
+    streamId: string;
+    sender: UserPreview;
+    sentAt: number;
     attachment: {
         id: string;
         filename: string;
         originalFilename: string;
         mimeType: string;
         size: number;
-    },
-    roomId: string,
+    };
+    roomId: string;
 }
 
+interface SysMessageBroadcast {
+    id: string;
+    streamId: string;
+    code: string;
+    type: "system";
+    message: string;
+    sentAt: number;
+    roomId: string;
+}
 
 export function useChats(roomId: string) {
     const session = useSession();
@@ -53,31 +61,50 @@ export function useChats(roomId: string) {
         throw new Error("User not authenticated");
     }
 
+    const userId = session.user.id;
+
     const users = useContactsStore((state) => state.users);
     const addUser = useContactsStore((state) => state.addUser);
 
-    const messages = useLiveQuery<ChatMessage[]>(
+    const groupedMessages = useLiveQuery<
+        Partial<Record<string, ChatMessage[]>>
+    >(
         async () => {
-            const rawMessages = await db.messages
-                .where("roomId")
-                .equals(roomId)
-                .sortBy("sentAt");
+            const [rawMessages, rawSysMessages] = await Promise.all([
+                db.messages
+                    .where("roomId")
+                    .equals(roomId)
+                    .sortBy("sentAt"),
 
-            return rawMessages.map((message) => ({
+                db.sysMessages
+                    .where("roomId")
+                    .equals(roomId)
+                    .sortBy("sentAt"),
+            ]);
+
+            const messages: ChatMessage[] = rawMessages.map((message) => ({
                 ...message,
                 sender: users[message.senderId],
-                isMine: message.senderId === session.user.id,
+                isMine: message.senderId === userId,
             }));
-        },
-        [roomId, session.user.id, users],
-    );
 
-    const groupedMessages = messages
-        ? Object.groupBy(
-            messages,
-            (message) => getDateGroup(message.sentAt),
-        )
-        : {};
+            const systemMessages: ChatSysMessage[] = rawSysMessages.map(
+                (message) => ({
+                    ...message,
+                    type: "system",
+                    sender: undefined,
+                }),
+            );
+
+            return Object.groupBy(
+                [...messages, ...systemMessages].sort(
+                    (a, b) => a.sentAt - b.sentAt,
+                ),
+                (message) => getDateGroup(message.sentAt),
+            );
+        },
+        [roomId, userId, users],
+    );
 
     /*
      * Mark messages as read when opening the room.
@@ -96,7 +123,7 @@ export function useChats(roomId: string) {
     }, [roomId]);
 
     /*
-     * Incoming socket messages.
+     * Handle incoming realtime messages.
      */
     useEffect(() => {
         const handleFile = async ({
@@ -110,12 +137,22 @@ export function useChats(roomId: string) {
             addUser(sender);
 
             try {
-                const response = await api.get(`../uploads/chat/${attachment.filename}`, { responseType: "blob" });
+                const response = await api.get(
+                    `../uploads/chat/${attachment.filename}`,
+                    { responseType: "blob" },
+                );
+
                 const blob = response.data;
-                const file = new File([blob], attachment.originalFilename, {
-                    type: attachment.mimeType || blob.type,
-                    lastModified: Date.now(),
-                });
+
+                const file = new File(
+                    [blob],
+                    attachment.originalFilename,
+                    {
+                        type: attachment.mimeType || blob.type,
+                        lastModified: Date.now(),
+                    },
+                );
+
                 const fileId = await addCacheFile(file);
 
                 await addMessage({
@@ -141,7 +178,10 @@ export function useChats(roomId: string) {
                     roomId: incomingRoomId,
                 });
             } catch (error) {
-                console.error("Failed to download chat attachment:", error);
+                console.error(
+                    "Failed to download chat attachment:",
+                    error,
+                );
 
                 toast.add({
                     type: "error",
@@ -149,6 +189,7 @@ export function useChats(roomId: string) {
                 });
             }
         };
+
         const handleText = async ({
             id,
             streamId,
@@ -175,16 +216,42 @@ export function useChats(roomId: string) {
             });
         };
 
+        const handleSysMessage = async ({
+            id,
+            streamId,
+            code,
+            message,
+            sentAt,
+            roomId: incomingRoomId,
+        }: SysMessageBroadcast) => {
+            await addSystemMessage({
+                id,
+                code,
+                message,
+                sentAt,
+                roomId: incomingRoomId,
+            });
+
+            chatSocket.emit("chat:received", {
+                streamId,
+                roomId: incomingRoomId,
+            });
+        };
+
         chatSocket.on("chat:file", handleFile);
         chatSocket.on("chat:text", handleText);
+        chatSocket.on("chat:system", handleSysMessage);
 
         return () => {
             chatSocket.off("chat:file", handleFile);
             chatSocket.off("chat:text", handleText);
+            chatSocket.off("chat:system", handleSysMessage);
         };
-    }, [roomId]);
+    }, [roomId, addUser]);
 
-
+    /*
+     * Mark unfinished uploads as failed.
+     */
     useEffect(() => {
         const markUploadingFilesAsFailed = async () => {
             await db.messages
@@ -202,28 +269,18 @@ export function useChats(roomId: string) {
         markUploadingFilesAsFailed();
     }, [roomId]);
 
-    return {
-        messages: messages ?? [],
-        groupedMessages,
-    };
+    return { groupedMessages };
 }
 
 function getDateGroup(timestamp: number) {
     const date = new Date(timestamp);
 
-    if (isToday(date)) {
-        return "Today";
-    }
-
-    if (isYesterday(date)) {
-        return "Yesterday";
-    }
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
 
     const daysAgo = differenceInCalendarDays(new Date(), date);
 
-    if (daysAgo < 7) {
-        return format(date, "EEEE");
-    }
+    if (daysAgo < 7) return format(date, "EEEE");
 
     return format(date, "MMMM d, yyyy");
 }

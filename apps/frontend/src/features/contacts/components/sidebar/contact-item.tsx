@@ -26,7 +26,7 @@ export function ContactItem({
     onAdd,
 }: ContactItemProps) {
     const name = contact.contact?.name ?? contact.name;
-    console.log(contact);
+ 
     return (
         <div
             className={cn(

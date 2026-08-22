@@ -13,12 +13,13 @@ import { onMessageReceived } from "./handlers/onMessageRecieved.js";
 import { onPresenceSubscribe } from "./handlers/onSubscribePresence.js";
 import { onTyping } from "./handlers/onTyping.js";
 import { getAllRooms } from "../../routes/room/get-room.js";
+import { onSysMessage } from "./handlers/onSysMessage.js";
 
 
 
 export class ChatSocket implements SocketHandler {
     namespace = "/chat";
-    private io!: Namespace;
+    io!: Namespace;
 
     init(io: Namespace) {
         this.io = io;
@@ -59,6 +60,9 @@ export class ChatSocket implements SocketHandler {
         socket.on(ChatEvents.Chat.File, safe((data) => onFileSend(socket, data)));
         socket.on(ChatEvents.Chat.Received, safe((data) => onMessageReceived(socket, data)));
         socket.on(ChatEvents.Chat.Typing, safe((data) => onTyping(socket, data)));
+
+
+        socket.on(ChatEvents.Sys, safe((data) => onSysMessage(socket, data)));
 
         socket.on(ChatEvents.Presence.Subscribe, safe((data) => onPresenceSubscribe(socket, data)));
 
@@ -111,7 +115,7 @@ export class ChatSocket implements SocketHandler {
             const rooms = await getAllRooms(socket.data.user.id);
             if (!rooms || rooms.length === 0) return;
 
-            socket.join(rooms.map(({ id }) => id));
+            socket.join(rooms.map(({ id }) => `room:${id}`));
 
             return rooms
 
