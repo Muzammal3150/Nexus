@@ -83,10 +83,15 @@ export function RoomsSidebarItem({ room, active }: RoomsSidebarItemProps) {
 
                                 <span className="truncate">
                                     {room.isGroup &&
+                                        room.lastMessage.sender &&
                                         `${formatUserName(room.lastMessage.sender, session!.user)}:`}
-                                    {room.lastMessage.type === 'text'
-                                        ? room.lastMessage.text
-                                        : room.lastMessage.attachment.originalFilename}
+                                    {room.lastMessage
+                                        ? room.lastMessage.type === 'text'
+                                            ? room.lastMessage.text
+                                            : room.lastMessage.type === 'file'
+                                              ? room.lastMessage.attachment.originalFilename
+                                              : room.lastMessage.message
+                                        : 'No messages yet'}
                                 </span>
                             </span>
                         ) : null}
