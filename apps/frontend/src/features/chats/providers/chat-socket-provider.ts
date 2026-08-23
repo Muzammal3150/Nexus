@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "@/components/ui/toast";
 import { chatSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -17,12 +18,19 @@ export function ChatSocketProvider({ children }: { children: React.ReactNode }) 
                 queryKey: ["rooms"]
             })
         };
+        const handleError = ({ message }: { message: string; }) => {
+            toast.add({
+                type: "error",
+                description: message
+            })
+        }
 
+        chatSocket.on("chat:error", handleError)
         chatSocket.on("room:create-broadcast", handleRoomBroadCast);
 
         return () => {
             console.log("CHAT PROVIDER UNMOUNT", chatSocket.id);
-
+            chatSocket.off("chat:error", handleError)
             chatSocket.off("room:create-broadcast", handleRoomBroadCast);
             chatSocket.disconnect();
         };

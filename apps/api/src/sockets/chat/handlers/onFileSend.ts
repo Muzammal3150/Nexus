@@ -17,7 +17,44 @@ const filePayloadSchema = z.object({
 
 type FilePayload = z.infer<typeof filePayloadSchema>;
 
-function validate(socket: Socket, data: unknown): FilePayload | null {
+
+export async function onFileSend(socket: Socket, data: unknown) {
+    const payload = validate(socket, data);
+    if (!payload) return;
+
+    const { id, roomId, attachment } = payload;
+
+    const messagePayload = {
+        id,
+        sender: socket.data.user,
+        attachment,
+        sentAt: Date.now(),
+        roomId,
+    };
+
+    const streamId = await redis.xAdd(`nexus:chat:room:${roomId}`, "*", {
+        event: "chat:file",
+        payload: JSON.stringify(messagePayload),
+    },
+    );
+
+    await redis.hSet(`nexus:chat:sync:${roomId}`, socket.data.session.id, streamId);
+
+    socket.to(`room:${roomId}`).emit(ChatEvents.Chat.File, {
+        ...messagePayload,
+        from: "message-broadcast",
+        streamId,
+    });
+}
+
+function validate(socket: Socket, data: unknown) {
+    if (!socket.data.user?.id) {
+        socket.emit(ChatEvents.Error, {
+            message: "You are not authenticated",
+        });
+        return null;
+    }
+
     const result = filePayloadSchema.safeParse(data);
 
     if (!result.success) {
@@ -39,38 +76,3 @@ function validate(socket: Socket, data: unknown): FilePayload | null {
     return result.data;
 }
 
-export async function onFileSend(socket: Socket, data: unknown) {
-    const payload = validate(socket, data);
-    if (!payload) return;
-
-    const { id, roomId, attachment } = payload;
-
-    const messagePayload = {
-        id,
-        sender: socket.data.user,
-        attachment,
-        sentAt: Date.now(),
-        roomId,
-    };
-
-    const streamId = await redis.xAdd(
-        `nexus:chat:room:${roomId}`,
-        "*",
-        {
-            event: "chat:file",
-            payload: JSON.stringify(messagePayload),
-        },
-    );
-
-    await redis.hSet(
-        `nexus:chat:sync:${roomId}`,
-        socket.data.session.id,
-        streamId,
-    );
-
-    socket.to(`room:${roomId}`).emit(ChatEvents.Chat.File, {
-        ...messagePayload,
-        from: "message-broadcast",
-        streamId,
-    });
-}

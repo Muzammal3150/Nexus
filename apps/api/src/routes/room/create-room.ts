@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { auth } from '../../config/auth.js';
 import prisma from '../../config/prisma.js';
+import { socketServer } from '../../config/socket.js';
+import { ChatEvents } from '../../sockets/chat/events.js';
 
 const MAX_GROUP_MEMBERS = 200;
 
@@ -17,7 +19,7 @@ const createRoomSchema = z.object({
             .min(1))
         .min(1),
     isGroup: z.boolean(),
-    
+
 }).superRefine((data, ctx) => {
     if (data.isGroup && !data.name) {
         ctx.addIssue({
@@ -122,6 +124,16 @@ export async function createRoom(req: Request, res: Response) {
             },
         },
     });
+    const io = socketServer.getIO("/chat")?.io;
+    if (io) {
+        for (const member of room.members) {
+            const sockets = await io.in(`user:${member.userId}`).fetchSockets();
 
+            for (const memberSocket of sockets) memberSocket.join(`room:${room.id}`)
+
+            io.to(`user:${member.userId}`).emit(ChatEvents.Room.CreateBroadcast, room);
+
+        }
+    }
     return res.status(201).json({ room });
 }

@@ -1,58 +1,60 @@
+import { z } from "zod";
 import type { Socket } from "socket.io";
 import { redis } from "../../../config/redis.js";
+import { ChatEvents } from "../events.js";
 
-interface MessageReceivePayload {
-    streamId: string;
-    roomId: string;
+const messageReceivePayloadSchema = z.object({
+    streamId: z.string().min(1, "A valid streamId is required"),
+    roomId: z.string().trim().min(1, "A valid roomId is required"),
+});
+
+
+
+export async function onMessageReceived(socket: Socket, data: unknown) {
+    const payload = await validate(socket, data);
+    if (!payload) return;
+
+    const { roomId, streamId } = payload;
+
+    await redis.hSet(`nexus:chat:sync:${roomId}`, socket.data.session.id, streamId);
 }
 
-function validate(
-    socket: Socket,
-    data: unknown,
-): data is MessageReceivePayload {
-    if (!data || typeof data !== "object") {
-        return false;
-    }
 
-    const payload = data as Record<string, unknown>;
 
-    if (typeof payload.roomId !== "string") {
-        return false;
-    }
+async function validate(socket: Socket, data: unknown) {
+    const result = messageReceivePayloadSchema.safeParse(data);
 
-    if (typeof payload.streamId !== "string") {
-        return false;
+    if (!result.success) {
+        socket.emit(ChatEvents.Error, {
+            message: result.error.issues[0]?.message ?? "Invalid message",
+        });
+        return null;
     }
 
     if (!socket.data.user?.id) {
-        return false;
+        socket.emit(ChatEvents.Error, {
+            message: "You are not authenticated",
+        });
+        return null;
     }
 
-    return true;
-}
+    const { roomId, streamId } = result.data;
 
-export async function onMessageReceived(socket: Socket, data: unknown) {
-    if (!validate(socket, data)) {
-        return;
+    if (!socket.rooms.has(`room:${roomId}`)) {
+        socket.emit(ChatEvents.Error, {
+            message: "You are not a member of this room",
+        });
+        return null;
     }
 
-    const { roomId, streamId } = data;
-
-    // Make sure the socket is actually in this room.
-    if (!socket.rooms.has(roomId)) {
-        return;
-    }
-
-    // Make sure this stream ID actually exists in this room.
     const message = await redis.xRange(`nexus:chat:room:${roomId}`, streamId, streamId);
 
     if (message.length === 0) {
-        return;
+        socket.emit(ChatEvents.Error, {
+            message: "Message does not exist",
+        });
+        return null;
     }
 
-    await redis.hSet(
-        `nexus:chat:sync:${roomId}`,
-        socket.data.session.id,
-        streamId,
-    );
+    return result.data;
 }

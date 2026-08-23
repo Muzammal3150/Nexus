@@ -13,6 +13,13 @@ const textPayloadSchema = z.object({
 type TextPayload = z.infer<typeof textPayloadSchema>;
 
 function validate(socket: Socket, data: unknown): TextPayload | null {
+    if (!socket.data.user?.id) {
+        socket.emit(ChatEvents.Error, {
+            message: "You are not authenticated",
+        });
+        return null;
+    }
+
     const result = textPayloadSchema.safeParse(data);
 
     if (!result.success) {
@@ -22,9 +29,7 @@ function validate(socket: Socket, data: unknown): TextPayload | null {
         return null;
     }
 
-    const { roomId } = result.data;
-
-    if (!socket.rooms.has(`room:${roomId}`)) {
+    if (!socket.rooms.has(`room:${result.data.roomId}`)) {
         socket.emit(ChatEvents.Error, {
             message: "You are not a member of this room",
         });
@@ -48,18 +53,14 @@ export async function onText(socket: Socket, data: unknown) {
         roomId,
     };
 
-    const streamId = await redis.xAdd(
-        `nexus:chat:room:${roomId}`,
-        "*",
-        {
-            event: "chat:text",
-            payload: JSON.stringify(messagePayload),
-        },
-    );
+    const streamId = await redis.xAdd(`nexus:chat:room:${roomId}`, "*", {
+        event: "chat:text",
+        payload: JSON.stringify(messagePayload),
+    });
 
     socket.to(`room:${roomId}`).emit(ChatEvents.Chat.Text, {
-        ...messagePayload,
         streamId,
+        ...messagePayload,
     });
 
     socket.emit(ChatEvents.Chat.Text, {
@@ -68,9 +69,5 @@ export async function onText(socket: Socket, data: unknown) {
         streamId,
     });
 
-    await redis.hSet(
-        `nexus:chat:sync:${roomId}`,
-        socket.data.session.id,
-        streamId,
-    );
+    await redis.hSet(`nexus:chat:sync:${roomId}`, socket.data.session.id, streamId);
 }

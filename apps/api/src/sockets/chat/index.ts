@@ -1,19 +1,16 @@
 import type { Namespace, Socket } from "socket.io";
-import type { SocketHandler } from "../../config/socket.js";
-import { authenticate } from "../authenticate.js";
-import { ChatEvents } from "./events.js";
-import { onRoomCreate } from "./handlers/onRoomCreate.js";
-import { onText } from "./handlers/onText.js";
-import { initSafe } from "./safeAck.js";
-import { onFileSend } from "./handlers/onFileSend.js";
-import type { Session } from "better-auth";
-import type { Room } from "../../generated/prisma/client.js";
 import { redis } from "../../config/redis.js";
+import type { Room } from "../../generated/prisma/client.js";
+import { getAllRooms } from "../../routes/room/get-room.js";
+import { authenticate } from "../authenticate.js";
+import type { SocketHandler } from "../socket-server.js";
+import { ChatEvents } from "./events.js";
+import { onFileSend } from "./handlers/onFileSend.js";
 import { onMessageReceived } from "./handlers/onMessageRecieved.js";
 import { onPresenceSubscribe } from "./handlers/onSubscribePresence.js";
+import { onText } from "./handlers/onText.js";
 import { onTyping } from "./handlers/onTyping.js";
-import { getAllRooms } from "../../routes/room/get-room.js";
-import { onSysMessage } from "./handlers/onSysMessage.js";
+import { initSafe } from "./safeAck.js";
 
 
 
@@ -55,14 +52,12 @@ export class ChatSocket implements SocketHandler {
         const rooms = await this.joinAllRooms(socket);
 
 
-        socket.on(ChatEvents.Room.Create, safe((data) => onRoomCreate(this.ctx(), socket, data)));
         socket.on(ChatEvents.Chat.Text, safe((data) => onText(socket, data)));
         socket.on(ChatEvents.Chat.File, safe((data) => onFileSend(socket, data)));
         socket.on(ChatEvents.Chat.Received, safe((data) => onMessageReceived(socket, data)));
         socket.on(ChatEvents.Chat.Typing, safe((data) => onTyping(socket, data)));
 
 
-        socket.on(ChatEvents.Sys, safe((data) => onSysMessage(socket, data)));
 
         socket.on(ChatEvents.Presence.Subscribe, safe((data) => onPresenceSubscribe(socket, data)));
 

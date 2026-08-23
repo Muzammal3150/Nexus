@@ -21,9 +21,9 @@ export async function createRoom(payload: {
 
         const room = response.data.room;
 
-        chatSocket.emit('room:create', {
-            roomId: room.id,
-        });
+        // chatSocket.emit('room:create', {
+        //     roomId: room.id,
+        // });
 
         return room;
     } catch (error) {

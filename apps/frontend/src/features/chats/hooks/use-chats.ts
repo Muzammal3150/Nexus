@@ -22,7 +22,7 @@ import { api } from "@/lib/axios";
 
 interface TextMessageBroadcast {
     id: string;
-    streamId: string;
+    streamId?: string;
     sender: UserPreview;
     sentAt: number;
     text: string;
@@ -31,7 +31,7 @@ interface TextMessageBroadcast {
 
 interface FileMessageBroadcast {
     id: string;
-    streamId: string;
+    streamId?: string;
     sender: UserPreview;
     sentAt: number;
     attachment: {
@@ -172,11 +172,13 @@ export function useChats(roomId: string) {
                     isRead: incomingRoomId === roomId,
                     sentAt,
                 });
+                if (streamId) {
 
-                chatSocket.emit("chat:received", {
-                    streamId,
-                    roomId: incomingRoomId,
-                });
+                    chatSocket.emit("chat:received", {
+                        streamId,
+                        roomId: incomingRoomId,
+                    });
+                }
             } catch (error) {
                 console.error(
                     "Failed to download chat attachment:",
@@ -209,11 +211,12 @@ export function useChats(roomId: string) {
                 text,
                 isRead: incomingRoomId === roomId,
             });
-
-            chatSocket.emit("chat:received", {
-                streamId,
-                roomId: incomingRoomId,
-            });
+            if (streamId) {
+                chatSocket.emit("chat:received", {
+                    streamId,
+                    roomId: incomingRoomId,
+                });
+            }
         };
 
         const handleSysMessage = async ({
@@ -231,11 +234,13 @@ export function useChats(roomId: string) {
                 sentAt,
                 roomId: incomingRoomId,
             });
-
-            chatSocket.emit("chat:received", {
-                streamId,
-                roomId: incomingRoomId,
-            });
+            if (streamId) {
+                console.log("Sync", streamId)
+                chatSocket.emit("chat:received", {
+                    streamId,
+                    roomId: incomingRoomId,
+                });
+            }
         };
 
         chatSocket.on("chat:file", handleFile);
