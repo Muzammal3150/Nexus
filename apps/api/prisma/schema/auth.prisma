@@ -9,7 +9,7 @@ model User {
     sessions      Session[]
     accounts      Account[]
     username      String        @unique
-    roomMembers   RoomMembers[]
+    roomMembers   RoomMember[]
 
     @@unique([email])
     @@map("user")

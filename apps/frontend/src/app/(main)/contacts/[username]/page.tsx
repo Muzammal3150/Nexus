@@ -1,13 +1,8 @@
-import ActivityTimeline, {
-    ActivityItem,
-} from '@/features/contacts/components/contacts/activity-timeline';
 import DetailsCard from '@/features/contacts/components/contacts/details-card';
 import GroupsList from '@/features/contacts/components/contacts/groups-list';
 import MediaGrid from '@/features/contacts/components/contacts/media-grid';
 import ProfileHeader from '@/features/contacts/components/contacts/profile-header';
 import ProfileTabs from '@/features/contacts/components/contacts/profile-tabs';
-
-import { ImagePlus, LogIn, UserPlus2 } from 'lucide-react';
 
 import { Loading } from '@/components/custom-ui/loading';
 import { User } from '@/features/auth/lib/auth';
@@ -33,17 +28,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const { username } = await params;
     const user = await getUser(username);
 
-    const activity: ActivityItem[] = [
-        { id: 'a1', icon: ImagePlus, label: 'Updated profile photo', date: user.updatedAt },
-        {
-            id: 'a2',
-            icon: UserPlus2,
-            label: 'Joined \u201CClimbing Crew\u201D',
-            date: new Date('2025-11-02T12:00:00Z'),
-        },
-        { id: 'a3', icon: LogIn, label: 'Created account', date: user.createdAt },
-    ];
-
     return (
         <div className="min-h-full w-full bg-background p-4 sm:p-6 lg:p-10">
             <div className="mx-auto w-full max-w-6xl">
@@ -59,7 +43,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             {
                                 key: 'media',
                                 label: 'Shared media',
-                                count: 12,
+
                                 content: (
                                     <Suspense fallback={<Loading />}>
                                         <MediaGrid userId={user.id} />
@@ -69,14 +53,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             {
                                 key: 'groups',
                                 label: 'Shared groups',
-                                count: 0,
-                                content: <GroupsList groups={[]} />,
-                            },
-                            {
-                                key: 'activity',
-                                label: 'Activity',
-                                count: 0,
-                                content: <ActivityTimeline items={activity} />,
+              
+                                content: (
+                                    <Suspense fallback={<Loading />}>
+                                        <GroupsList userId={user.id} />
+                                    </Suspense>
+                                ),
                             },
                         ]}
                     />

@@ -9,10 +9,10 @@ model Room {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    members RoomMembers[]
+    members RoomMember[]
 }
 
-model RoomMembers {
+model RoomMember {
     roomId String
     userId String
 

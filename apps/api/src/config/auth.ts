@@ -4,22 +4,19 @@ import prisma from "./prisma.js";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 
 export const auth = betterAuth({
-    database: prismaAdapter(prisma, {
-        provider: "postgresql",
-    }),
+    database: prismaAdapter(prisma, { provider: "postgresql" }),
+    baseURL: process.env.FRONTEND_URL,
+    trustedOrigins: ["http://localhost:3000", process.env.FRONTEND_URL!],
 
-    emailAndPassword: {
-        enabled: true,
-    },
+
+    emailAndPassword: { enabled: true },
     databaseHooks: {
         user: {
             create: {
                 async before(user) {
                     const isUser = await prisma.user.findUnique({ where: { username: user.username as string } })
                     if (isUser) {
-                        throw new APIError('CONFLICT', {
-                            message: "User with same username already exists."
-                        })
+                        throw new APIError('CONFLICT', { message: "User with same username already exists." })
                     }
 
                     return { data: user };
@@ -41,7 +38,6 @@ export const auth = betterAuth({
     plugins: [
         inferAdditionalFields({
             user: {
-
                 username: {
                     type: "string",
                     required: true,
@@ -55,7 +51,6 @@ export const auth = betterAuth({
         expiresIn: 30 * 24 * 60 * 30,
         updateAge: 24 * 60 * 60,
     },
-    trustedOrigins: ["http://localhost:3000", process.env.FRONTEND_URL!],
 });
 
 

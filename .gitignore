@@ -78,18 +78,3 @@ Thumbs.db
 .cache/
 .parcel-cache/
 
-# =========================
-# Prisma
-# =========================
-prisma/dev.db
-prisma/dev.db-journal
-
-# =========================
-# Misc
-# =========================
-*.pid
-*.seed
-```
-
-
-uploads/

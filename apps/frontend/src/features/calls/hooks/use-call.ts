@@ -13,10 +13,11 @@ export function useCall(roomId: string) {
     useEffect(() => {
         void controller.init();
         return () => controller.destroy();
-    }, [controller]); // re-run init/destroy whenever the instance changes
+    }, [controller]);
 
     return useSyncExternalStore(
         controller.subscribe,
-        controller.getSnapshot
+        controller.getSnapshot,
+        controller.getSnapshot,
     );
 }

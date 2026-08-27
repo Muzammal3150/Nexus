@@ -1,6 +1,7 @@
-import { CallSocket } from "../sockets/call/index.js"
-import { ChatSocket } from "../sockets/chat/index.js"
-import { SocketServer } from "../sockets/socket-server.js"
+import { CallSocket } from "../modules/call/socket.js"
+import { ChatSocket } from "../modules/chat/socket.js"
+
+import { SocketServer } from "../sockets/socketServer.js"
 
 
 const socketServer = new SocketServer()
@@ -9,3 +10,4 @@ const socketServer = new SocketServer()
 
 
 export { socketServer }
+

@@ -13,12 +13,6 @@ type Snapshot = {
     error: string | null;
 };
 
-/**
- * Per-peer negotiation state, following the "perfect negotiation" pattern
- * (https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation)
- * so that simultaneous offers from both sides (glare) resolve deterministically
- * instead of corrupting the signaling state.
- */
 type PeerState = {
     connection: RTCPeerConnection;
     // true while we're in the middle of creating/sending our own offer
@@ -31,20 +25,17 @@ type PeerState = {
     restartAttempts: number;
 };
 
-// Basic STUN config so peers behind NAT can actually establish connectivity.
-// Replace/extend with your own TURN server(s) for reliability across restrictive
-// networks (corporate firewalls, symmetric NAT, etc) — STUN alone is not enough
-// for a meaningful fraction of real-world networks.
+
 const ICE_SERVERS: RTCIceServer[] = [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
-    // { urls: "turn:your-turn-server.example.com:3478", username: "...", credential: "..." },
 ];
 
 const MAX_ICE_RESTART_ATTEMPTS = 3;
 
 export class CallController {
-    private readonly dev = true;
+    private dev = true
+
 
     private isInit = false;
     private isLoading = true;
@@ -766,12 +757,12 @@ export class CallController {
     }
 
     private log(message: string, ...args: unknown[]) {
-        // if (!this.dev) return;
-        // console.log(
-        //     `%c[CallController:${this.roomId}]`,
-        //     "color:#3b82f6;font-weight:bold",
-        //     message,
-        //     ...args
-        // );
+        if (!this.dev) return;
+        console.log(
+            `%c[CallController:${this.roomId}]`,
+            "color:#3b82f6;font-weight:bold",
+            message,
+            ...args
+        );
     }
 }

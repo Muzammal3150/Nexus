@@ -18,9 +18,6 @@ interface ProfileActionsProps {
     user: User;
 }
 
-// shadcn's DropdownMenu (Radix under the hood) owns its own open state
-// internally, so this file no longer needs "use client" or a click-outside
-// handler — that's all handled inside components/ui/dropdown-menu.tsx.
 export default function ProfileActions({ user }: ProfileActionsProps) {
     const router = useRouter();
     async function onChat() {
@@ -67,16 +64,13 @@ export default function ProfileActions({ user }: ProfileActionsProps) {
                 Video
             </Button>
 
-            <DropdownMenu>
+            {/* <DropdownMenu>
                 <DropdownMenuTrigger
                     render={<Button variant="outline" size="icon" aria-label="More options" />}
                 >
                     <MoreVertical className="size-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
-                    {/* `variant="destructive"` on DropdownMenuItem requires a recent
-              shadcn dropdown-menu.tsx — swap for
-              className="text-destructive focus:text-destructive" on older versions */}
                     <DropdownMenuItem variant="destructive">
                         <Ban className="size-4" />
                         Block {user.name}
@@ -86,7 +80,7 @@ export default function ProfileActions({ user }: ProfileActionsProps) {
                         Report
                     </DropdownMenuItem>
                 </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
         </div>
     );
 }

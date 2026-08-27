@@ -1,0 +1,143 @@
+Folder PATH listing for volume Library
+Volume serial number is 0000005D E041:E7D5
+D:.
+|   .env
+|   .gitignore
+|   nodemon.json
+|   package.json
+|   prisma.config.ts
+|   tree.txt
+|   tsconfig.json
+|   
++---certs
+|       dev-cert.pem
+|       dev-key.pem
+|       
++---node_modules
++---prisma
+|   +---migrations
+|   |   |   migration_lock.toml
+|   |   |   
+|   |   +---20260724070257_init_username
+|   |   |       migration.sql
+|   |   |       
+|   |   +---20260724082323_init_room_members
+|   |   |       migration.sql
+|   |   |       
+|   |   \---20260821071044_rename_client_to_member
+|   |           migration.sql
+|   |           
+|   \---schema
+|           auth.prisma
+|           rooms.prisma
+|           schema.prisma
+|           
++---src
+|   |   app.ts
+|   |   server.ts
+|   |   
+|   +---auth
+|   |       authorize.ts
+|   |       
+|   +---config
+|   |       auth.ts
+|   |       avatarUpload.ts
+|   |       chatUpload.ts
+|   |       prisma.ts
+|   |       redis.ts
+|   |       roomAvatarUpload.ts
+|   |       socket.ts
+|   |       
+|   +---generated
+|   |   \---prisma
+|   |       |   browser.ts
+|   |       |   client.ts
+|   |       |   commonInputTypes.ts
+|   |       |   enums.ts
+|   |       |   models.ts
+|   |       |   
+|   |       +---internal
+|   |       |       class.ts
+|   |       |       prismaNamespace.ts
+|   |       |       prismaNamespaceBrowser.ts
+|   |       |       
+|   |       \---models
+|   |               Account.ts
+|   |               Room.ts
+|   |               RoomMembers.ts
+|   |               Session.ts
+|   |               User.ts
+|   |               Verification.ts
+|   |               
+|   +---presence
+|   |       get-presence.ts
+|   |       
+|   +---routes
+|   |   |   authorize.ts
+|   |   |   chatUpload.ts
+|   |   |   index.ts
+|   |   |   
+|   |   +---room
+|   |   |       common-room.ts
+|   |   |       create-room.ts
+|   |   |       get-room.ts
+|   |   |       index.ts
+|   |   |       member.ts
+|   |   |       update-room.ts
+|   |   |       
+|   |   \---users
+|   |           Avatar.ts
+|   |           GetUser.ts
+|   |           users.ts
+|   |           
+|   +---sockets
+|   |   |   authenticate.ts
+|   |   |   socket-server.ts
+|   |   |   
+|   |   +---call
+|   |   |   |   CallManager.ts
+|   |   |   |   events.ts
+|   |   |   |   index.ts
+|   |   |   |   safeAck.ts
+|   |   |   |   types.ts
+|   |   |   |   
+|   |   |   \---handlers
+|   |   |           onCallAccept.ts
+|   |   |           onCallInit.ts
+|   |   |           onCallLeave.ts
+|   |   |           onCallReady.ts
+|   |   |           onCallReject.ts
+|   |   |           onDisconnect.ts
+|   |   |           onGetRoom.ts
+|   |   |           onRTCAnswer.ts
+|   |   |           onRTCIceCandidate.ts
+|   |   |           onRTCOffer.ts
+|   |   |           
+|   |   \---chat
+|   |       |   events.ts
+|   |       |   index.ts
+|   |       |   safeAck.ts
+|   |       |   sysMsg.ts
+|   |       |   types.ts
+|   |       |   
+|   |       \---handlers
+|   |               onFileSend.ts
+|   |               onMessageRecieved.ts
+|   |               onSubscribePresence.ts
+|   |               onText.ts
+|   |               onTyping.ts
+|   |               
+|   \---types
+|           express.d.ts
+|           
+\---uploads
+    +---avatars
+    |       07949cdf-2126-4eed-ab92-b9cfae6f01f4.png
+    |       09ee3ca0-994f-465f-b1df-0aae8d98aff7.jpg      
+    +---chat
+    |       1786709851391-f989c338-6ff2-4959-a834-a2e08c5ab37c.png
+    |       1786709986701-a18b7db1-e40d-415c-bd9f-4566e558c003.png      
+    \---rooms
+            19534512-78b4-48c9-a172-6c2109bf67ee.png
+            6154966b-0082-4ea2-9786-0918c88e0f8e.png
+            

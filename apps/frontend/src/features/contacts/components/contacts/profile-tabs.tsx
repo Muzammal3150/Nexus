@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export interface TabConfig {
     key: string;
     label: string;
-    count: number;
     content: ReactNode;
 }
 
@@ -21,13 +20,11 @@ export default function ProfileTabs({ tabs, defaultTab }: ProfileTabsProps) {
             defaultValue={defaultTab ?? tabs[0]?.key}
             className="rounded-2xl flex-col border border-border bg-card p-5 lg:p-6"
         >
-            <TabsList>
+            <TabsList variant={'line'}>
                 {tabs.map((t) => (
-                    <TabsTrigger key={t.key} value={t.key} className="gap-1.5">
+                    <TabsTrigger key={t.key} value={t.key}>
                         {t.label}
-                        <Badge variant="secondary" className="px-1.5">
-                            {t.count}
-                        </Badge>
+
                     </TabsTrigger>
                 ))}
             </TabsList>

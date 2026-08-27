@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 interface DeviceInfo {
     canSwitchCamera: boolean;
@@ -10,7 +10,7 @@ interface CallMediaState {
     isMuted: boolean;
     isCameraEnabled: boolean;
     isOnHold: boolean;
-    cameraFacing: 'user' | 'environment';
+    cameraFacing: "user" | "environment";
     deviceInfo: DeviceInfo;
 }
 
@@ -28,29 +28,12 @@ const defaultDeviceInfo: DeviceInfo = {
     hasMic: false,
 };
 
-export function useCallMediaControls(
-    stream: MediaStream | null,
-): UseCallMediaControlsReturn {
+export function useCallMediaControls(stream: MediaStream | null): UseCallMediaControlsReturn {
+    const [isMuted, setIsMuted] = useState(true);
+    const [isCameraEnabled, setIsCameraEnabled] = useState(false);
     const [isOnHold, setIsOnHold] = useState(false);
-    const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>(
-        'user',
-    );
-    const [deviceInfo, setDeviceInfo] =
-        useState<DeviceInfo>(defaultDeviceInfo);
-
-    const getAudioTrack = useCallback(() => {
-        return stream?.getAudioTracks()[0] ?? null;
-    }, [stream]);
-
-    const getVideoTrack = useCallback(() => {
-        return stream?.getVideoTracks()[0] ?? null;
-    }, [stream]);
-
-    const audioTrack = getAudioTrack();
-    const videoTrack = getVideoTrack();
-
-    const isMuted = audioTrack ? !audioTrack.enabled : true;
-    const isCameraEnabled = videoTrack ? videoTrack.enabled : false;
+    const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("user");
+    const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>(defaultDeviceInfo);
 
     const refreshDevices = useCallback(async () => {
         if (!navigator.mediaDevices) {
@@ -59,97 +42,96 @@ export function useCallMediaControls(
         }
 
         try {
-            const devices =
-                await navigator.mediaDevices.enumerateDevices();
-
-            const cameras = devices.filter(
-                (device) => device.kind === 'videoinput',
-            );
-
-            const microphones = devices.filter(
-                (device) => device.kind === 'audioinput',
-            );
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const hasCamera = devices.some((device) => device.kind === "videoinput");
+            const hasMic = devices.some((device) => device.kind === "audioinput");
+            const cameraCount = devices.filter((device) => device.kind === "videoinput").length;
 
             setDeviceInfo({
-                canSwitchCamera: cameras.length > 1,
-                hasCamera: cameras.length > 0,
-                hasMic: microphones.length > 0,
+                hasCamera,
+                hasMic,
+                canSwitchCamera: cameraCount > 1,
             });
         } catch {
             setDeviceInfo({
+                hasCamera: !!stream?.getVideoTracks().length,
+                hasMic: !!stream?.getAudioTracks().length,
                 canSwitchCamera: false,
-                hasCamera: Boolean(videoTrack),
-                hasMic: Boolean(audioTrack),
             });
         }
-    }, [audioTrack, videoTrack]);
+    }, [stream]);
+
+    const syncTrackState = useCallback(() => {
+        const audioTrack = stream?.getAudioTracks()[0];
+        const videoTrack = stream?.getVideoTracks()[0];
+
+        setIsMuted(audioTrack ? !audioTrack.enabled : true);
+        setIsCameraEnabled(videoTrack?.enabled ?? false);
+    }, [stream]);
+
+    useEffect(() => {
+        syncTrackState();
+        setIsOnHold(false);
+    }, [stream, syncTrackState]);
 
     useEffect(() => {
         refreshDevices();
 
-        const handleDeviceChange = () => {
-            refreshDevices();
-        };
+        const handleDeviceChange = () => refreshDevices();
 
-        navigator.mediaDevices?.addEventListener(
-            'devicechange',
-            handleDeviceChange,
-        );
+        navigator.mediaDevices?.addEventListener("devicechange", handleDeviceChange);
 
         return () => {
-            navigator.mediaDevices?.removeEventListener(
-                'devicechange',
-                handleDeviceChange,
-            );
+            navigator.mediaDevices?.removeEventListener("devicechange", handleDeviceChange);
         };
     }, [refreshDevices]);
 
     const toggleMic = useCallback(() => {
-        const track = getAudioTrack();
+        const track = stream?.getAudioTracks()[0];
 
         if (!track) return;
 
         track.enabled = !track.enabled;
-    }, [getAudioTrack]);
+        setIsMuted(!track.enabled);
+    }, [stream]);
 
     const toggleCamera = useCallback(() => {
-        const track = getVideoTrack();
+        const track = stream?.getVideoTracks()[0];
 
         if (!track) return;
 
         track.enabled = !track.enabled;
-    }, [getVideoTrack]);
+        setIsCameraEnabled(track.enabled);
+    }, [stream]);
 
     const toggleHold = useCallback(() => {
         if (!stream) return;
 
-        const nextHoldState = !isOnHold;
+        const nextHold = !isOnHold;
 
         stream.getTracks().forEach((track) => {
-            track.enabled = !nextHoldState;
+            track.enabled = !nextHold;
         });
 
-        setIsOnHold(nextHoldState);
+        setIsOnHold(nextHold);
+        setIsMuted(nextHold || !stream.getAudioTracks()[0]?.enabled);
+        setIsCameraEnabled(!nextHold && !!stream.getVideoTracks()[0]?.enabled);
     }, [stream, isOnHold]);
 
     const switchCamera = useCallback(async () => {
         if (!stream || !deviceInfo.canSwitchCamera) return;
 
-        const oldTrack = getVideoTrack();
+        const oldTrack = stream.getVideoTracks()[0];
 
         if (!oldTrack) return;
 
-        const nextFacing =
-            cameraFacing === 'user' ? 'environment' : 'user';
+        const nextFacing = cameraFacing === "user" ? "environment" : "user";
 
         try {
-            const newStream =
-                await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: nextFacing,
-                    },
-                    audio: false,
-                });
+            const newStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: nextFacing },
+                audio: false,
+            });
 
             const newTrack = newStream.getVideoTracks()[0];
 
@@ -158,29 +140,18 @@ export function useCallMediaControls(
                 return;
             }
 
+            newTrack.enabled = oldTrack.enabled;
             stream.removeTrack(oldTrack);
+            stream.addTrack(newTrack);
             oldTrack.stop();
 
-            stream.addTrack(newTrack);
-
             setCameraFacing(nextFacing);
-
+            setIsCameraEnabled(newTrack.enabled);
             await refreshDevices();
         } catch (error) {
-            console.error('Failed to switch camera:', error);
+            console.error("Failed to switch camera:", error);
         }
-    }, [
-        stream,
-        deviceInfo.canSwitchCamera,
-        getVideoTrack,
-        cameraFacing,
-        refreshDevices,
-    ]);
-
-    // Reset hold state when the stream itself changes.
-    useEffect(() => {
-        setIsOnHold(false);
-    }, [stream]);
+    }, [stream, deviceInfo.canSwitchCamera, cameraFacing, refreshDevices]);
 
     return {
         isMuted,
@@ -196,17 +167,13 @@ export function useCallMediaControls(
     };
 }
 
-
-export async function getStream(isCamera: boolean, isMic: boolean) {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: isCamera,
-            audio: isMic,
-        });
-
-        return stream;
-    } catch (err) {
-        console.error(err);
-        throw err;
+export async function getStream(isCamera: boolean, isMic: boolean): Promise<MediaStream> {
+    if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Media devices are not supported");
     }
+
+    return navigator.mediaDevices.getUserMedia({
+        video: isCamera,
+        audio: isMic,
+    });
 }
