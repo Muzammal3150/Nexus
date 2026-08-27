@@ -7,10 +7,9 @@ const roomActionPayloadSchema = z.object({
     roomId: z.string().trim().min(1, "A valid roomId is required"),
 });
 
-type RoomActionPayload = z.infer<typeof roomActionPayloadSchema>;
 type CallRejectCallback = (response: { success: true }) => void;
 
-function validate(socket: Socket, data: unknown): RoomActionPayload | null {
+function validate(socket: Socket, data: unknown){
     const result = roomActionPayloadSchema.safeParse(data);
 
     if (!result.success) {

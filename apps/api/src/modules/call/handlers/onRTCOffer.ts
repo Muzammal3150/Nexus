@@ -1,13 +1,22 @@
 import type { Socket } from "socket.io";
+import { z } from "zod";
+
 import { CallEvents } from "../events.js";
 import { safeAck } from "../safeAck.js";
 import type { CallContext } from "../types.js";
 
-interface RTCOfferPayload {
-    targetId: string;
-    roomId: string;
-    offer: RTCSessionDescriptionInit;
-}
+const rtcSessionDescriptionSchema = z.object({
+    type: z.enum(["offer", "answer", "pranswer", "rollback"]),
+    sdp: z.string().optional(),
+});
+
+const rtcOfferSchema = z.object({
+    targetId: z.string().trim().min(1),
+    roomId: z.string().trim().min(1),
+    offer: rtcSessionDescriptionSchema,
+});
+
+type RTCOfferPayload = z.infer<typeof rtcOfferSchema>;
 
 export async function onRTCOffer(
     ctx: CallContext,
@@ -15,15 +24,10 @@ export async function onRTCOffer(
     data: unknown,
     callback?: unknown,
 ) {
-    const payload = data as Partial<RTCOfferPayload> | undefined;
+    const result = rtcOfferSchema.safeParse(data);
 
-    if (
-        !payload ||
-        typeof payload.roomId !== "string" ||
-        !payload.roomId.trim() ||
-        typeof payload.targetId !== "string"
-    ) {
-        const message = "A valid roomId and targetId are required.";
+    if (!result.success) {
+        const message = "A valid roomId, targetId, and offer are required.";
 
         socket.emit(CallEvents.Error, { message });
 
@@ -33,14 +37,14 @@ export async function onRTCOffer(
         });
     }
 
-    // Sender must be in the room
-    const isSenderInRoom = ctx.callManager.hasAccepted(payload.roomId, socket.data.user.id)
-    const isTargetInRoom = ctx.callManager.hasAccepted(payload.roomId, payload.targetId)
-    console.log(ctx.callManager.getRoom(payload.roomId), payload.targetId, isSenderInRoom, isTargetInRoom)
+    const { roomId, targetId, offer } = result.data;
+    const userId = socket.data.user.id;
+
+    const isSenderInRoom = ctx.callManager.hasAccepted(roomId, userId);
+    const isTargetInRoom = ctx.callManager.hasAccepted(roomId, targetId);
 
     if (!isSenderInRoom || !isTargetInRoom) {
-        const message =
-            "Failed to create offer: Both members are not in the same room.";
+        const message = "Both members must be in the same room.";
 
         socket.emit(CallEvents.Error, { message });
 
@@ -49,16 +53,13 @@ export async function onRTCOffer(
             message,
         });
     }
-    console.log("Invite sended to ", payload.targetId)
-    ctx.io.to(`user:${payload.targetId}`).emit(
-        CallEvents.OfferBroadcast,
-        {
-            sender: socket.data.user,
-            roomId: payload.roomId,
-            offer: payload.offer,
-            sentAt: new Date(),
-        },
-    );
+
+    ctx.io.to(`user:${targetId}`).emit(CallEvents.OfferBroadcast, {
+        sender: socket.data.user,
+        roomId,
+        offer,
+        sentAt: new Date(),
+    });
 
     return safeAck(callback, {
         success: true,

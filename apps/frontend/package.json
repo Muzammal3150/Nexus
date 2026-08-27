@@ -5,10 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "set NODE_OPTIONS=--use-system-ca&&node server.mjs",
     "lint": "eslint",
-    "dev:wifi": "set NODE_OPTIONS=--use-system-ca&& next dev --hostname 0.0.0.0 --experimental-https --experimental-https-cert ./certs/dev-cert.pem --experimental-https-key ./certs/dev-key.pem",
-    "start:wifi": "set NODE_OPTIONS=--use-system-ca&& next start --hostname 0.0.0.0"
+    "dev:wifi": "set NODE_OPTIONS=--use-system-ca&& next dev --hostname 0.0.0.0 --experimental-https --experimental-https-cert ./certs/dev-cert.pem --experimental-https-key ./certs/dev-key.pem"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
