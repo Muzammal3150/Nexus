@@ -2,19 +2,29 @@ import { User } from '@/features/auth/lib/auth';
 
 export interface CallMember {
 
-  user: User;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string | null;
+  };
   stream?: MediaStream | null;
   isSelf: boolean;
-  joined: boolean;
+  isJoined: boolean;
 }
 export interface CallRoom {
   id: string;
   sender: User;
-  memberIds: string[];
-
-  acceptedUserIds: string[];
-  rejectedUserIds: string[];
-  joinedUserIds: string[];
+  members: {
+    id: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image?: string | null;
+    };
+    isJoined: boolean;
+  }[];
 
   createdAt: number;
   started: boolean;

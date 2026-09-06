@@ -3,18 +3,19 @@ import type { Namespace } from "socket.io";
 import type { User } from "../../config/auth.js";
 import type { CallManager } from "./callManager.js";
 
+// types.ts
+export interface CallMember {
+    id: string;
+    user: User;
+    isJoined: boolean;
+}
+
 export interface CallRoom {
     id: string;
     sender: User;
-    memberIds: string[];
-
-    acceptedUserIds: Set<string>;
-    rejectedUserIds: Set<string>;
-    joinedUserIds: Set<string>;
-
+    members: CallMember[];
     createdAt: number;
     started: boolean;
-    // timeout: NodeJS.Timeout;
 }
 
 export interface CallContext {
@@ -23,5 +24,5 @@ export interface CallContext {
 }
 
 export interface RTCSessionDescriptionInit {
-    
+
 }

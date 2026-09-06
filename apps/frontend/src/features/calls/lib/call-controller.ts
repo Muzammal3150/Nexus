@@ -2,7 +2,7 @@ import { User } from '@/features/auth/lib/auth';
 import { SessionType } from "@/features/auth/providers/session-provider";
 import { CallMember, CallRoom } from "@/features/calls/types/calls";
 import { callSocket } from "@/lib/socket";
-import { getRoom, loadMembers } from './get-room';
+import { getRoom } from './get-room';
 
 
 type Snapshot = {
@@ -15,15 +15,10 @@ type Snapshot = {
 
 type PeerState = {
     connection: RTCPeerConnection;
-    // true while we're in the middle of creating/sending our own offer
     makingOffer: boolean;
-    // true if we decided to ignore an incoming offer due to collision
     ignoreOffer: boolean;
-    // "polite" peer rolls back its own offer on collision; "impolite" ignores the incoming one
     polite: boolean;
-    // number of consecutive ICE-restart attempts, used to cap retries
     restartAttempts: number;
-    // pending "remove this peer if it doesn't recover" timer, or null if none scheduled
     disconnectTimer: ReturnType<typeof setTimeout> | null;
 };
 
@@ -34,10 +29,7 @@ const ICE_SERVERS: RTCIceServer[] = [
 ];
 
 const MAX_ICE_RESTART_ATTEMPTS = 3;
-// How long to wait after a connection reports "disconnected" before treating
-// the peer as gone. WebRTC "disconnected" is often a transient blip (brief
-// network loss, backgrounded tab) that recovers on its own, so we don't tear
-// the peer down immediately.
+
 const DISCONNECT_GRACE_MS = 5000;
 
 export class CallController {
@@ -51,7 +43,6 @@ export class CallController {
     readonly session: NonNullable<SessionType>;
 
     private room: CallRoom | null = null;
-    private members: CallMember[] = [];
     private myStream: MediaStream | null = null;
     private lastError: string | null = null;
 
@@ -105,12 +96,12 @@ export class CallController {
     private updateSnapshot() {
         this.snapshot = {
             room: this.room,
-            members: this.members.map((member) => ({
+            members: this.room?.members.map((member) => ({
                 ...member,
-                stream: member.isSelf
+                stream: member.user.id == this.session.user.id
                     ? this.myStream
                     : this.memberStreams.get(member.user.id) ?? null,
-            })),
+            })) ?? [],
             myStream: this.myStream,
             isLoading: this.isLoading,
             error: this.lastError,
@@ -142,7 +133,6 @@ export class CallController {
         try {
             this.room = await getRoom(this.roomId);
 
-            this.members = await loadMembers(this.room, this.session);
             this.updateSnapshot();
 
             try {
@@ -178,12 +168,13 @@ export class CallController {
         // called again on the same socket without a prior destroy().
         this.unregisterSocketListeners();
 
-        callSocket.on("call:leave-broadcast", this.handleLeave);
-        callSocket.on("call:reject-broadcast", this.handleLeave);
+        callSocket.on("call:sync", this.syncCall)
         callSocket.on("call:ready-broadcast", this.handleReady);
         callSocket.on("rtc:offer-broadcast", this.handleOffer);
         callSocket.on("rtc:answer-broadcast", this.handleAnswer);
         callSocket.on("rtc:ice-candidate-broadcast", this.handleIceCandidate);
+        callSocket.on("call:leave-broadcast", this.handleLeave);
+        callSocket.on("call:reject-broadcast", this.handleLeave);
 
         this.log("Socket listeners registered");
     }
@@ -196,6 +187,18 @@ export class CallController {
         callSocket.off("rtc:answer-broadcast", this.handleAnswer);
         callSocket.off("rtc:ice-candidate-broadcast", this.handleIceCandidate);
     }
+
+    syncCall = async (data: { room: CallRoom }) => {
+        if (!this.isInit) return;
+        if (data.room.id !== this.roomId) return;
+
+        this.log("Syncing room", data.room);
+
+        this.room = data.room;
+
+
+        this.updateSnapshot();
+    };
 
     destroy() {
         if (!this.isInit) return;
@@ -214,7 +217,6 @@ export class CallController {
 
         this.myStream = null;
         this.room = null;
-        this.members = [];
 
         this.isInit = false;
         this.isLoading = true;
@@ -403,13 +405,6 @@ export class CallController {
 
     handleReady = async ({ user, roomId }: { user: User; roomId?: string }) => {
         if (!this.isEventValid({ roomId, user })) return;
-
-        this.log("Received ready", user.id);
-
-        this.members = this.members.map((member) =>
-            member.user.id === user.id ? { ...member, joined: true } : member
-        );
-        this.updateSnapshot();
 
         const existingPeer = this.peers.get(user.id);
         if (existingPeer) {
@@ -606,8 +601,6 @@ export class CallController {
 
         this.log("Member left", user.id);
         this.closePeer(user.id);
-        this.members = this.members.filter((m) => m.user.id !== user.id);
-        this.updateSnapshot();
     };
 
     // ---------------------------------------------------------------------
@@ -692,7 +685,7 @@ export class CallController {
             ) {
                 this.clearDisconnectTimer(state);
                 this.closePeer(userId);
-                this.markMemberLeft(userId);
+                //TODO: maybe set an error here? or maybe not, since the user might have left the call and this is just a cleanup
                 this.updateSnapshot();
             }
         };
@@ -757,17 +750,10 @@ export class CallController {
 
             this.log("Peer still disconnected after grace period, removing", userId);
             this.closePeer(userId);
-            this.markMemberLeft(userId);
-            this.updateSnapshot();
         }, DISCONNECT_GRACE_MS);
     }
 
-    /** Reflects a peer's WebRTC connection going away in the member list without fully removing them from the room. */
-    private markMemberLeft(userId: string) {
-        this.members = this.members.map((member) =>
-            member.user.id === userId ? { ...member, joined: false } : member
-        );
-    }
+
 
     private closePeer(userId: string) {
         const state = this.peers.get(userId);

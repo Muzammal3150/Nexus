@@ -39,8 +39,8 @@ export async function onRTCIceCandidate(
     const { roomId, targetId, candidate } = result.data;
     const userId = socket.data.user.id;
 
-    const isSenderInRoom = ctx.callManager.hasAccepted(roomId, userId);
-    const isTargetInRoom = ctx.callManager.hasAccepted(roomId, targetId);
+    const isSenderInRoom = ctx.callManager.hasJoined(roomId, userId);
+    const isTargetInRoom = ctx.callManager.hasJoined(roomId, targetId);
 
     if (!isSenderInRoom || !isTargetInRoom) {
         const message = "Both members must be in the same room.";

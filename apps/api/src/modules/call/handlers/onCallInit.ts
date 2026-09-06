@@ -80,7 +80,7 @@ export async function onCallInit(
     let newRoom;
 
     try {
-        newRoom = ctx.callManager.createRoom(
+        newRoom = await ctx.callManager.createRoom(
             payload.memberIds,
             socket.data.user,
         );
@@ -96,10 +96,10 @@ export async function onCallInit(
 
     socket.join(newRoom.id);
 
-    for (const memberId of newRoom.memberIds) {
-        if (memberId === socket.data.user.id) continue;
+    for (const member of newRoom.members) {
+        if (member.id === socket.data.user.id) continue;
 
-        ctx.io.to(`user:${memberId}`).emit(
+        ctx.io.to(`user:${member.id}`).emit(
             CallEvents.InviteBroadcast,
             newRoom,
         );

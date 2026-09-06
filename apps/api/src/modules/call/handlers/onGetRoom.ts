@@ -1,5 +1,5 @@
 import { safeAck } from "../safeAck.js";
-import type { CallContext } from "../types.js";
+import type { CallContext, CallRoom } from "../types.js";
 
 
 interface GetRoomResponse {
@@ -8,12 +8,12 @@ interface GetRoomResponse {
     room?: {
         id: string;
         sender: unknown;
-        memberIds: string[];
         createdAt: number;
         started: boolean;
-        acceptedUserIds: string[];
-        joinedUserIds: string[];
-        rejectedUserIds: string[];
+        members: {
+            id: string;
+            isJoined: boolean;
+        }[];
     };
 }
 
@@ -29,7 +29,7 @@ export async function onGetRoom(ctx: CallContext, roomId: unknown, cb: unknown) 
 
     let room;
     try {
-        room =  ctx.callManager.getRoom(roomId);
+        room = ctx.callManager.getRoom(roomId);
     } catch (err) {
         console.error(`Error fetching room ${roomId}:`, err);
         return safeAck<GetRoomResponse>(cb, { success: false, error: "Failed to fetch room" });
@@ -41,16 +41,29 @@ export async function onGetRoom(ctx: CallContext, roomId: unknown, cb: unknown) 
 
     safeAck<GetRoomResponse>(cb, {
         success: true,
-        room: {
-            id: room.id,
-            sender: room.sender,
-            memberIds: room.memberIds,
-            createdAt: room.createdAt,
-            started: room.started,
-            acceptedUserIds: [...room.acceptedUserIds],
-            joinedUserIds: [...room.joinedUserIds],
-            rejectedUserIds: [...room.rejectedUserIds],
-        },
+        room: serializeRoom(room),
     });
+}
+
+
+export function serializeRoom(room: CallRoom) {
+    return {
+        id: room.id,
+        sender: room.sender,
+        createdAt: room.createdAt,
+        started: room.started,
+
+        members: room.members.map((member) => ({
+            id: member.id,
+            user: {
+                id: member.user.id,
+                name: member.user.name,
+                email: member.user.email,
+                image: member.user.image,
+            },
+
+            isJoined: member.isJoined,
+        })),
+    }
 }
 

@@ -13,7 +13,7 @@ import { onCallLeave } from "./handlers/onCallLeave.js";
 import { onCallReady } from "./handlers/onCallReady.js";
 import { onCallReject } from "./handlers/onCallReject.js";
 import { onDisconnect } from "./handlers/onDisconnect.js";
-import { onGetRoom } from "./handlers/onGetRoom.js";
+import { onGetRoom, serializeRoom } from "./handlers/onGetRoom.js";
 import { onRTCAnswer } from "./handlers/onRTCAnswer.js";
 import { onRTCIceCandidate } from "./handlers/onRTCIceCandidate.js";
 import { onRTCOffer } from "./handlers/onRTCOffer.js";
@@ -42,6 +42,7 @@ export class CallSocket implements SocketHandler {
                     }
 
                     console.log(`${user.name} timed out in call ${room.id}`);
+                    this.io.to(room.id).emit(CallEvents.Sync, { room: serializeRoom(room) });
                     this.io.to(room.id).emit(CallEvents.RejectBroadcast, { user });
 
                     const sockets = await this.io.in(`user:${userId}`).fetchSockets();

@@ -180,7 +180,7 @@ export function MemberTile({
                 </Avatar>
             )}
 
-            {!member.joined && (
+            {!member.isJoined && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/30 backdrop-blur-sm">
                     <div className="flex gap-1">
                         {[0, 150, 300].map((delay) => (

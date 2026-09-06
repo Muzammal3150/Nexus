@@ -18,7 +18,7 @@ interface MemberGridProps {
 }
 
 export function MemberGrid({ members, onFullView }: MemberGridProps) {
-    console.log(members)
+    
     return (
         <div
             className={cn(

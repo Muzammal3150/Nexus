@@ -2,6 +2,7 @@ import type { Socket } from "socket.io";
 import { z } from "zod";
 import { CallEvents } from "../events.js";
 import type { CallContext } from "../types.js";
+import { serializeRoom } from "./onGetRoom.js";
 
 const roomActionPayloadSchema = z.object({
     roomId: z.string().trim().min(1, "A valid roomId is required"),
@@ -38,7 +39,7 @@ export async function onCallLeave(
     let room;
 
     try {
-        room =  ctx.callManager.leave(payload.roomId, socket.data.user);
+        room = ctx.callManager.leave(payload.roomId, socket.data.user);
     } catch (error) {
         console.error(`Error leaving call ${payload.roomId}:`, error);
 
@@ -54,8 +55,11 @@ export async function onCallLeave(
     socket.leave(room.id);
 
     ctx.io.to(room.id).emit(CallEvents.LeaveBroadcast, { user: socket.data.user });
+    ctx.io.to(room.id).emit(CallEvents.Sync, { room: serializeRoom(room) });
+    
+    const anyoneJoined = room.members.some((member) => member.isJoined);
 
-    if (room.joinedUserIds.size === 0) {
+    if (!anyoneJoined) {
         try {
             ctx.callManager.removeRoom(room.id);
         } catch (error) {

@@ -4,6 +4,8 @@ export const CallEvents = {
     GetRoom: "call:get-room",
     Ready: "call:ready",
 
+    Sync: "call:sync",
+
     Invite: "call:invite",
     Accept: "call:accept",
     Reject: "call:reject",

@@ -13,12 +13,12 @@ interface GetRoomResponse {
     room?: {
         id: string;
         sender: User;
-        memberIds: string[];
         createdAt: number;
         started: boolean;
-        acceptedUserIds: string[];
-        joinedUserIds: string[];
-        rejectedUserIds: string[];
+        members: {
+            id: string;
+            isJoined: boolean;
+        }[];
     };
 }
 
@@ -79,17 +79,14 @@ export async function loadMembers(room: CallRoom, session: SessionType) {
 
     const params = new URLSearchParams();
 
-    room.memberIds.forEach(id => params.append("ids", id));
+    room.members.forEach(member => params.append("ids", member.id));
 
     const { data: users } = await api.get<User[]>(`/users/?${params.toString()}`);
 
     return users.map(user => ({
         user,
         isSelf: user.id === session?.user.id,
-        joined: room.joinedUserIds.includes(user.id),
+        isJoined: room.members.find(member => member.id === user.id)?.isJoined ?? false,
 
     }))
-
-
 }
-
