@@ -40,7 +40,7 @@ export default function SignupForm() {
             }
 
             router.replace('/');
-        } catch  {
+        } catch {
             form.setError('root', {
                 type: 'server',
                 message: 'Internal Server Error.',
@@ -138,7 +138,7 @@ export default function SignupForm() {
                     {disabled ? 'Creating account...' : 'Sign Up'}
                 </Button>
             </Field>
-
+            
             <SignUpFormFooter disabled={disabled} />
         </form>
     );

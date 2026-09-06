@@ -27,17 +27,10 @@ export function useRooms() {
             .orderBy('sentAt')
             .toArray();
 
-        return Object.groupBy(
-            rawMessages,
-            (message) => message.roomId,
-        );
+        return Object.groupBy(rawMessages, (message) => message.roomId);
     }, []);
 
-    const {
-        data: roomsData,
-        isLoading,
-        isError,
-    } = useQuery({
+    const { data: roomsData, isLoading, isError, } = useQuery({
         queryKey: ['rooms', 'list'],
         queryFn: async () => {
             const response = await api.get<Room[]>('/rooms');
@@ -47,10 +40,7 @@ export function useRooms() {
     });
 
     const userMap = useMemo(() => {
-        const users = new Map<
-            string,
-            NonNullable<Room['members'][number]['user']>
-        >();
+        const users = new Map<string, NonNullable<Room['members'][number]['user']>>();
 
         if (!roomsData) {
             return users;

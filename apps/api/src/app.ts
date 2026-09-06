@@ -15,7 +15,7 @@ const useHttps = process.env.USE_HTTPS === "true";
 const server = useHttps
     ? createHttpsServer({
         key: fs.readFileSync("./certs/dev-key.pem"),
-        cert: fs.readFileSync("./certs/dev-cert.pem"),
+        cert: fs.readFileSync("./certs/dev.pem"),
     }, app)
     
     : createHttpServer(app);

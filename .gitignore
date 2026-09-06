@@ -78,3 +78,5 @@ Thumbs.db
 .cache/
 .parcel-cache/
 
+tree.txt
+pnpm-lock.yaml

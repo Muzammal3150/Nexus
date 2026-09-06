@@ -23,6 +23,8 @@ type PeerState = {
     polite: boolean;
     // number of consecutive ICE-restart attempts, used to cap retries
     restartAttempts: number;
+    // pending "remove this peer if it doesn't recover" timer, or null if none scheduled
+    disconnectTimer: ReturnType<typeof setTimeout> | null;
 };
 
 
@@ -32,6 +34,11 @@ const ICE_SERVERS: RTCIceServer[] = [
 ];
 
 const MAX_ICE_RESTART_ATTEMPTS = 3;
+// How long to wait after a connection reports "disconnected" before treating
+// the peer as gone. WebRTC "disconnected" is often a transient blip (brief
+// network loss, backgrounded tab) that recovers on its own, so we don't tear
+// the peer down immediately.
+const DISCONNECT_GRACE_MS = 5000;
 
 export class CallController {
     private dev = true
@@ -134,16 +141,10 @@ export class CallController {
 
         try {
             this.room = await getRoom(this.roomId);
-            console.log(this.room, this.roomId)
-            // if (!this.room) {
-            //     throw new Error("Room not found");
-            // }
 
             this.members = await loadMembers(this.room, this.session);
             this.updateSnapshot();
 
-            // Media access failures shouldn't block joining the call — a user
-            // without a camera/mic can still be present and see/hear others.
             try {
                 await this.setMyStream(true, true);
             } catch (mediaErr) {
@@ -201,14 +202,7 @@ export class CallController {
         this.log("Destroying controller");
 
         this.unregisterSocketListeners();
-
-        this.myStream?.getTracks().forEach((track) => {
-            try {
-                track.stop();
-            } catch {
-                /* ignore */
-            }
-        });
+        this.stopStream(this.myStream);
 
         for (const userId of Array.from(this.peers.keys())) {
             this.closePeer(userId);
@@ -244,15 +238,20 @@ export class CallController {
         return run;
     }
 
+    /** Tears down the current stream and pushes the "no media" state to peers + snapshot. */
+    private clearStream(previousStream: MediaStream | null) {
+        this.stopStream(previousStream);
+        this.myStream = null;
+        this.replaceTracksOnAllPeers(null);
+        this.updateSnapshot();
+    }
+
     private async setMyStreamInternal(video: boolean, audio: boolean) {
         const previousStream = this.myStream;
 
         try {
             if (!video && !audio) {
-                this.stopStream(previousStream);
-                this.myStream = null;
-                this.replaceTracksOnAllPeers(null);
-                this.updateSnapshot();
+                this.clearStream(previousStream);
                 return null;
             }
 
@@ -270,39 +269,11 @@ export class CallController {
             };
 
             if (!constraints.video && !constraints.audio) {
-                this.stopStream(previousStream);
-                this.myStream = null;
-                this.replaceTracksOnAllPeers(null);
-                this.updateSnapshot();
+                this.clearStream(previousStream);
                 throw new Error("No camera or microphone is available on this device");
             }
 
-            let stream: MediaStream;
-            try {
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-            } catch (primaryErr) {
-                // Fall back to whichever single track is still requested, so a
-                // blocked/unavailable camera doesn't also take down audio (or
-                // vice versa).
-                if (constraints.video && constraints.audio) {
-                    this.log("Full media request failed, retrying audio-only", primaryErr);
-                    try {
-                        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    } catch (fallbackErr) {
-                        this.stopStream(previousStream);
-                        this.myStream = null;
-                        this.replaceTracksOnAllPeers(null);
-                        this.updateSnapshot();
-                        throw this.mapMediaError(fallbackErr);
-                    }
-                } else {
-                    this.stopStream(previousStream);
-                    this.myStream = null;
-                    this.replaceTracksOnAllPeers(null);
-                    this.updateSnapshot();
-                    throw this.mapMediaError(primaryErr);
-                }
-            }
+            const stream = await this.acquireStream(constraints, previousStream);
 
             this.myStream = stream;
             this.replaceTracksOnAllPeers(stream);
@@ -320,6 +291,32 @@ export class CallController {
             );
             this.updateSnapshot();
             throw error;
+        }
+    }
+
+    /**
+     * Requests the given constraints, falling back to audio-only if a combined
+     * video+audio request fails (so a blocked/unavailable camera doesn't also
+     * take down audio). Clears stream state and rethrows a mapped error on total failure.
+     */
+    private async acquireStream(
+        constraints: MediaStreamConstraints,
+        previousStream: MediaStream | null
+    ): Promise<MediaStream> {
+        try {
+            return await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (primaryErr) {
+            if (constraints.video && constraints.audio) {
+                this.log("Full media request failed, retrying audio-only", primaryErr);
+                try {
+                    return await navigator.mediaDevices.getUserMedia({ audio: true });
+                } catch (fallbackErr) {
+                    this.clearStream(previousStream);
+                    throw this.mapMediaError(fallbackErr);
+                }
+            }
+            this.clearStream(previousStream);
+            throw this.mapMediaError(primaryErr);
         }
     }
 
@@ -369,8 +366,7 @@ export class CallController {
                     continue;
                 }
 
-                const tracks = stream.getTracks();
-                for (const track of tracks) {
+                for (const track of stream.getTracks()) {
                     const sender = senders.find((s) => s.track?.kind === track.kind);
                     if (sender) {
                         sender.replaceTrack(track).catch((err) =>
@@ -409,13 +405,6 @@ export class CallController {
         if (!this.isEventValid({ roomId, user })) return;
 
         this.log("Received ready", user.id);
-
-        const existingMember = this.members.find((m) => m.user.id === user.id);
-        if (!existingMember) {
-            // Someone we don't know about signaled ready — refresh membership
-            // rather than silently dropping them.
-            this.log("Ready from unknown member, refreshing member list", user.id);
-        }
 
         this.members = this.members.map((member) =>
             member.user.id === user.id ? { ...member, joined: true } : member
@@ -494,8 +483,7 @@ export class CallController {
             // Perfect-negotiation collision handling: if we're also in the
             // middle of making an offer (or not in "stable" state), decide
             // who backs off based on politeness rather than corrupting state.
-            const offerCollision =
-                state.makingOffer || pc.signalingState !== "stable";
+            const offerCollision = state.makingOffer || pc.signalingState !== "stable";
 
             state.ignoreOffer = !state.polite && offerCollision;
             if (state.ignoreOffer) {
@@ -643,6 +631,7 @@ export class CallController {
             ignoreOffer: false,
             polite,
             restartAttempts: 0,
+            disconnectTimer: null,
         };
 
         if (this.myStream) {
@@ -685,11 +674,25 @@ export class CallController {
 
         connection.onconnectionstatechange = () => {
             this.log("Connection state changed", userId, connection.connectionState);
+
+            if (connection.connectionState === "connected") {
+                this.clearDisconnectTimer(state);
+                state.restartAttempts = 0;
+                return;
+            }
+
+            if (connection.connectionState === "disconnected") {
+                this.scheduleDisconnectCleanup(userId, state);
+                return;
+            }
+
             if (
                 connection.connectionState === "closed" ||
                 connection.connectionState === "failed"
             ) {
+                this.clearDisconnectTimer(state);
                 this.closePeer(userId);
+                this.markMemberLeft(userId);
                 this.updateSnapshot();
             }
         };
@@ -711,12 +714,12 @@ export class CallController {
             return;
         }
 
-        state.restartAttempts += 1;
-        this.log("Attempting ICE restart", userId, state.restartAttempts);
-
         // Only the side that isn't mid-offer should drive the restart, to
         // avoid a second collision on top of the connection failure.
         if (state.makingOffer) return;
+
+        state.restartAttempts += 1;
+        this.log("Attempting ICE restart", userId, state.restartAttempts);
 
         state.connection
             .createOffer({ iceRestart: true })
@@ -736,9 +739,41 @@ export class CallController {
             });
     }
 
+    private clearDisconnectTimer(state: PeerState) {
+        if (state.disconnectTimer) {
+            clearTimeout(state.disconnectTimer);
+            state.disconnectTimer = null;
+        }
+    }
+
+    /** After the grace period, remove the peer if it's still disconnected (hasn't recovered). */
+    private scheduleDisconnectCleanup(userId: string, state: PeerState) {
+        this.clearDisconnectTimer(state);
+        state.disconnectTimer = setTimeout(() => {
+            const current = this.peers.get(userId);
+            // Guard against acting on a stale timer: bail if the peer was
+            // already replaced/removed, or has since recovered.
+            if (!current || current.connection.connectionState !== "disconnected") return;
+
+            this.log("Peer still disconnected after grace period, removing", userId);
+            this.closePeer(userId);
+            this.markMemberLeft(userId);
+            this.updateSnapshot();
+        }, DISCONNECT_GRACE_MS);
+    }
+
+    /** Reflects a peer's WebRTC connection going away in the member list without fully removing them from the room. */
+    private markMemberLeft(userId: string) {
+        this.members = this.members.map((member) =>
+            member.user.id === userId ? { ...member, joined: false } : member
+        );
+    }
+
     private closePeer(userId: string) {
         const state = this.peers.get(userId);
         if (!state) return;
+
+        this.clearDisconnectTimer(state);
 
         try {
             state.connection.onicecandidate = null;

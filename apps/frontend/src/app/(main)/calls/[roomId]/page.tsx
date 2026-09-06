@@ -1,11 +1,14 @@
 'use client';
 
 import { LoadingPage } from '@/components/custom-ui/loading';
+import { toast } from '@/components/ui/toast';
 import { CallControls } from '@/features/calls/components/video/call-controls';
 import { MemberGrid } from '@/features/calls/components/video/member-grid';
 import { SpotlightView } from '@/features/calls/components/video/spotlight-view';
 import { useCall } from '@/features/calls/hooks/use-call';
-import { notFound, useParams } from 'next/navigation';
+import { useCallMediaControls } from '@/features/calls/hooks/use-media';
+import { callSocket } from '@/lib/socket';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 export default function VideoCallPage() {
@@ -19,9 +22,32 @@ export default function VideoCallPage() {
     }, [room, isLoading]);
 
     const [focusedId, setFocusedId] = useState<string | null>(null);
-    // const [sheetOpen, setSheetOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-    // const onLeave = () => {};
+
+    const {
+        isMuted,
+        isCameraEnabled,
+        isOnHold,
+        deviceInfo,
+        toggleMic,
+        toggleCamera,
+        toggleHold,
+        switchCamera,
+    } = useCallMediaControls(myStream);
+    const router = useRouter();
+
+    function leaveCall() {
+        try {
+            callSocket.emit('call:leave', { roomId });
+            router.push('/calls');
+        } catch {
+            toast.add({
+                title: 'Error',
+                description: 'Failed to leave the call',
+                type: 'error',
+            });
+        }
+    }
 
     function toggleFullscreen() {
         if (!containerRef.current) return;
@@ -57,7 +83,20 @@ export default function VideoCallPage() {
                 )}
             </div>
 
-            <CallControls myStream={myStream} onToggleFullScreen={toggleFullscreen} />
+            <CallControls
+                myStream={myStream}
+                onToggleFullScreen={toggleFullscreen}
+                roomId={roomId}
+                isMuted={isMuted}
+                isCameraEnabled={isCameraEnabled}
+                isOnHold={isOnHold}
+                deviceInfo={deviceInfo}
+                toggleMic={toggleMic}
+                toggleCamera={toggleCamera}
+                toggleHold={toggleHold}
+                switchCamera={switchCamera}
+                leaveCall={leaveCall}
+            />
 
             {/* <MemberSheet open={sheetOpen} onOpenChange={setSheetOpen} members={members} /> */}
         </div>

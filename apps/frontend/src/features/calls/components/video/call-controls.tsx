@@ -13,27 +13,38 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { useCallMediaControls } from '@/features/calls/hooks/use-media';
 
 interface CallControlsProps {
     onToggleFullScreen: () => void;
     myStream: MediaStream | null;
 
-    DropdownMenungup?: () => void;
+    isMuted: boolean;
+    isCameraEnabled: boolean;
+    isOnHold: boolean;
+    deviceInfo: any;
+    toggleMic: () => void;
+    toggleCamera: () => void;
+    toggleHold: () => void;
+    switchCamera: () => void;
+
+    leaveCall: () => void;
+
+    roomId: string;
 }
 
-export function CallControls({ onToggleFullScreen, myStream }: CallControlsProps) {
-    const {
-        isMuted,
-        isCameraEnabled,
-        isOnHold,
-        deviceInfo,
-        toggleMic,
-        toggleCamera,
-        toggleHold,
-        switchCamera,
-    } = useCallMediaControls(myStream);
-
+export function CallControls({
+    onToggleFullScreen,
+    myStream,
+    deviceInfo,
+    isMuted,
+    isCameraEnabled,
+    isOnHold,
+    toggleMic,
+    toggleCamera,
+    toggleHold,
+    switchCamera,
+    leaveCall,
+}: CallControlsProps) {
     return (
         <div className="flex justify-between sm:grid grid-cols-3 gap-2 border-t bg-background p-3">
             {/* Media controls */}
@@ -72,7 +83,7 @@ export function CallControls({ onToggleFullScreen, myStream }: CallControlsProps
 
             {/* Call controls */}
             <div className="flex justify-center gap-2">
-                <Button className="size-10" variant="destructive">
+                <Button className="size-10" variant="destructive" onClick={leaveCall}>
                     <PhoneOff className="size-5" />
                 </Button>
 

@@ -32,7 +32,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
                             </h1>
                             {user.emailVerified && (
                                 <BadgeCheck
-                                    className="size-[19px] shrink-0 text-primary"
+                                    className="size-4.75 shrink-0 text-primary"
                                     aria-label="Verified account"
                                 />
                             )}
@@ -45,7 +45,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
                                 <span className="text-emerald-500">{statusLabel.online}</span>
                             ) : (
                                 <>
-                                    Last seen
+                                    Last seen: &nbsp;
                                     {formatDistanceToNow(user.lastSeen, { addSuffix: true })}
                                 </>
                             )}

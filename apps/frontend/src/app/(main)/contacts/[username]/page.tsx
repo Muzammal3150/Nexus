@@ -1,3 +1,5 @@
+'use client';
+
 import DetailsCard from '@/features/contacts/components/contacts/details-card';
 import GroupsList from '@/features/contacts/components/contacts/groups-list';
 import MediaGrid from '@/features/contacts/components/contacts/media-grid';
@@ -8,25 +10,30 @@ import { Loading } from '@/components/custom-ui/loading';
 import { User } from '@/features/auth/lib/auth';
 import { Presence } from '@/features/presence/types';
 import { api } from '@/lib/axios';
-import { notFound } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
 import { Suspense } from 'react';
 
 async function getUser(username: string) {
-    try {
-        const { data } = await api.get<User & Presence>(`/users/${username}`);
-        return data;
-    } catch {
-        notFound();
-    }
+    const { data } = await api.get<User & Presence>(`/users/${username}`);
+    return data;
 }
 
-interface ProfilePageProps {
-    params: Promise<{ username: string }>;
-}
+export default function ProfilePage() {
+    const { username } = useParams<{ username: string }>();
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
-    const { username } = await params;
-    const user = await getUser(username);
+    const {
+        data: user,
+        isLoading,
+        isError,
+    } = useQuery({
+        queryKey: ['user', username],
+        queryFn: () => getUser(username),
+        enabled: !!username,
+    });
+
+    if (isLoading) return <Loading />;
+    if (isError || !user) return <div>User not found</div>;
 
     return (
         <div className="min-h-full w-full bg-background p-4 sm:p-6 lg:p-10">
@@ -43,7 +50,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             {
                                 key: 'media',
                                 label: 'Shared media',
-
                                 content: (
                                     <Suspense fallback={<Loading />}>
                                         <MediaGrid userId={user.id} />
@@ -53,7 +59,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             {
                                 key: 'groups',
                                 label: 'Shared groups',
-              
                                 content: (
                                     <Suspense fallback={<Loading />}>
                                         <GroupsList userId={user.id} />
@@ -62,7 +67,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             },
                         ]}
                     />
-                    <p className="px-1 font-mono text-[11px] text-center col-span-2 text-muted-foreground/70">
+
+                    <p className="col-span-2 px-1 text-center font-mono text-[11px] text-muted-foreground/70">
                         id: {user.id}
                     </p>
                 </div>

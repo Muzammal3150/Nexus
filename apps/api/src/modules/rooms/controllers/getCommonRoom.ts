@@ -10,6 +10,7 @@ export async function getCommonRoom(req: Request<{ userId: string }>, res: Respo
 
         const rooms = await prisma.room.findMany({
             where: {
+                isGroup:true,
                 AND: [
                     { members: { some: { userId: myUserId } } },
                     { members: { some: { userId } } },

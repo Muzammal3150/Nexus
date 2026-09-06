@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface DeviceInfo {
     canSwitchCamera: boolean;
@@ -35,9 +35,17 @@ export function useCallMediaControls(stream: MediaStream | null): UseCallMediaCo
     const [cameraFacing, setCameraFacing] = useState<"user" | "environment">("user");
     const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>(defaultDeviceInfo);
 
+    // Remembers what mic/camera looked like right before hold was engaged,
+    // so resuming restores the user's actual choice instead of force-enabling everything.
+    const preHoldStateRef = useRef<{ micEnabled: boolean; cameraEnabled: boolean } | null>(null);
+
     const refreshDevices = useCallback(async () => {
-        if (!navigator.mediaDevices) {
-            setDeviceInfo(defaultDeviceInfo);
+        if (!navigator.mediaDevices?.enumerateDevices) {
+            setDeviceInfo({
+                hasCamera: !!stream?.getVideoTracks().length,
+                hasMic: !!stream?.getAudioTracks().length,
+                canSwitchCamera: false,
+            });
             return;
         }
 
@@ -52,7 +60,8 @@ export function useCallMediaControls(stream: MediaStream | null): UseCallMediaCo
                 hasMic,
                 canSwitchCamera: cameraCount > 1,
             });
-        } catch {
+        } catch (error) {
+            console.error("Failed to enumerate devices:", error);
             setDeviceInfo({
                 hasCamera: !!stream?.getVideoTracks().length,
                 hasMic: !!stream?.getAudioTracks().length,
@@ -72,7 +81,28 @@ export function useCallMediaControls(stream: MediaStream | null): UseCallMediaCo
     useEffect(() => {
         syncTrackState();
         setIsOnHold(false);
+        preHoldStateRef.current = null;
     }, [stream, syncTrackState]);
+
+    // Keep state in sync if a track ends unexpectedly (device unplugged, permission
+    // revoked, remote party closes it, etc.) instead of silently going stale.
+    useEffect(() => {
+        if (!stream) return;
+
+        const audioTrack = stream.getAudioTracks()[0];
+        const videoTrack = stream.getVideoTracks()[0];
+
+        const handleAudioEnded = () => setIsMuted(true);
+        const handleVideoEnded = () => setIsCameraEnabled(false);
+
+        audioTrack?.addEventListener("ended", handleAudioEnded);
+        videoTrack?.addEventListener("ended", handleVideoEnded);
+
+        return () => {
+            audioTrack?.removeEventListener("ended", handleAudioEnded);
+            videoTrack?.removeEventListener("ended", handleVideoEnded);
+        };
+    }, [stream]);
 
     useEffect(() => {
         refreshDevices();
@@ -87,35 +117,66 @@ export function useCallMediaControls(stream: MediaStream | null): UseCallMediaCo
     }, [refreshDevices]);
 
     const toggleMic = useCallback(() => {
+        // Toggling the raw track while on hold would desync isOnHold from
+        // actual track state, so route mic/camera changes through hold logic instead.
+        if (isOnHold) return;
+
         const track = stream?.getAudioTracks()[0];
 
         if (!track) return;
 
         track.enabled = !track.enabled;
         setIsMuted(!track.enabled);
-    }, [stream]);
+    }, [stream, isOnHold]);
 
     const toggleCamera = useCallback(() => {
+        if (isOnHold) return;
+
         const track = stream?.getVideoTracks()[0];
 
         if (!track) return;
 
         track.enabled = !track.enabled;
         setIsCameraEnabled(track.enabled);
-    }, [stream]);
+    }, [stream, isOnHold]);
 
     const toggleHold = useCallback(() => {
         if (!stream) return;
 
+        const audioTrack = stream.getAudioTracks()[0];
+        const videoTrack = stream.getVideoTracks()[0];
         const nextHold = !isOnHold;
 
-        stream.getTracks().forEach((track) => {
-            track.enabled = !nextHold;
-        });
+        if (nextHold) {
+            // Entering hold: remember actual per-track state, then mute everything.
+            preHoldStateRef.current = {
+                micEnabled: audioTrack?.enabled ?? false,
+                cameraEnabled: videoTrack?.enabled ?? false,
+            };
 
-        setIsOnHold(nextHold);
-        setIsMuted(nextHold || !stream.getAudioTracks()[0]?.enabled);
-        setIsCameraEnabled(!nextHold && !!stream.getVideoTracks()[0]?.enabled);
+            if (audioTrack) audioTrack.enabled = false;
+            if (videoTrack) videoTrack.enabled = false;
+
+            setIsOnHold(true);
+            setIsMuted(true);
+            setIsCameraEnabled(false);
+        } else {
+            // Resuming: restore exactly what the user had before hold, don't
+            // force everything back on (e.g. a user who was already muted
+            // should stay muted after resuming).
+            const restore = preHoldStateRef.current ?? {
+                micEnabled: !!audioTrack?.enabled,
+                cameraEnabled: !!videoTrack?.enabled,
+            };
+
+            if (audioTrack) audioTrack.enabled = restore.micEnabled;
+            if (videoTrack) videoTrack.enabled = restore.cameraEnabled;
+
+            preHoldStateRef.current = null;
+            setIsOnHold(false);
+            setIsMuted(!restore.micEnabled);
+            setIsCameraEnabled(restore.cameraEnabled);
+        }
     }, [stream, isOnHold]);
 
     const switchCamera = useCallback(async () => {
@@ -126,9 +187,12 @@ export function useCallMediaControls(stream: MediaStream | null): UseCallMediaCo
         if (!oldTrack) return;
 
         const nextFacing = cameraFacing === "user" ? "environment" : "user";
+        const wasEnabled = oldTrack.enabled;
+
+        let newStream: MediaStream | null = null;
 
         try {
-            const newStream = await navigator.mediaDevices.getUserMedia({
+            newStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: nextFacing },
                 audio: false,
             });
@@ -140,16 +204,25 @@ export function useCallMediaControls(stream: MediaStream | null): UseCallMediaCo
                 return;
             }
 
-            newTrack.enabled = oldTrack.enabled;
-            stream.removeTrack(oldTrack);
+            newTrack.enabled = wasEnabled;
             stream.addTrack(newTrack);
+            // Only remove/stop the old track once the new one is confirmed working,
+            // so a mid-swap failure doesn't leave the call with no video track at all.
+            stream.removeTrack(oldTrack);
             oldTrack.stop();
+
+            // Stop any extra tracks getUserMedia may have handed back beyond the video track.
+            newStream.getTracks().forEach((track) => {
+                if (track !== newTrack) track.stop();
+            });
 
             setCameraFacing(nextFacing);
             setIsCameraEnabled(newTrack.enabled);
             await refreshDevices();
         } catch (error) {
             console.error("Failed to switch camera:", error);
+            // Clean up anything we managed to acquire before the failure.
+            newStream?.getTracks().forEach((track) => track.stop());
         }
     }, [stream, deviceInfo.canSwitchCamera, cameraFacing, refreshDevices]);
 

@@ -12,7 +12,7 @@ export default function AvatarWithStatus({ name, image, isOnline }: AvatarWithSt
 
     return (
         <div className="relative -mt-10 shrink-0 lg:-mt-12">
-            <Avatar className="h-20 w-20 border-4 border-card lg:h-28 lg:w-28">
+            <Avatar className="h-20 w-20 border-4 border-card overflow-hidden lg:h-28 lg:w-28">
                 {image ? (
                     <img src={image} alt={name} className="object-cover" />
                 ) : (

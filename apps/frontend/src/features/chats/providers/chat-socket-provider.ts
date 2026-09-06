@@ -4,9 +4,11 @@ import { toast } from "@/components/ui/toast";
 import { chatSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useChatSync } from "../hooks/use-chats-sync";
 
 export function ChatSocketProvider({ children }: { children: React.ReactNode }) {
     const queryClient = useQueryClient()
+    const syncChat = useChatSync()
 
     useEffect(() => {
         console.log("CHAT PROVIDER MOUNT", chatSocket.id);

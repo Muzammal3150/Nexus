@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/features/chats/lib/utils-chat';
 import { cn } from '@/lib/utils';
-
 import { CallMember } from '@/features/calls/types/calls';
 
 interface MemberTileProps {
@@ -29,74 +28,128 @@ const avatarTextSizes = {
     large: 'text-3xl',
 } as const;
 
-export function MemberTile({ member, onFullView, className, size = 'default' }: MemberTileProps) {
+export function MemberTile({
+    member,
+    onFullView,
+    className,
+    size = 'default',
+}: MemberTileProps) {
     const showControls = size !== 'thumb';
-
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    const audioContextRef = useRef<AudioContext | null>(null);
-    const analyserRef = useRef<AnalyserNode | null>(null);
-    const animationRef = useRef<number | null>(null);
-
     const [speaking, setSpeaking] = useState(false);
+    const [cameraEnabled, setCameraEnabled] = useState(false);
+    const [micEnabled, setMicEnabled] = useState(false);
 
     const stream = member.stream;
 
-    const videoTrack = stream?.getVideoTracks()[0];
-    const audioTrack = stream?.getAudioTracks()[0];
+    useEffect(() => {
+        if (!stream) {
+            setCameraEnabled(false);
+            setMicEnabled(false);
+            return;
+        }
 
-    const cameraEnabled = videoTrack?.enabled ?? false;
-    const micEnabled = audioTrack?.enabled ?? false;
+        const updateTracks = () => {
+            const videoTrack = stream.getVideoTracks()[0];
+            const audioTrack = stream.getAudioTracks()[0];
+
+            setCameraEnabled(
+                !!videoTrack &&
+                videoTrack.enabled &&
+                videoTrack.readyState === 'live',
+            );
+
+            setMicEnabled(
+                !!audioTrack &&
+                audioTrack.enabled &&
+                audioTrack.readyState === 'live',
+            );
+        };
+
+        updateTracks();
+
+        // enabled is not reactive, so check it periodically.
+        const interval = setInterval(updateTracks, 100);
+
+        return () => clearInterval(interval);
+    }, [stream]);
 
     useEffect(() => {
         if (!videoRef.current) return;
 
         videoRef.current.srcObject = stream ?? null;
-    }, [stream]);
+
+        return () => {
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
+            }
+        };
+        // cameraEnabled controls whether the <video> element is mounted at all
+        // (it's swapped for an <Avatar> otherwise), so we need to re-run this
+        // whenever that flips to (re)attach the stream once the element exists.
+    }, [stream, cameraEnabled]);
 
     useEffect(() => {
-        if (!stream || !audioTrack) {
+        const audioTrack = stream?.getAudioTracks()[0];
+
+        if (!audioTrack || !audioTrack.enabled) {
             setSpeaking(false);
             return;
         }
 
         const audioContext = new AudioContext();
-
         const analyser = audioContext.createAnalyser();
+
         analyser.fftSize = 256;
 
-        const source = audioContext.createMediaStreamSource(new MediaStream([audioTrack]));
+        const source = audioContext.createMediaStreamSource(
+            new MediaStream([audioTrack]),
+        );
 
         source.connect(analyser);
 
-        audioContextRef.current = audioContext;
-        analyserRef.current = analyser;
-
         const data = new Uint8Array(analyser.frequencyBinCount);
+
+        let animationFrame: number;
 
         const checkVolume = () => {
             analyser.getByteFrequencyData(data);
 
-            const volume = data.reduce((sum, value) => sum + value, 0) / data.length;
+            const volume =
+                data.reduce((sum, value) => sum + value, 0) / data.length;
 
             setSpeaking(volume > 15);
-
-            animationRef.current = requestAnimationFrame(checkVolume);
+            animationFrame = requestAnimationFrame(checkVolume);
         };
 
+        audioContext.resume().catch(() => {});
         checkVolume();
 
         return () => {
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-            }
-
+            cancelAnimationFrame(animationFrame);
+            source.disconnect();
+            analyser.disconnect();
             audioContext.close();
-
-            audioContextRef.current = null;
-            analyserRef.current = null;
+            setSpeaking(false);
         };
-    }, [stream, audioTrack]);
+        // audioTrack.enabled is a mutable property on the same track object,
+        // so this effect needs micEnabled as a dependency to re-run when the
+        // mic is toggled — otherwise a mute/unmute permanently kills the
+        // speaking indicator for that track.
+    }, [stream, micEnabled]);
+
+    useEffect(() => {
+        if (!videoRef.current) return;
+
+        videoRef.current.srcObject = stream ?? null;
+
+        return () => {
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
+            }
+        };
+    }, [stream, cameraEnabled]);
 
     return (
         <div
@@ -116,7 +169,12 @@ export function MemberTile({ member, onFullView, className, size = 'default' }: 
                 />
             ) : (
                 <Avatar className={avatarSizes[size]}>
-                    <AvatarFallback className={cn('font-medium', avatarTextSizes[size])}>
+                    <AvatarFallback
+                        className={cn(
+                            'font-medium',
+                            avatarTextSizes[size],
+                        )}
+                    >
                         {getInitials(member.user.name)}
                     </AvatarFallback>
                 </Avatar>
@@ -129,9 +187,7 @@ export function MemberTile({ member, onFullView, className, size = 'default' }: 
                             <div
                                 key={delay}
                                 className="size-2 animate-bounce rounded-full bg-primary"
-                                style={{
-                                    animationDelay: `${delay}ms`,
-                                }}
+                                style={{ animationDelay: `${delay}ms` }}
                             />
                         ))}
                     </div>
@@ -141,7 +197,9 @@ export function MemberTile({ member, onFullView, className, size = 'default' }: 
             {showControls && (
                 <>
                     <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-background/70 px-2 py-1 backdrop-blur">
-                        {!micEnabled && <MicOff className="size-3.5 text-destructive" />}
+                        {!micEnabled && (
+                            <MicOff className="size-3.5 text-destructive" />
+                        )}
 
                         <span className="text-xs font-medium">
                             {member.user.name}
